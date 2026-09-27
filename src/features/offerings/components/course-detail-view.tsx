@@ -17,7 +17,6 @@ import {
 import type { Offering } from "@prisma/client";
 
 import { formatPrice } from "@/lib/utils";
-import { siteConfig } from "@/config/site";
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { HeroFeatheredImage } from "@/components/shared/hero-feathered-image";
@@ -38,7 +37,7 @@ import { parseOfferingFaqs } from "../lib/faq";
 import { parseOfferingCurriculumTopics } from "../lib/curriculum-topics";
 import type { CurriculumOutline } from "../server/queries";
 import { GuestCheckoutForm } from "@/features/orders/components/guest-checkout-form";
-import { MobileEnrollCta } from "@/features/orders/components/mobile-enroll-cta";
+import { EnrollCta } from "@/features/orders/components/enroll-cta";
 import { SaleCountdown } from "./sale-countdown";
 import { ViewContentTracker } from "./view-content-tracker";
 
@@ -332,9 +331,14 @@ function CourseDetailView({
 
             {cta && (
               <div className="flex flex-col gap-2">
-                <Button size="lg" variant="inverse" asChild className="w-full sm:w-fit sm:px-10">
-                  <Link href={cta.href}>{cta.label}</Link>
-                </Button>
+                <EnrollCta
+                  href={cta.href}
+                  label={cta.label}
+                  hasGuestForm={offering.allowsGuestCheckout && payable != null}
+                  variant="inverse"
+                  size="lg"
+                  className="w-full sm:w-fit sm:px-10"
+                />
                 <p className="text-ink-muted-foreground flex items-center gap-1.5 text-xs">
                   <ShieldCheck className="size-3.5" aria-hidden="true" />
                   Secure payment powered by Razorpay
@@ -708,12 +712,12 @@ function CourseDetailView({
             About Stively
           </h2>
           <p className="text-muted-foreground max-w-3xl text-pretty">
-            {siteConfig.description}
+            Taught by the team that uses these tools daily on real client projects - Stively is a
+            software studio, not a course platform built around hired instructors.
           </p>
           <p className="text-muted-foreground max-w-3xl text-pretty">
-            This course is built and maintained by the same team that builds software for our
-            clients - the material reflects how these tools are actually used on real work, not a
-            theoretical syllabus.
+            The material reflects how prompting and AI tools are actually used on real client
+            work, not a theoretical syllabus.
           </p>
         </Container>
       </Section>
@@ -858,9 +862,14 @@ function CourseDetailView({
             ))}
           </ul>
           {cta && (
-            <Button size="lg" variant="inverse" asChild className="w-full sm:w-auto sm:px-10">
-              <Link href={cta.href}>{cta.label}</Link>
-            </Button>
+            <EnrollCta
+              href={cta.href}
+              label={cta.label}
+              hasGuestForm={offering.allowsGuestCheckout && payable != null}
+              variant="inverse"
+              size="lg"
+              className="w-full sm:w-auto sm:px-10"
+            />
           )}
         </Container>
       </Section>
@@ -879,7 +888,7 @@ function CourseDetailView({
                 </span>
               )}
             </div>
-            <MobileEnrollCta
+            <EnrollCta
               href={cta.href}
               label={cta.label}
               hasGuestForm={offering.allowsGuestCheckout && payable != null}

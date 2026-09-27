@@ -38,7 +38,8 @@ async function main() {
     data: {
       slug: "generative-ai-prompt-engineering",
       title: "Generative AI & Prompt Engineering Certification",
-      shortDescription: "Understand what Generative AI actually does, and learn to write prompts that get you real, useful results - not guesswork.",
+      shortDescription:
+        "Stop getting generic answers from ChatGPT. Learn a simple prompting method that gets you usable work (reports, emails, study notes, content, code) in minutes. Finish in a weekend and earn a verifiable certificate.",
       longDescription:
         "A practical, no-fluff course on Generative AI and prompt engineering. You'll start with what Generative AI actually is and how tools like ChatGPT, Claude, and Gemini work underneath, then move into real prompt-engineering skills - goals, context, constraints, output format, few-shot examples, structured output, task decomposition, prompt chaining, grounding, and evaluation. Every lesson is built around one real recorded lecture, a written summary you can revisit, and a short quiz you need to pass before moving on - so the certification actually reflects real understanding, not just watched-to-the-end.\n\nNew lessons are added regularly as the curriculum keeps growing - lifetime access means you get every update.",
       category: "TRAINING",
