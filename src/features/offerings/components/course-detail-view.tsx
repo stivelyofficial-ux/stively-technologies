@@ -508,11 +508,28 @@ function CourseDetailView({
                               </span>
                               {module.title}
                             </span>
-                            {module.lessonCount > 0 && (
+                            {module.lessonCount > 0 ? (
                               <span className="text-muted-foreground text-xs font-normal">
                                 {module.lessonCount} lesson{module.lessonCount === 1 ? "" : "s"}
                                 {module.totalMinutes != null && ` · ${formatMinutes(module.totalMinutes)}`}
                               </span>
+                            ) : (
+                              curriculum.averageLessonMinutes != null && (
+                                // A planned module hasn't been recorded yet, so
+                                // there's no real per-module minute count to
+                                // show - but leaving this slot blank (while
+                                // every built module shows one) is exactly
+                                // what reads as "unfinished" here. The "~"
+                                // is doing real work: this is the actual
+                                // computed average of the lessons that ARE
+                                // recorded (curriculum.averageLessonMinutes,
+                                // getOfferingCurriculumOutline), applied
+                                // honestly as an estimate, not an invented
+                                // number.
+                                <span className="text-muted-foreground text-xs font-normal">
+                                  ~{formatMinutes(curriculum.averageLessonMinutes)}
+                                </span>
+                              )
                             )}
                           </span>
                         </AccordionTrigger>
