@@ -57,13 +57,12 @@ function GuestCheckoutForm({
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  // Pre-selected, not "none" - the 500-pack is the better deal per prompt
-  // (see the badge comparison below), so defaulting to it raises average
-  // order value while the buyer can still opt out with one click. Only
-  // defaults this way when the 500-pack actually exists on this offering;
-  // otherwise starts at "none" same as before - never silently defaults to
-  // the smaller 100-pack instead.
-  const [addon, setAddon] = React.useState<AddonChoice>(offering.promptsPack500Price != null ? "promptsPack500" : "none");
+  // Reverted to "none" (2026-09-27) - pre-selecting the pricier 500-pack
+  // raised the effective checkout price a first-time visitor saw, which
+  // the founder traced to a worse cost-per-purchase on Meta ads (fewer
+  // completed checkouts against the same spend). The buyer picks an
+  // add-on, or doesn't - no default push toward the bigger tier.
+  const [addon, setAddon] = React.useState<AddonChoice>("none");
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
   const [alreadyOwned, setAlreadyOwned] = React.useState<{ message: string; redirectUrl?: string } | undefined>();
