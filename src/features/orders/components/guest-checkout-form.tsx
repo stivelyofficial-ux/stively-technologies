@@ -57,7 +57,13 @@ function GuestCheckoutForm({
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
-  const [addon, setAddon] = React.useState<AddonChoice>("none");
+  // Pre-selected, not "none" - the 500-pack is the better deal per prompt
+  // (see the badge comparison below), so defaulting to it raises average
+  // order value while the buyer can still opt out with one click. Only
+  // defaults this way when the 500-pack actually exists on this offering;
+  // otherwise starts at "none" same as before - never silently defaults to
+  // the smaller 100-pack instead.
+  const [addon, setAddon] = React.useState<AddonChoice>(offering.promptsPack500Price != null ? "promptsPack500" : "none");
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
   const [alreadyOwned, setAlreadyOwned] = React.useState<{ message: string; redirectUrl?: string } | undefined>();
