@@ -30,20 +30,40 @@ function formatRemaining(ms: number): string {
 function SaleCountdown({ endsAt, className, label = "Offer price ends in" }: { endsAt: string; className?: string; label?: string }) {
   const target = React.useMemo(() => new Date(endsAt).getTime(), [endsAt]);
   const [remaining, setRemaining] = React.useState<number | null>(null);
+  const [expired, setExpired] = React.useState(false);
 
   React.useEffect(() => {
-    const tick = () => setRemaining(target - Date.now());
+    const tick = () => {
+      const next = target - Date.now();
+      if (next <= 0) {
+        setExpired(true);
+        return;
+      }
+      setRemaining(next);
+    };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, [target]);
 
-  if (remaining == null || remaining <= 0) return null;
+  // Renders the icon + label immediately (identical on server and first
+  // client render - remaining starts null both places, no hydration
+  // mismatch) instead of the old "return null until the first tick", which
+  // popped this whole badge into existence about a second after paint -
+  // measured as a real, reproducible layout shift (PageSpeed CLS) on every
+  // visit, in all three places this badge appears on the course page. The
+  // caller only ever renders this component once the server has already
+  // confirmed `endsAt` is in the future (see course-detail-view.tsx), so
+  // `expired` only has to handle the rarer case of the deadline passing
+  // *during* an active visit - an acceptable one-time collapse, not the
+  // common-path shift this fix removes.
+  if (expired) return null;
 
   return (
     <span className={className}>
       <Flame className="size-3.5 shrink-0" aria-hidden="true" />
-      {label} {formatRemaining(remaining)}
+      {label}
+      {remaining != null ? ` ${formatRemaining(remaining)}` : ""}
     </span>
   );
 }

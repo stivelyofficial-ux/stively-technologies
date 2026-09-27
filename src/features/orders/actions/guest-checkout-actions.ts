@@ -6,7 +6,12 @@ import { isNextRedirectError } from "@/lib/next-redirect";
 import { createRazorpayOrder, verifyRazorpaySignature, describeRazorpayError } from "@/lib/razorpay";
 import type { ActionResult } from "@/actions/leads";
 import type { AuthActionResult } from "@/actions/auth";
-import { createGuestOrderSchema, verifyGuestPaymentSchema, acceptOrderAutoLoginSchema } from "../validation/guest-checkout-schemas";
+import {
+  createGuestOrderSchema,
+  verifyGuestPaymentSchema,
+  acceptOrderAutoLoginSchema,
+  setGuestLearnerNameSchema,
+} from "../validation/guest-checkout-schemas";
 import { fulfillGuestOrder } from "../server/guest-fulfillment";
 import { getOfferingPayablePrice } from "@/features/offerings/lib/pricing";
 
@@ -30,10 +35,12 @@ export type CreateGuestOrderResult =
 
 /**
  * The guest-checkout twin of createOrder (order-actions.ts) - no session,
- * no existing account, name/email/phone captured right here on the
- * checkout form. Only ever usable on an Offering that opted into this
- * (allowsGuestCheckout) - the normal authenticated flow is untouched and
- * still the default for everything else.
+ * no existing account, just email captured right here on the checkout form
+ * (no name, no phone - see guest-checkout-schemas.ts's comment; name is
+ * collected right after payment via setGuestLearnerName instead). Only ever
+ * usable on an Offering that opted into this (allowsGuestCheckout) - the
+ * normal authenticated flow is untouched and still the default for
+ * everything else.
  */
 export async function createGuestOrder(input: unknown): Promise<CreateGuestOrderResult> {
   const parsed = createGuestOrderSchema.safeParse(input);
@@ -84,13 +91,14 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
   }
 
   const basePrice = getOfferingPayablePrice(offering) ?? offering.price!;
-  // Either/or, 500 wins if a tampered request somehow sent both - see
-  // Offering.promptsPack500Price's own comment on why this is a single
-  // choice, not two stackable add-ons.
-  const addonChoice: "promptsPack500" | "promptsPack" | null =
-    data.promptsPack500 && offering.promptsPack500Price != null
+  // The single checkbox resolves to whichever tier the offering actually
+  // has - preferring the 500-pack when both exist, same preference the UI
+  // itself renders - resolved server-side, not trusted from the client.
+  const addonChoice: "promptsPack500" | "promptsPack" | null = !data.addPromptPack
+    ? null
+    : offering.promptsPack500Price != null
       ? "promptsPack500"
-      : data.promptsPack && offering.promptsPackPrice != null
+      : offering.promptsPackPrice != null
         ? "promptsPack"
         : null;
   const addonPrice =
@@ -111,9 +119,7 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
     const order = await prisma.order.create({
       data: {
         offeringId: offering.id,
-        guestName: data.name,
         guestEmail: data.email,
-        phone: data.phone,
         amount,
         currency: offering.currency,
         status: "PENDING",
@@ -210,6 +216,34 @@ export async function verifyGuestPayment(input: unknown): Promise<VerifyGuestPay
     console.error("verifyGuestPayment failed:", error);
     return { success: false, error: "Something went wrong. Please try again." };
   }
+}
+
+/**
+ * The "let's set up your learner profile" interstitial's submit - runs
+ * right after verifyGuestPayment succeeds, before the browser follows the
+ * autoLoginLink it returned. No session exists yet at this point, so the
+ * order's own PAID status plus its guestEmail matching what's submitted
+ * here is the trust boundary (matches data.email against the same order
+ * this same browser just paid for and got a real result back on -
+ * see setGuestLearnerNameSchema's comment). Saves straight onto the
+ * account fulfillGuestOrder already created; certificate generation
+ * already refuses to run without a name (getCertificateEligibility), so a
+ * visitor who abandons this step before finishing it just sees that same
+ * message later instead of a broken/incomplete-looking blank name.
+ */
+export async function setGuestLearnerName(input: unknown): Promise<ActionResult> {
+  const parsed = setGuestLearnerNameSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  const { orderId, email, name } = parsed.data;
+
+  const order = await prisma.order.findUnique({ where: { id: orderId }, select: { status: true, guestEmail: true, userId: true } });
+  if (!order || order.status !== "PAID" || !order.userId) return { success: false, error: "Order not found." };
+  if (!order.guestEmail || order.guestEmail.toLowerCase() !== email.toLowerCase()) {
+    return { success: false, error: "That email doesn't match this order." };
+  }
+
+  await prisma.user.update({ where: { id: order.userId }, data: { name } });
+  return { success: true };
 }
 
 /**

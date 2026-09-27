@@ -161,7 +161,7 @@ export default async function DigitalProductPage({ params }: DigitalProductPageP
                         }}
                         nonce={nonce}
                         ctaLabel="Buy Now for"
-                        namePlaceholder="Your name"
+                        collectLearnerName={false}
                       />
                     ) : (
                       <p className="text-muted-foreground text-sm">This product isn&apos;t available for purchase right now.</p>

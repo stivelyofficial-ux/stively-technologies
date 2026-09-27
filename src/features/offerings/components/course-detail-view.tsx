@@ -38,6 +38,7 @@ import { parseOfferingFaqs } from "../lib/faq";
 import { parseOfferingCurriculumTopics } from "../lib/curriculum-topics";
 import type { CurriculumOutline } from "../server/queries";
 import { GuestCheckoutForm } from "@/features/orders/components/guest-checkout-form";
+import { MobileEnrollCta } from "@/features/orders/components/mobile-enroll-cta";
 import { SaleCountdown } from "./sale-countdown";
 import { ViewContentTracker } from "./view-content-tracker";
 
@@ -878,9 +879,12 @@ function CourseDetailView({
                 </span>
               )}
             </div>
-            <Button asChild className="max-w-[60%] flex-1">
-              <Link href={cta.href}>{cta.label}</Link>
-            </Button>
+            <MobileEnrollCta
+              href={cta.href}
+              label={cta.label}
+              hasGuestForm={offering.allowsGuestCheckout && payable != null}
+              className="max-w-[60%] flex-1"
+            />
           </div>
         </div>
       )}

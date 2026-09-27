@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import "@/lib/razorpay-client-types";
 import { trackMetaPurchase, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
-import { createGuestOrder, verifyGuestPayment } from "../actions/guest-checkout-actions";
+import { createGuestOrder, verifyGuestPayment, setGuestLearnerName } from "../actions/guest-checkout-actions";
 
 export interface GuestCheckoutFormProps {
   offering: {
@@ -28,8 +29,16 @@ export interface GuestCheckoutFormProps {
   nonce?: string;
   /** "Enroll Now" reads right for a course, wrong for a one-off product - the call site names its own verb. Defaults to the original course wording so every existing caller is unaffected. */
   ctaLabel?: string;
-  namePlaceholder?: string;
-  /** Overrides the promptsPack add-on's label/description - lets a course page point the bonus at the real, purchasable Digital Store product instead of the original unlinked promise. Ignored when the offering has no promptsPackPrice. */
+  /**
+   * Shows the "set up your learner profile" name step right after payment
+   * succeeds, before redirecting - on by default (every course this form
+   * sells issues a certificate that needs a real name, and there's no
+   * account/profile page reason to ask for it any earlier). digital-store
+   * passes false: a one-off download has no certificate to put a name on,
+   * so there's nothing to justify the extra step for that buyer.
+   */
+  collectLearnerName?: boolean;
+  /** Overrides the prompt-pack add-on's label/description - lets a course page point the bonus at the real, purchasable Digital Store product instead of the original unlinked promise. Ignored when the offering has no matching price set. */
   promptsPackCopy?: { label: string; description: string };
   /** Same, for the promptsPack500 tier. Ignored when the offering has no promptsPack500Price. */
   promptsPack500Copy?: { label: string; description: string };
@@ -37,35 +46,40 @@ export interface GuestCheckoutFormProps {
 
 /**
  * The zero-login checkout path for an Offering with allowsGuestCheckout on
- * - name/email/phone captured right here, no account exists until payment
+ * - just an email captured right here, no account exists until payment
  * actually succeeds (see fulfillGuestOrder). Deliberately minimal: no
- * multi-step wizard, one form, one button, matching the "cold Instagram
- * traffic, ready-to-buy audience, zero distraction" brief this was built
- * for.
+ * multi-step wizard before payment, one field, one button, matching the
+ * "cold Instagram traffic, ready-to-buy audience, zero distraction" brief
+ * this was built for. No name field, no phone field and no three-way
+ * add-on choice (2026-09-27) - every field/decision before Razorpay opens
+ * is a real reason a cold visitor hesitates; see
+ * guest-checkout-schemas.ts's comment for the name/phone removal, and the
+ * single checkbox below for the add-on simplification. The name moves to
+ * a one-field "set up your learner profile" step right after payment
+ * succeeds instead (see the `profileStep` render below) - asked for once
+ * there's already a paying customer on the other end, not before.
  */
-type AddonChoice = "none" | "promptsPack" | "promptsPack500";
-
 function GuestCheckoutForm({
   offering,
   nonce,
   ctaLabel = "Enroll Now for",
-  namePlaceholder = "For your certificate",
+  collectLearnerName = true,
   promptsPackCopy,
   promptsPack500Copy,
 }: GuestCheckoutFormProps) {
   const [scriptReady, setScriptReady] = React.useState(false);
-  const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
-  const [phone, setPhone] = React.useState("");
-  // Reverted to "none" (2026-09-27) - pre-selecting the pricier 500-pack
-  // raised the effective checkout price a first-time visitor saw, which
-  // the founder traced to a worse cost-per-purchase on Meta ads (fewer
-  // completed checkouts against the same spend). The buyer picks an
-  // add-on, or doesn't - no default push toward the bigger tier.
-  const [addon, setAddon] = React.useState<AddonChoice>("none");
+  const [addPromptPack, setAddPromptPack] = React.useState(false);
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
   const [alreadyOwned, setAlreadyOwned] = React.useState<{ message: string; redirectUrl?: string } | undefined>();
+  // Set once verifyGuestPayment succeeds - holds everything the profile
+  // step and its eventual redirect need, so the redirect itself only ever
+  // happens from one place (handleProfileSubmit) instead of being
+  // duplicated between "collect name" and "skip straight there" paths.
+  const [paidResult, setPaidResult] = React.useState<{ orderId: string; email: string; redirectTo: string } | undefined>();
+  const [learnerName, setLearnerName] = React.useState("");
+  const [profilePending, setProfilePending] = React.useState(false);
   // Guards against Razorpay's documented "handler can fire more than once"
   // edge case double-reporting the same purchase to the Meta Pixel - see
   // the handler below. A ref, not state: it must survive without
@@ -75,12 +89,32 @@ function GuestCheckoutForm({
   // duplicate-prevention boundary here).
   const purchaseTrackedRef = React.useRef(false);
 
-  const addonPrice =
-    addon === "promptsPack500"
-      ? (offering.promptsPack500Price ?? 0)
-      : addon === "promptsPack"
-        ? (offering.promptsPackPrice ?? 0)
-        : 0;
+  // Whichever tier this offering actually has - the 500-pack when
+  // available (better value per prompt), otherwise the 100-pack. Mirrors
+  // createGuestOrder's own server-side resolution exactly, so the price
+  // shown here can never drift from what actually gets charged.
+  const availableAddon: { tier: "promptsPack500" | "promptsPack"; price: number; label: string; description: string; badge?: string } | null =
+    offering.promptsPack500Price != null
+      ? {
+          tier: "promptsPack500",
+          price: offering.promptsPack500Price,
+          label: promptsPack500Copy?.label ?? "500 AI Prompt Templates",
+          description: promptsPack500Copy?.description ?? "PDF download, delivered by email",
+          badge:
+            offering.promptsPackPrice != null
+              ? `5x the prompts, just ${formatPrice(offering.promptsPack500Price - offering.promptsPackPrice, offering.currency)} more`
+              : "Best value",
+        }
+      : offering.promptsPackPrice != null
+        ? {
+            tier: "promptsPack",
+            price: offering.promptsPackPrice,
+            label: promptsPackCopy?.label ?? "100 Practical AI Prompts",
+            description: promptsPackCopy?.description ?? "PDF download, delivered by email",
+          }
+        : null;
+
+  const addonPrice = addPromptPack && availableAddon ? availableAddon.price : 0;
   const total = offering.price + addonPrice;
 
   async function handleSubmit(event: React.FormEvent) {
@@ -90,11 +124,8 @@ function GuestCheckoutForm({
 
     const result = await createGuestOrder({
       offeringId: offering.id,
-      name,
       email,
-      phone,
-      promptsPack: addon === "promptsPack",
-      promptsPack500: addon === "promptsPack500",
+      addPromptPack,
     });
     if (!result.success) {
       setIsPending(false);
@@ -127,7 +158,11 @@ function GuestCheckoutForm({
       order_id: result.razorpayOrderId,
       name: "Stively",
       description: offering.title,
-      prefill: { name, email, contact: phone },
+      // No `contact` - Razorpay collects a phone number itself, in its own
+      // flow, only where it actually needs one (UPI, etc.) - see
+      // guest-checkout-schemas.ts's comment on why this form no longer
+      // asks for it upfront.
+      prefill: { email },
       theme: { color: "#ec3013" },
       handler: async (response) => {
         const verifyResult = await verifyGuestPayment({
@@ -157,13 +192,21 @@ function GuestCheckoutForm({
           trackMetaPurchase(verifyResult.amount / 100, verifyResult.currency);
         }
 
-        // Straight into the account, signed in - no separate "click here to
-        // continue" step. autoLoginLink now resolves to the right place for
-        // what was actually bought (My Purchases with a real download
-        // button for a digital product, My Learning for a course) - see
-        // acceptOrderAutoLogin. downloadUrl is the fallback only if
-        // fulfillment somehow produced a file but no account link.
-        window.location.href = verifyResult.autoLoginLink ?? verifyResult.downloadUrl ?? "/login";
+        // autoLoginLink resolves to the right place for what was actually
+        // bought (My Purchases with a real download button for a digital
+        // product, My Learning for a course) - see acceptOrderAutoLogin.
+        // downloadUrl is the fallback only if fulfillment somehow produced
+        // a file but no account link.
+        const redirectTo = verifyResult.autoLoginLink ?? verifyResult.downloadUrl ?? "/login";
+        if (collectLearnerName) {
+          // One more screen before that redirect: the name this account
+          // was created without (see guest-checkout-schemas.ts). Held in
+          // state, not followed immediately - handleProfileSubmit does the
+          // actual navigation once a name is in.
+          setPaidResult({ orderId: result.orderId, email, redirectTo });
+          return;
+        }
+        window.location.href = redirectTo;
       },
       modal: { ondismiss: () => setIsPending(false) },
     });
@@ -176,60 +219,80 @@ function GuestCheckoutForm({
     razorpay.open();
   }
 
+  /**
+   * The one-field "set up your learner profile" step's submit. Best-effort
+   * on the name save: a paying customer never gets trapped here by a
+   * server hiccup on a purely cosmetic field - the redirect always fires
+   * once this resolves, name saved or not, same as fulfillGuestOrder's own
+   * philosophy of never blocking real access behind non-essential steps.
+   */
+  async function handleProfileSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!paidResult) return;
+    setProfilePending(true);
+    try {
+      await setGuestLearnerName({ orderId: paidResult.orderId, email: paidResult.email, name: learnerName });
+    } catch (err) {
+      console.error("setGuestLearnerName failed:", err);
+    }
+    window.location.href = paidResult.redirectTo;
+  }
+
+  if (paidResult) {
+    return (
+      <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5 text-center">
+          <span className="text-foreground font-display text-xl font-semibold">🎉 You&apos;re enrolled!</span>
+          <span className="text-muted-foreground text-sm">Let&apos;s set up your learner profile.</span>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="gc-learner-name">Full name</Label>
+          <Input
+            id="gc-learner-name"
+            value={learnerName}
+            onChange={(e) => setLearnerName(e.target.value)}
+            placeholder="Your name"
+            autoFocus
+            required
+          />
+          <span className="text-muted-foreground text-xs">This name will appear on your Stively Certificate of Completion.</span>
+        </div>
+        <Button type="submit" size="lg" loading={profilePending} className="w-full">
+          Continue to Course
+        </Button>
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form id="guest-checkout-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" nonce={nonce} onLoad={() => setScriptReady(true)} />
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="gc-name">Full name</Label>
-        <Input id="gc-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={namePlaceholder} required />
-      </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="gc-email">Email</Label>
         <Input id="gc-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="For your account" required />
       </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="gc-phone">Phone number</Label>
-        <Input id="gc-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="For order updates" required />
-      </div>
 
-      {(offering.promptsPackPrice != null || offering.promptsPack500Price != null) && (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-foreground mb-0.5 text-sm font-medium">Add a prompt pack?</legend>
-
-          <AddonOption
-            id="gc-addon-none"
-            checked={addon === "none"}
-            onSelect={() => setAddon("none")}
-            label="No thanks"
-            description="Just the course"
-          />
-
-          {offering.promptsPackPrice != null && (
-            <AddonOption
-              id="gc-addon-100"
-              checked={addon === "promptsPack"}
-              onSelect={() => setAddon("promptsPack")}
-              label={promptsPackCopy?.label ?? "100 Practical AI Prompts"}
-              description={`${promptsPackCopy?.description ?? "PDF download, delivered by email"} · ${formatPrice(offering.promptsPackPrice, offering.currency)}`}
-            />
-          )}
-
-          {offering.promptsPack500Price != null && (
-            <AddonOption
-              id="gc-addon-500"
-              checked={addon === "promptsPack500"}
-              onSelect={() => setAddon("promptsPack500")}
-              label={promptsPack500Copy?.label ?? "500 AI Prompt Templates"}
-              description={`${promptsPack500Copy?.description ?? "PDF download, delivered by email"} · ${formatPrice(offering.promptsPack500Price, offering.currency)}`}
-              badge={
-                offering.promptsPackPrice != null
-                  ? `5x the prompts, just ${formatPrice(offering.promptsPack500Price - offering.promptsPackPrice, offering.currency)} more`
-                  : "Best value"
-              }
-            />
-          )}
-        </fieldset>
+      {availableAddon && (
+        <label
+          htmlFor="gc-addon"
+          className="border-border hover:border-primary/40 flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+        >
+          <Checkbox id="gc-addon" checked={addPromptPack} onCheckedChange={(v) => setAddPromptPack(v === true)} className="mt-0.5" />
+          <span className="flex-1">
+            <span className="flex flex-wrap items-center gap-1.5">
+              <span className="text-foreground text-sm font-medium">Add {availableAddon.label}</span>
+              {availableAddon.badge && (
+                <Badge variant="success" className="font-normal">
+                  {availableAddon.badge}
+                </Badge>
+              )}
+            </span>
+            <span className="text-muted-foreground block text-sm">
+              {availableAddon.description} · {formatPrice(availableAddon.price, offering.currency)}
+            </span>
+          </span>
+        </label>
       )}
 
       {error && (
@@ -241,6 +304,9 @@ function GuestCheckoutForm({
       <Button type="submit" size="lg" loading={isPending} className="w-full">
         {ctaLabel} {formatPrice(total, offering.currency)}
       </Button>
+      <p className="text-primary -mt-2 text-center text-xs font-medium">
+        You&apos;re one step away from the AI era - no distractions, just enroll.
+      </p>
 
       <Dialog open={!!alreadyOwned} onOpenChange={(open) => !open && setAlreadyOwned(undefined)}>
         <DialogContent>
@@ -262,60 +328,6 @@ function GuestCheckoutForm({
         </DialogContent>
       </Dialog>
     </form>
-  );
-}
-
-/**
- * One card in the either/or prompt-pack upsell (native radio under a styled
- * label - accessible, keyboard-operable, no new dependency for what's
- * really a 3-option radio group). The `badge` prop is where the actual
- * upsell psychology lives: an explicit, true, computed comparison ("5x the
- * prompts, just ₹100 more") anchored against the cheaper option right next
- * to it, not invented urgency - see course-detail-view.tsx/AD-025 for why.
- */
-function AddonOption({
-  id,
-  checked,
-  onSelect,
-  label,
-  description,
-  badge,
-}: {
-  id: string;
-  checked: boolean;
-  onSelect: () => void;
-  label: string;
-  description: string;
-  badge?: string;
-}) {
-  return (
-    <label
-      htmlFor={id}
-      className={cn(
-        "flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition-colors",
-        checked ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
-      )}
-    >
-      <input
-        type="radio"
-        id={id}
-        name="gc-addon"
-        checked={checked}
-        onChange={onSelect}
-        className="accent-primary mt-0.5 size-4 shrink-0"
-      />
-      <span className="flex-1">
-        <span className="flex flex-wrap items-center gap-1.5">
-          <span className="text-foreground text-sm font-medium">{label}</span>
-          {badge && (
-            <Badge variant="success" className="font-normal">
-              {badge}
-            </Badge>
-          )}
-        </span>
-        <span className="text-muted-foreground block text-sm">{description}</span>
-      </span>
-    </label>
   );
 }
 
