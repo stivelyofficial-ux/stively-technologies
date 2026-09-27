@@ -104,7 +104,7 @@ async function main() {
         "Students and professionals who already use ChatGPT or similar tools but want to actually understand what they're doing",
         "Anyone who wants prompting skills that transfer across AI tools, not tied to one specific product",
       ],
-      requirements: ["A laptop/desktop with a modern browser", "Access to any AI assistant (ChatGPT, Claude, Gemini, or similar) for the practice activities"],
+      requirements: ["Any phone, tablet, laptop or desktop with a browser", "Access to any AI assistant (ChatGPT, Claude, Gemini, or similar) - a free plan is enough"],
       // 8 modules total - matches the real course outline. Only modules 1-4
       // have recorded lessons below (real video + quiz); 5-8 are added as
       // empty Module rows by a one-off migration (not this seed, which only
