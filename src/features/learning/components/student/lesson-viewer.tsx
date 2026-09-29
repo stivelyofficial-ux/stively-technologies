@@ -181,6 +181,7 @@ function LessonViewer({
                     ) : (
                       <Icon className="size-4 shrink-0" aria-hidden="true" />
                     )}
+                    <span className="text-muted-foreground/70 tabular-nums">{index + 1}.</span>
                     {item.title}
                   </Link>
                 </li>

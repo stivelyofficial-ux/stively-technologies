@@ -103,7 +103,11 @@ export async function getCurriculumForEnrollment(
   // plus this enrollment's quiz results so a passed quiz can show its own
   // tick independently of whether the lesson was marked complete.
   const blocks = await prisma.lessonBlock.findMany({
-    where: { lessonId: { in: orderedLessons.map((l) => l.id) } },
+    // AI_CONVERSATION is excluded here - it's no longer one of a lesson's
+    // "parts" shown as a tab (LessonAssistantPanel below makes it a
+    // persistent, always-available panel instead, not tied to a specific
+    // item in the Watch/Read/Quiz sequence).
+    where: { lessonId: { in: orderedLessons.map((l) => l.id) }, type: { not: "AI_CONVERSATION" } },
     orderBy: { order: "asc" },
     select: {
       id: true,
@@ -306,6 +310,24 @@ export async function getAiTutorConversation(
     remainingToday: Math.max(0, AI_TUTOR_DAILY_MESSAGE_LIMIT - usedToday),
     dailyLimit: AI_TUTOR_DAILY_MESSAGE_LIMIT,
   };
+}
+
+/**
+ * A student's private note on one lesson - same access re-check as
+ * getAiTutorConversation above, so this can't be called with an
+ * enrollmentId/lessonId pair that isn't genuinely this student's own.
+ * Empty string (not null) when nothing's been written yet, since the
+ * textarea it feeds has no separate "no note" state to render.
+ */
+export async function getLessonNote(enrollmentId: string, lessonId: string, studentId: string): Promise<string> {
+  const lessonView = await getLessonForStudent(lessonId, enrollmentId, studentId);
+  if (!lessonView) return "";
+
+  const note = await prisma.lessonNote.findUnique({
+    where: { enrollmentId_lessonId: { enrollmentId, lessonId } },
+    select: { content: true },
+  });
+  return note?.content ?? "";
 }
 
 /** Search within the student's own enrolled curriculum only - never across other students' or other offerings' content. */

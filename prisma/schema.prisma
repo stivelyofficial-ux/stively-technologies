@@ -1777,6 +1777,7 @@ model OfferingEnrollment {
   /// Certificate below.
   lessonProgress        LessonProgress[]
   assessmentSubmissions AssessmentSubmission[]
+  lessonNotes           LessonNote[]
   certificate           Certificate?
 
   /// Phase 10 (Mentor & Learning Delivery) - program-specific mentor
@@ -1979,6 +1980,7 @@ model Lesson {
   blocks          LessonBlock[]
   progress        LessonProgress[]
   aiTutorMessages AiTutorMessage[]
+  notes           LessonNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2191,6 +2193,27 @@ model LessonProgress {
   @@unique([enrollmentId, lessonId])
   @@index([enrollmentId])
   @@index([lessonId])
+}
+
+/// A student's own private notes on one lesson - one row per
+/// enrollment+lesson (same shape as LessonProgress), overwritten in place
+/// as they keep editing rather than versioned. Never surfaced to anyone but
+/// the student who wrote it - no admin/mentor read path exists for this.
+model LessonNote {
+  id String @id @default(cuid())
+
+  enrollmentId String
+  enrollment   OfferingEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  content String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([enrollmentId, lessonId])
+  @@index([enrollmentId])
 }
 
 enum AiTutorMessageRole {

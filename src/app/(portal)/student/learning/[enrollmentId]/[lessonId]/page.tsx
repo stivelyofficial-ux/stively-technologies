@@ -8,6 +8,8 @@ import { markLessonStarted } from "@/features/learning/actions/progress-actions"
 import { LessonViewer } from "@/features/learning/components/student/lesson-viewer";
 import { CourseSidebar } from "@/features/learning/components/student/course-sidebar";
 import { CourseNavDrawer } from "@/features/learning/components/student/course-nav-drawer";
+import { LessonPanelsShell } from "@/features/learning/components/student/lesson-panels-shell";
+import { LessonAssistantPanel } from "@/features/learning/components/student/lesson-assistant-panel";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 
 interface LessonPageProps {
@@ -91,45 +93,46 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
         Offsetting by the header height instead would push these 64px into
         the content and float them over the lesson.
       */}
-      <div className="flex min-h-full flex-col lg:flex-row">
-        {/* Desktop rail - scrolls independently of the lesson beside it. */}
-        <aside className="border-border/70 hidden w-[300px] shrink-0 border-r lg:block xl:w-[340px]">
-          <div className="sticky top-0 h-[calc(100vh-4rem)]">{sidebar}</div>
-        </aside>
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          {/* Mobile course bar - opaque, not translucent: it sits over scrolling body text. */}
-          <div className="border-border/70 bg-background sticky top-0 z-20 border-b lg:hidden">
-            <div className="flex items-center gap-3 px-4 py-2.5">
-              <CourseNavDrawer label={curriculum.title}>{sidebar}</CourseNavDrawer>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-muted-foreground truncate text-[11px]">
-                  {curriculum.completedLessons} of {curriculum.totalLessons} lessons completed
-                </span>
-                <span className="text-foreground truncate text-sm font-medium">{curriculum.title}</span>
-              </div>
-              <span className="text-foreground shrink-0 text-sm font-semibold tabular-nums">
-                {curriculum.progressPercentage}%
-              </span>
-            </div>
-            {/* Progress reads as part of the bar itself rather than another stacked row. */}
-            <div className="bg-muted h-0.5 w-full" aria-hidden="true">
-              <div className="bg-primary h-full" style={{ width: `${curriculum.progressPercentage}%` }} />
-            </div>
+      <LessonPanelsShell
+        sidebar={sidebar}
+        assistantPanel={<LessonAssistantPanel enrollmentId={enrollmentId} lessonId={lessonId} />}
+        mobileAssistant={
+          <div className="border-border/70 mt-8 border-t pt-6">
+            <LessonAssistantPanel enrollmentId={enrollmentId} lessonId={lessonId} />
           </div>
-
-          <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-            <LessonViewer
-              enrollmentId={enrollmentId}
-              curriculum={curriculum}
-              lessonView={lessonView}
-              activeItemId={activeItemId}
-              canViewCertificate={policy?.canViewCertificates ?? false}
-              canDownloadResources={policy?.canDownloadResources ?? false}
-            />
+        }
+      >
+        {/* Mobile course bar - opaque, not translucent: it sits over scrolling body text. */}
+        <div className="border-border/70 bg-background sticky top-0 z-20 border-b lg:hidden">
+          <div className="flex items-center gap-3 px-4 py-2.5">
+            <CourseNavDrawer label={curriculum.title}>{sidebar}</CourseNavDrawer>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="text-muted-foreground truncate text-[11px]">
+                {curriculum.completedLessons} of {curriculum.totalLessons} lessons completed
+              </span>
+              <span className="text-foreground truncate text-sm font-medium">{curriculum.title}</span>
+            </div>
+            <span className="text-foreground shrink-0 text-sm font-semibold tabular-nums">
+              {curriculum.progressPercentage}%
+            </span>
+          </div>
+          {/* Progress reads as part of the bar itself rather than another stacked row. */}
+          <div className="bg-muted h-0.5 w-full" aria-hidden="true">
+            <div className="bg-primary h-full" style={{ width: `${curriculum.progressPercentage}%` }} />
           </div>
         </div>
-      </div>
+
+        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+          <LessonViewer
+            enrollmentId={enrollmentId}
+            curriculum={curriculum}
+            lessonView={lessonView}
+            activeItemId={activeItemId}
+            canViewCertificate={policy?.canViewCertificates ?? false}
+            canDownloadResources={policy?.canDownloadResources ?? false}
+          />
+        </div>
+      </LessonPanelsShell>
     </>
   );
 }
