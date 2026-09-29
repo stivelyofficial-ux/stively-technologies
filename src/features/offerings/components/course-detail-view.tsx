@@ -38,6 +38,7 @@ import { parseOfferingCurriculumTopics } from "../lib/curriculum-topics";
 import type { CurriculumOutline } from "../server/queries";
 import { GuestCheckoutForm } from "@/features/orders/components/guest-checkout-form";
 import { EnrollCta } from "@/features/orders/components/enroll-cta";
+import { CourseComparison } from "./course-comparison";
 import { SaleCountdown } from "./sale-countdown";
 import { ViewContentTracker } from "./view-content-tracker";
 
@@ -61,7 +62,7 @@ const INCLUDED = [
 const HOW_LEARNING_WORKS = [
   { icon: PlayCircle, title: "Watch", description: "A short, focused video lesson." },
   { icon: BookOpen, title: "Read", description: "Written notes covering the same ground." },
-  { icon: Sparkles, title: "Practice", description: "Try it on a real AI assistant yourself." },
+  { icon: Sparkles, title: "Practice", description: "Apply it yourself, hands-on." },
   { icon: ClipboardCheck, title: "Quiz", description: "Six questions to check you actually got it." },
   { icon: Unlock, title: "Unlock", description: "Pass, and the next lesson opens." },
 ] as const;
@@ -69,25 +70,18 @@ const HOW_LEARNING_WORKS = [
 const COMPARISON = [
   { typical: "Hours of video you watch passively", stively: "Short lessons, then you actually try it" },
   { typical: "No way to know if you understood", stively: "A quiz gates every lesson before the next unlocks" },
-  { typical: "Prompt lists that go stale", stively: "The reasoning behind prompts, so it transfers to any tool" },
+  { typical: "Notes that go stale as tools and versions change", stively: "The reasoning behind it, so it transfers to real, changing work" },
   { typical: "Certificate for finishing the video", stively: "Certificate that reflects passed assessments" },
 ] as const;
 
 const DEFAULT_COURSE_FAQS = [
   {
     question: "Do I need any prior experience?",
-    answer:
-      "No. The course starts from what Generative AI actually is and builds up from there. If you've used ChatGPT even once, you're ready.",
+    answer: "No. The course starts from the fundamentals and builds up from there - no prior experience assumed.",
   },
   {
     question: "What do I need to follow along?",
-    answer:
-      "A laptop or phone with a browser, and access to any AI assistant - ChatGPT, Claude, Gemini or similar. A free account on any one of them is enough.",
-  },
-  {
-    question: "Is this tied to one specific AI tool?",
-    answer:
-      "No. The techniques are deliberately tool-agnostic - they work the same across ChatGPT, Claude, Gemini and whatever replaces them next.",
+    answer: "A laptop or desktop with a modern browser. Everything else the course needs, it tells you when you need it.",
   },
   {
     question: "How long do I have access?",
@@ -429,20 +423,20 @@ function CourseDetailView({
             {/* THE PROBLEM */}
             <div className="flex flex-col gap-5">
               <h2 className="text-foreground font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-                You already use AI. But are you using it well?
+                You&apos;ve probably tried to learn this before. Did it stick?
               </h2>
               <p className="text-muted-foreground text-pretty">
-                Most people get vague, generic output and assume that&apos;s just how AI works. Usually
-                it isn&apos;t the tool - it&apos;s the instruction.
+                Most people watch a tutorial, feel like they understood it, then can&apos;t reproduce it
+                a week later. Usually that isn&apos;t on you - it&apos;s how the material was taught.
               </p>
               <ul className="grid gap-3 sm:grid-cols-2">
                 {[
-                  "Answers that are vague and generic",
-                  "Prompts that leave too much to guesswork",
-                  "Missing context, so the AI fills gaps itself",
-                  "Confident answers that are quietly wrong",
+                  "Hours of tutorial video, but nothing sticks",
+                  "Code you copied, not code you understand",
+                  "No way to check if you actually got it",
+                  "Output that looks right but is quietly wrong",
                   "Nothing repeatable - starting from scratch every time",
-                  "No way to tell good output from bad",
+                  "No feedback until you're already stuck",
                 ].map((problem) => (
                   <li key={problem} className="text-muted-foreground flex items-start gap-2.5 text-sm">
                     <X className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -625,8 +619,8 @@ function CourseDetailView({
                 ))}
               </ol>
               <p className="text-muted-foreground text-sm">
-                You need at least 3 of 6 correct to pass a quiz. Get it wrong and you can retry - the
-                point is that you actually understood it, not that you got one shot.
+                You need at least half the questions correct to pass a quiz. Get it wrong and you can
+                retry - the point is that you actually understood it, not that you got one shot.
               </p>
             </div>
 
@@ -637,7 +631,7 @@ function CourseDetailView({
               </h2>
               <div className="border-border/70 overflow-hidden rounded-xl border">
                 <div className="bg-muted grid grid-cols-2 gap-4 px-4 py-3 text-sm font-semibold">
-                  <span className="text-muted-foreground">A typical AI course</span>
+                  <span className="text-muted-foreground">A typical course</span>
                   <span className="text-foreground">The Stively approach</span>
                 </div>
                 <ul className="divide-border/70 divide-y">
@@ -716,11 +710,13 @@ function CourseDetailView({
             software studio, not a course platform built around hired instructors.
           </p>
           <p className="text-muted-foreground max-w-3xl text-pretty">
-            The material reflects how prompting and AI tools are actually used on real client
-            work, not a theoretical syllabus.
+            The material reflects how these skills are actually used on real client work, not a
+            theoretical syllabus.
           </p>
         </Container>
       </Section>
+
+      <CourseComparison />
 
       {/* ── FOUNDING PRICE (in place of fabricated testimonials) ──
         Still no invented reviews/ratings/learner counts - that's a hard
