@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { OfferingEnrollment, Order, OfferingRequest, OfferingEnrollmentStatus, AccessGrantReason } from "@prisma/client";
 import { emitEnrollmentEvent } from "../lib/events";
+import { ensureInternshipTrack } from "@/features/internships/server/creation";
 
 interface CreateEnrollmentInput {
   studentId: string;
@@ -129,5 +130,6 @@ export async function completeEnrollment(enrollmentId: string): Promise<Offering
     },
   });
   emitEnrollmentEvent("ENROLLMENT_COMPLETED", updated);
+  await ensureInternshipTrack(enrollmentId, updated.studentId);
   return updated;
 }

@@ -2,11 +2,15 @@
 
 import { useEffect } from "react";
 
+import { isDatabaseConnectivityError } from "@/lib/is-database-error";
+
 /**
  * Catches errors thrown by the root layout itself (fonts, providers, etc.)
  * where app/error.tsx can't help, since that only wraps content the layout
  * renders. Must render its own <html>/<body> - the root layout is the thing
- * that broke.
+ * that broke. No Tailwind classes here on purpose - if the layout itself
+ * failed, don't assume its styling pipeline is trustworthy either; inline
+ * styles keep this legible no matter what broke upstream.
  */
 export default function GlobalError({
   error,
@@ -19,14 +23,47 @@ export default function GlobalError({
     console.error(error);
   }, [error]);
 
+  const isDbError = isDatabaseConnectivityError(error);
+
   return (
     <html lang="en">
       <body>
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-2xl font-semibold">Something went wrong</h1>
+        <div
+          style={{
+            display: "flex",
+            minHeight: "100vh",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            padding: 24,
+            textAlign: "center",
+            fontFamily: "system-ui, sans-serif",
+          }}
+        >
+          {isDbError ? (
+            <>
+              <h1 style={{ fontSize: 24, fontWeight: 600 }}>We&apos;re under maintenance</h1>
+              <p style={{ color: "#666", maxWidth: 420 }}>
+                We&apos;ll be back online on <strong>October 1st</strong>. Sorry for the inconvenience - reach out
+                at team@stively.com if it&apos;s urgent.
+              </p>
+            </>
+          ) : (
+            <h1 style={{ fontSize: 24, fontWeight: 600 }}>Something went wrong</h1>
+          )}
           <button
             onClick={reset}
-            className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white"
+            style={{
+              borderRadius: 8,
+              background: "black",
+              color: "white",
+              padding: "10px 20px",
+              fontSize: 14,
+              fontWeight: 500,
+              border: "none",
+              cursor: "pointer",
+            }}
           >
             Try again
           </button>

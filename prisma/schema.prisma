@@ -102,6 +102,7 @@ model User {
   sentMessages        MentorMessage[]
   sessionAttendance   MentorSessionAttendee[]
   notifications       Notification[]
+  internshipTracks    InternshipTrack[]
 
   /// Client Workspace - every SalesLead this CLIENT-role user has been
   /// linked to as the business's contact (see SalesLead.clientUserId).
@@ -521,6 +522,10 @@ model TeamMember {
 
   /// AI Interview Platform - see Job below.
   createdJobs Job[]
+
+  /// Internship Portal - see InternshipTrack below.
+  internshipTracksAssigned InternshipTrack[]
+  internshipTasksReviewed  InternshipTask[]
 
   /// Sales CRM - see SalesLead below. Separate from `ownedLeads`/
   /// `assignments` (the inbound-marketing Lead CRM) on purpose, same
@@ -1778,6 +1783,7 @@ model OfferingEnrollment {
   lessonProgress        LessonProgress[]
   assessmentSubmissions AssessmentSubmission[]
   lessonNotes           LessonNote[]
+  internshipTracks      InternshipTrack[]
   certificate           Certificate?
 
   /// Phase 10 (Mentor & Learning Delivery) - program-specific mentor
@@ -2486,6 +2492,129 @@ model MentorAssignment {
 
   @@index([studentId])
   @@index([mentorId])
+}
+
+// ============================================
+// INTERNSHIP PORTAL
+// ============================================
+// A student unlocks a track the moment an OfferingEnrollment first reaches
+// COMPLETED (see ensureInternshipTrack, called from completeEnrollment) -
+// created with no project yet, an honest "waiting to be assigned" state
+// rather than nothing at all. An admin (or an affiliated mentor via
+// TeamMember) then assigns one real InternshipProject and a checklist of
+// InternshipTasks; the student reports progress daily via
+// InternshipDailyReport, one row per calendar day.
+
+enum InternshipTrackStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+}
+
+model InternshipTrack {
+  id String @id @default(cuid())
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  /// Which completed enrollment unlocked this track - informational (a
+  /// student could complete more than one course), not re-checked as a
+  /// hard gate after creation.
+  enrollmentId String?
+  enrollment   OfferingEnrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+
+  /// e.g. "Frontend Development Internship" - defaults from the
+  /// qualifying offering's title at creation, editable by an admin after.
+  title  String
+  status InternshipTrackStatus @default(ACTIVE)
+
+  project      InternshipProject?
+  tasks        InternshipTask[]
+  dailyReports InternshipDailyReport[]
+
+  assignedById String?
+  assignedBy   TeamMember? @relation(fields: [assignedById], references: [id], onDelete: SetNull)
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+}
+
+/// One project per track - the real, assigned brief ("build a real-time
+/// chat app"), not a generic label. Nullable relation from the track side
+/// (InternshipTrack.project) is how the UI tells "not assigned yet" apart
+/// from "assigned, brief is just short".
+model InternshipProject {
+  id String @id @default(cuid())
+
+  trackId String          @unique
+  track   InternshipTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  title        String
+  brief        String  @db.Text
+  instructions String? @db.Text
+  resourceUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum InternshipTaskStatus {
+  PENDING
+  SUBMITTED
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+/// The project checklist ("6 assigned") - admin-authored, ordered,
+/// individually reviewable. Distinct from InternshipDailyReport: a task is
+/// "build the login page," a daily report is "here's what I did today,"
+/// and a single day's work might touch several tasks or none yet.
+model InternshipTask {
+  id String @id @default(cuid())
+
+  trackId String
+  track   InternshipTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String? @db.Text
+  order       Int
+  status      InternshipTaskStatus @default(PENDING)
+
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  reviewedById String?
+  reviewedBy   TeamMember? @relation(fields: [reviewedById], references: [id], onDelete: SetNull)
+  feedback    String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([trackId])
+}
+
+/// One row per calendar day a student reports in - @@unique enforces that
+/// directly rather than needing application-level "already reported today"
+/// logic. Editing today's entry is an upsert on the same row, not a second
+/// report.
+model InternshipDailyReport {
+  id String @id @default(cuid())
+
+  trackId String
+  track   InternshipTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  reportDate DateTime @db.Date
+  content    String   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trackId, reportDate])
+  @@index([trackId])
 }
 
 enum AttendeeStatus {

@@ -8,6 +8,7 @@ import { OfferingGrid } from "@/features/offerings/components/offering-grid";
 import { getMyRequests } from "@/features/offering-requests/server/queries";
 import { RequestList } from "@/features/offering-requests/components/request-list";
 import { getStudentAccessSummary } from "@/features/enrollments/server/access-policy";
+import { hasInternshipTrack } from "@/features/internships/server/queries";
 import { ProgressCard } from "@/features/enrollments/components/progress-card";
 import { EnrollmentStatusBadge } from "@/features/enrollments/components/enrollment-status-badge";
 import { PrimeMembershipBanner } from "@/features/enrollments/components/prime-membership-banner";
@@ -23,18 +24,12 @@ import { Container } from "@/components/shared/container";
 
 export const metadata: Metadata = { title: "Student Dashboard" };
 
-const QUICK_ACTIONS = [
+const BASE_QUICK_ACTIONS = [
   {
     label: "Browse Offerings",
     description: "Training, internships, and more",
     icon: GraduationCap,
     href: "/offerings",
-  },
-  {
-    label: "Browse Internships",
-    description: "Find a placement to apply to",
-    icon: Briefcase,
-    href: "/student/internships",
   },
   {
     label: "Career Guidance",
@@ -49,6 +44,13 @@ const QUICK_ACTIONS = [
     href: "/contact",
   },
 ] as const;
+
+/** Real copy for a student who's actually unlocked a track (project, tasks, daily reports) vs. the generic "go find one" framing for everyone else - the internships page itself handles both cases, but the dashboard entry point shouldn't promise "browse placements" to someone who already has a real dashboard waiting. */
+function internshipQuickAction(hasTrack: boolean) {
+  return hasTrack
+    ? { label: "Intern Dashboard", description: "Your project, tasks & daily reports", icon: Briefcase, href: "/student/internships" }
+    : { label: "Internships", description: "Unlocks once you finish a course", icon: Briefcase, href: "/student/internships" };
+}
 
 // Platform-level messaging, not a claim about outcomes or a testimonial -
 // same "don't fabricate trust content" discipline the marketing site
@@ -77,6 +79,8 @@ export default async function StudentDashboardPage() {
   const { requests } = await getMyRequests(user.id, "STUDENT", {});
   const accessSummary = await getStudentAccessSummary(user.id);
   const { isPrimeMember } = await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { isPrimeMember: true } });
+  const hasTrack = await hasInternshipTrack(user.id);
+  const quickActions = [BASE_QUICK_ACTIONS[0], internshipQuickAction(hasTrack), ...BASE_QUICK_ACTIONS.slice(1)];
 
   return (
     <>
@@ -114,7 +118,7 @@ export default async function StudentDashboardPage() {
         <section className="flex flex-col gap-4">
           <SectionHeader title="Quick actions" />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {QUICK_ACTIONS.map((action) => (
+            {quickActions.map((action) => (
               <QuickActionCard key={action.label} {...action} />
             ))}
           </div>

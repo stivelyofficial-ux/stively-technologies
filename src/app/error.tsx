@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { isDatabaseConnectivityError } from "@/lib/is-database-error";
 
 export default function Error({
   error,
@@ -15,6 +16,28 @@ export default function Error({
     // Swap for real error monitoring (e.g. Sentry) when that's added.
     console.error(error);
   }, [error]);
+
+  // 2026-09-30: our Neon plan's monthly compute-hour allowance runs out
+  // before the database is genuinely unreachable - real, current, and
+  // worth a specific message rather than the generic one below, so a
+  // visitor hitting this mid-outage gets an honest "we know, here's when"
+  // instead of "something went wrong, try again" (which just looks broken).
+  if (isDatabaseConnectivityError(error)) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">We&apos;re under maintenance</h1>
+        <p className="text-muted-foreground max-w-md">
+          We&apos;ll be back online on <strong className="text-foreground">October 1st</strong>. Sorry for the
+          inconvenience - reach out at{" "}
+          <a href="mailto:team@stively.com" className="text-primary underline underline-offset-4">
+            team@stively.com
+          </a>{" "}
+          if it&apos;s urgent.
+        </p>
+        <Button onClick={reset}>Try again</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
