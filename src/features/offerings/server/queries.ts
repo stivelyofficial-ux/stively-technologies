@@ -104,10 +104,15 @@ export async function getOfferingBySlug(slug: string): Promise<Offering | null> 
  * an arbitrary one.
  */
 export async function getFeaturedCourseOffering(): Promise<Offering | null> {
-  return prisma.offering.findFirst({
-    where: { status: "PUBLISHED", visible: true, featured: true, category: "TRAINING" },
-    orderBy: { updatedAt: "desc" },
-  });
+  try {
+    return await prisma.offering.findFirst({
+      where: { status: "PUBLISHED", visible: true, featured: true, category: "TRAINING" },
+      orderBy: { updatedAt: "desc" },
+    });
+  } catch (error) {
+    console.error("getFeaturedCourseOffering failed:", error);
+    return null;
+  }
 }
 
 /**
@@ -118,9 +123,14 @@ export async function getFeaturedCourseOffering(): Promise<Offering | null> {
  * inflate the metric with traffic that never actually looked at it.
  */
 export async function getOfferingForDisplay(slug: string): Promise<Offering | null> {
-  return prisma.offering.findFirst({
-    where: { slug, status: "PUBLISHED", visible: true },
-  });
+  try {
+    return await prisma.offering.findFirst({
+      where: { slug, status: "PUBLISHED", visible: true },
+    });
+  } catch (error) {
+    console.error("getOfferingForDisplay failed:", error);
+    return null;
+  }
 }
 
 export async function getFeaturedOfferings(limit = 6): Promise<Offering[]> {

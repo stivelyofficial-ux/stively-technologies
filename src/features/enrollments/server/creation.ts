@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { OfferingEnrollment, Order, OfferingRequest, OfferingEnrollmentStatus, AccessGrantReason } from "@prisma/client";
 import { emitEnrollmentEvent } from "../lib/events";
 import { ensureInternshipTrack } from "@/features/internships/server/creation";
+import { convertReferralOnEnrollment } from "@/features/referrals/server/conversion";
 
 interface CreateEnrollmentInput {
   studentId: string;
@@ -71,18 +72,27 @@ export async function createEnrollmentFromOrder(order: Order): Promise<OfferingE
   // A "membership" product's own paid Order is what actually grants the
   // perk - see Offering.grantsPrimeMembership's schema comment for why this
   // rides on the normal checkout flow rather than a separate mechanism.
-  const offering = await prisma.offering.findUnique({ where: { id: order.offeringId }, select: { grantsPrimeMembership: true } });
+  const offering = await prisma.offering.findUnique({
+    where: { id: order.offeringId },
+    select: { grantsPrimeMembership: true, referralRewardAmount: true },
+  });
   if (offering?.grantsPrimeMembership) {
     await prisma.user.update({ where: { id: order.userId }, data: { isPrimeMember: true, primeMemberSince: new Date() } });
   }
 
-  return createEnrollment({
+  const enrollment = await createEnrollment({
     studentId: order.userId,
     offeringId: order.offeringId,
     orderId: order.id,
     status: "ACTIVE",
     accessGrantReason: "PAYMENT_CONFIRMED",
   });
+
+  // Referral Program (AD-035) - converts on PURCHASE, not on finishing the
+  // course, so this belongs here rather than in completeEnrollment below.
+  await convertReferralOnEnrollment(order.userId, order.offeringId, offering?.referralRewardAmount ?? null);
+
+  return enrollment;
 }
 
 /**

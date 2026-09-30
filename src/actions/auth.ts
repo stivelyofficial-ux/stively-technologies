@@ -13,6 +13,9 @@ import {
   getValidPasswordResetToken,
   deletePasswordResetToken,
 } from "@/lib/auth-tokens";
+import { attributeReferralSignup } from "@/features/referrals/server/attribution";
+import { isDatabaseConnectivityError } from "@/lib/is-database-error";
+import { MAINTENANCE_BODY } from "@/lib/maintenance";
 import {
   registerSchema,
   loginSchema,
@@ -31,7 +34,26 @@ import { isNextRedirectError } from "@/lib/next-redirect";
  */
 export type AuthActionResult =
   | { success: true; message?: string }
-  | { success: false; error: string };
+  | { success: false; error: string; isDbMaintenance?: boolean };
+
+/**
+ * One real message for every auth action that hits the database - login,
+ * register, reset password. `error.cause?.err` unwraps Auth.js's own
+ * AuthError wrapper (see AuthError's constructor in @auth/core/errors.js -
+ * it stores the original thrown error at `cause.err`), which is what
+ * `signIn("credentials", ...)` throws when `authorize()` itself throws a
+ * raw PrismaClientInitializationError - without this unwrap, loginUser's
+ * `error instanceof AuthError` branch below would catch it first and
+ * return "Invalid email or password", actively telling someone their
+ * credentials are wrong when the real cause is the database being down.
+ */
+function dbMaintenanceResultIfApplicable(error: unknown): AuthActionResult | null {
+  const original = error instanceof Error ? ((error.cause as { err?: Error })?.err ?? error) : undefined;
+  if (original instanceof Error && isDatabaseConnectivityError(original)) {
+    return { success: false, error: MAINTENANCE_BODY, isDbMaintenance: true };
+  }
+  return null;
+}
 
 const GENERIC_RESET_MESSAGE =
   "If an account exists for that email, we've sent a link to reset the password.";
@@ -91,6 +113,7 @@ export async function registerUser(
     });
 
     await sendVerificationEmail(user.email!, user.name, user.id);
+    await attributeReferralSignup(user.id);
 
     return {
       success: true,
@@ -98,7 +121,7 @@ export async function registerUser(
     };
   } catch (error) {
     console.error("registerUser failed:", error);
-    return { success: false, error: "Something went wrong. Please try again." };
+    return dbMaintenanceResultIfApplicable(error) ?? { success: false, error: "Something went wrong. Please try again." };
   }
 }
 
@@ -183,7 +206,7 @@ export async function resetPassword(
     return { success: true, message: "Password updated. You can now sign in." };
   } catch (error) {
     console.error("resetPassword failed:", error);
-    return { success: false, error: "Something went wrong. Please try again." };
+    return dbMaintenanceResultIfApplicable(error) ?? { success: false, error: "Something went wrong. Please try again." };
   }
 }
 
@@ -244,6 +267,15 @@ export async function loginUser(
     return { success: true };
   } catch (error) {
     if (isNextRedirectError(error)) throw error;
+
+    // Checked before the AuthError branch below on purpose - authorize()
+    // throwing a raw PrismaClientInitializationError still arrives here
+    // wrapped as an AuthError (Auth.js catches every authorize() throw),
+    // so without this check first, a database outage would fall into the
+    // generic "Invalid email or password" branch and tell someone their
+    // real credentials are wrong.
+    const dbResult = dbMaintenanceResultIfApplicable(error);
+    if (dbResult) return dbResult;
 
     if (error instanceof AuthError) {
       const code = "code" in error ? (error as { code?: string }).code : undefined;

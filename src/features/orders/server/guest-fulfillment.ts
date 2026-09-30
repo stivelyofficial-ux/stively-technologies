@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/utils";
 import { resend, EMAIL_FROM } from "@/lib/resend";
 import { siteConfig } from "@/config/site";
 import { handleOrderPaid } from "./post-purchase";
+import { attributeReferralSignup } from "@/features/referrals/server/attribution";
 import {
   generateAutoLoginToken,
   computeAutoLoginExpiry,
@@ -552,6 +553,11 @@ export async function fulfillGuestOrder(orderId: string): Promise<GuestOrderFulf
         },
       });
       userId = created.id;
+      // Referral Program (AD-035) - a guest checkout with no prior account
+      // IS this person's signup, so attribution happens right here, before
+      // handleOrderPaid below runs enrollment (and the referral-conversion
+      // check that depends on this row already existing).
+      await attributeReferralSignup(created.id);
     }
 
     await prisma.order.update({ where: { id: orderId }, data: { userId } });

@@ -14,6 +14,8 @@ import {
 } from "../validation/guest-checkout-schemas";
 import { fulfillGuestOrder } from "../server/guest-fulfillment";
 import { getOfferingPayablePrice } from "@/features/offerings/lib/pricing";
+import { isDatabaseConnectivityError } from "@/lib/is-database-error";
+import { MAINTENANCE_BODY } from "@/lib/maintenance";
 
 export type CreateGuestOrderResult =
   | {
@@ -24,7 +26,7 @@ export type CreateGuestOrderResult =
       currency: string;
       keyId: string;
     }
-  | { success: false; error: string }
+  | { success: false; error: string; isDbMaintenance?: boolean }
   | {
       success: false;
       alreadyOwned: true;
@@ -47,15 +49,37 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   const data = parsed.data;
 
-  const offering = await prisma.offering.findFirst({
-    where: { id: data.offeringId, status: "PUBLISHED", visible: true, allowsGuestCheckout: true },
-  });
-  if (!offering) return { success: false, error: "This offering is no longer available." };
-  if (offering.purchaseFlow !== "DIRECT_PAYMENT" && offering.purchaseFlow !== "BOTH") {
-    return { success: false, error: "This offering isn't available for direct purchase." };
-  }
-  if (offering.pricingType !== "FIXED" || offering.price == null) {
-    return { success: false, error: "This offering doesn't support guest checkout." };
+  let offering: Awaited<ReturnType<typeof prisma.offering.findFirst>>;
+  let existingOrder: { id: string; userId: string | null; downloadToken: string | null } | null;
+  try {
+    offering = await prisma.offering.findFirst({
+      where: { id: data.offeringId, status: "PUBLISHED", visible: true, allowsGuestCheckout: true },
+    });
+    if (!offering) return { success: false, error: "This offering is no longer available." };
+    if (offering.purchaseFlow !== "DIRECT_PAYMENT" && offering.purchaseFlow !== "BOTH") {
+      return { success: false, error: "This offering isn't available for direct purchase." };
+    }
+    if (offering.pricingType !== "FIXED" || offering.price == null) {
+      return { success: false, error: "This offering doesn't support guest checkout." };
+    }
+
+    // Someone re-buying a course/product they already paid for and own - most
+    // often a returning customer who forgot they'd already purchased, or one
+    // who typed the email they bought under. Catch it before Razorpay even
+    // opens rather than let them pay twice and sort it out afterwards.
+    existingOrder = await prisma.order.findFirst({
+      where: {
+        offeringId: offering.id,
+        status: "PAID",
+        OR: [{ guestEmail: { equals: data.email, mode: "insensitive" } }, { user: { email: { equals: data.email, mode: "insensitive" } } }],
+      },
+      select: { id: true, userId: true, downloadToken: true },
+    });
+  } catch (error) {
+    if (isDatabaseConnectivityError(error as Error)) {
+      return { success: false, error: MAINTENANCE_BODY, isDbMaintenance: true };
+    }
+    throw error;
   }
 
   const keyId = process.env.RAZORPAY_KEY_ID;
@@ -65,18 +89,6 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
     return { success: false, error: "Payments aren't set up yet - please contact us directly." };
   }
 
-  // Someone re-buying a course/product they already paid for and own - most
-  // often a returning customer who forgot they'd already purchased, or one
-  // who typed the email they bought under. Catch it before Razorpay even
-  // opens rather than let them pay twice and sort it out afterwards.
-  const existingOrder = await prisma.order.findFirst({
-    where: {
-      offeringId: offering.id,
-      status: "PAID",
-      OR: [{ guestEmail: { equals: data.email, mode: "insensitive" } }, { user: { email: { equals: data.email, mode: "insensitive" } } }],
-    },
-    select: { id: true, userId: true, downloadToken: true },
-  });
   if (existingOrder) {
     const session = await auth();
     const isSignedInAsOwner = existingOrder.userId != null && session?.user?.id === existingOrder.userId;
@@ -135,6 +147,9 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
 
     return { success: true, orderId: order.id, razorpayOrderId: razorpayOrder.id, amount, currency: offering.currency, keyId };
   } catch (error) {
+    if (isDatabaseConnectivityError(error as Error)) {
+      return { success: false, error: MAINTENANCE_BODY, isDbMaintenance: true };
+    }
     console.error("createGuestOrder (Razorpay) failed:", describeRazorpayError(error));
     return { success: false, error: "Payments aren't set up yet - please contact us directly." };
   }

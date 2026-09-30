@@ -10,6 +10,7 @@ import {
   getOfferingCurriculumOutline,
 } from "@/features/offerings/server/queries";
 import { CourseDetailView } from "@/features/offerings/components/course-detail-view";
+import { FrontendCourseLanding } from "@/features/offerings/components/frontend-course-landing";
 import { parseOfferingFilters } from "@/features/offerings/validation/offering-filters";
 import { slugToCategory } from "@/features/offerings/lib/category-slug";
 import { CATEGORY_LABEL } from "@/features/offerings/lib/labels";
@@ -218,7 +219,16 @@ export default async function OfferingSlugPage({ params, searchParams }: Offerin
               : {}),
           }}
         />
-        <CourseDetailView offering={offering} curriculum={curriculum} nonce={nonce} />
+        {/* frontend-development has its own bespoke, conversion-first design
+          (see frontend-course-landing.tsx's own doc comment) instead of the
+          generic CourseDetailView every other TRAINING offering uses - a
+          layout branch on the one real slug it applies to, same reasoning
+          as the DIGITAL_PRODUCT redirect and category branch above. */}
+        {offering.slug === "frontend-development" ? (
+          <FrontendCourseLanding offering={offering} curriculum={curriculum} nonce={nonce} />
+        ) : (
+          <CourseDetailView offering={offering} curriculum={curriculum} nonce={nonce} />
+        )}
       </>
     );
   }

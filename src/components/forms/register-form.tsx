@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { GoogleSignInButton } from "@/components/forms/google-signin-button";
+import { DatabaseMaintenanceDialog } from "@/components/shared/database-maintenance-dialog";
 
 type PublicRole = "STUDENT" | "CLIENT";
 
@@ -27,6 +28,15 @@ export interface RegisterFormProps {
 function RegisterForm({ defaultRole = "STUDENT", callbackUrl, defaultEmail }: RegisterFormProps) {
   const [role, setRole] = React.useState<PublicRole>(defaultRole);
   const [state, formAction, isPending] = useActionState(registerUser, null);
+
+  // "Adjust state during render" (react.dev's own pattern), not a
+  // useEffect+setState - see login-form.tsx's identical comment.
+  const [showMaintenance, setShowMaintenance] = React.useState(false);
+  const [lastHandledState, setLastHandledState] = React.useState(state);
+  if (state !== lastHandledState) {
+    setLastHandledState(state);
+    if (state?.success === false && state.isDbMaintenance) setShowMaintenance(true);
+  }
 
   if (state?.success) {
     return (
@@ -48,6 +58,7 @@ function RegisterForm({ defaultRole = "STUDENT", callbackUrl, defaultEmail }: Re
 
   return (
     <div className="flex flex-col gap-6">
+      <DatabaseMaintenanceDialog open={showMaintenance} onOpenChange={setShowMaintenance} />
       <div
         className="border-border bg-muted flex gap-1 rounded-full border p-1"
         role="radiogroup"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 
 import { loginUser } from "@/actions/auth";
@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { GoogleSignInButton } from "@/components/forms/google-signin-button";
 import { ResendVerificationForm } from "@/components/forms/resend-verification-form";
+import { DatabaseMaintenanceDialog } from "@/components/shared/database-maintenance-dialog";
 
 export interface LoginFormProps {
   callbackUrl?: string;
@@ -18,8 +19,21 @@ function LoginForm({ callbackUrl }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(loginUser, null);
   const needsVerification = state?.success === false && state.error.includes("verify your email");
 
+  // Opens once per new failed-with-maintenance result, closeable afterward
+  // without the dialog reopening itself - "adjust state during render"
+  // (react.dev's own pattern for this), not a useEffect+setState, which
+  // the lint rule here flags as cascading-render-prone for exactly this
+  // "derive from a prop/state change" case.
+  const [showMaintenance, setShowMaintenance] = useState(false);
+  const [lastHandledState, setLastHandledState] = useState(state);
+  if (state !== lastHandledState) {
+    setLastHandledState(state);
+    if (state?.success === false && state.isDbMaintenance) setShowMaintenance(true);
+  }
+
   return (
     <div className="flex flex-col gap-6">
+      <DatabaseMaintenanceDialog open={showMaintenance} onOpenChange={setShowMaintenance} />
       <form action={formAction} className="flex flex-col gap-5">
         {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
 

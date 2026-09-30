@@ -100,6 +100,18 @@ Every shortcut, gap, or deferred decision goes here the moment it's identified �
 **Priority:** P2 - revisit once Phase 2 (inbound) has real conversation volume to see how often this gap actually fires.
 **Estimated effort:** ~2-3 hours to expand the keyword list from real missed cases, or fold in an AI-classification pass if keyword coverage proves insufficient.
 
+## Referral payout is fully manual (no automated disbursement)
+
+**Reason:** AD-035's Referral Program marks a converted referral PAID only after an admin has actually sent the ₹200/₹100 outside the platform (bank transfer/UPI) and confirms it in `/admin/referrals` - no payment-gateway payout integration exists in this codebase (Razorpay here is inbound-only). Fine at low volume; becomes real ongoing admin overhead once referral volume grows.
+**Priority:** P2 - revisit once monthly payout count makes manual reconciliation genuinely painful.
+**Estimated effort:** ~1-2 days (RazorpayX payout API integration, or equivalent - plus whatever KYC/compliance step a payout API requires that a pure inbound-payment integration never needed).
+
+## Referral Program has minimal fraud detection
+
+**Reason:** AD-035 blocks the one fraud case that's free to block (self-referral - the referrer and referred-user id are compared and silently dropped at attribution time) and guarantees a person is only ever credited to one referrer (`Referral.referredUserId` is `@unique`). It does not detect a referrer farming the reward via multiple fake email accounts referring themselves under different identities - no device/IP-fingerprint correlation, no velocity limits on signups from one referral code.
+**Priority:** P2 - revisit if/when real payout volume shows a suspicious pattern (e.g. one referrer with many low-quality conversions in a short window).
+**Estimated effort:** ~4-6 hours for a first pass (flag, don't auto-block - correlate `ReferralClick.ipAddress`/`userAgent` across a referrer's converted referrals, surface a warning badge in `/admin/referrals` for a human to review before paying).
+
 ---
 
 *To add an item: one line of what it is, why it exists (usually "no time" or "smaller scope than the ideal solution"), and an honest priority + effort estimate — not an aspirational one.*

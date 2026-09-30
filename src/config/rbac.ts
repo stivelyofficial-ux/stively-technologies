@@ -55,6 +55,10 @@ export const PROTECTED_ROUTES: ProtectedRoute[] = [
   { prefix: "/admin", roles: ["ADMIN", "SUPER_ADMIN"] },
   { prefix: "/ceo", roles: ["SUPER_ADMIN"] },
   { prefix: "/sales", roles: ["SALES"] },
+  // Referral Program (AD-035) - any signed-in user can refer, regardless of
+  // role, so this lists every (portal)-layout role explicitly rather than
+  // reusing one of the role-specific prefixes above.
+  { prefix: "/referrals", roles: ["STUDENT", "MENTOR", "CLIENT", "COMPANY", "INTERN", "TEAM_MEMBER"] },
 ];
 
 /**

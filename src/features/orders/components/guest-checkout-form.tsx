@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { DatabaseMaintenanceDialog } from "@/components/shared/database-maintenance-dialog";
 import { formatPrice } from "@/lib/utils";
 import "@/lib/razorpay-client-types";
 import { trackMetaPurchase, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
@@ -73,6 +74,7 @@ function GuestCheckoutForm({
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
   const [alreadyOwned, setAlreadyOwned] = React.useState<{ message: string; redirectUrl?: string } | undefined>();
+  const [showMaintenance, setShowMaintenance] = React.useState(false);
   // Set once verifyGuestPayment succeeds - holds everything the profile
   // step and its eventual redirect need, so the redirect itself only ever
   // happens from one place (handleProfileSubmit) instead of being
@@ -134,6 +136,7 @@ function GuestCheckoutForm({
         return;
       }
       setError(result.error);
+      if ("isDbMaintenance" in result && result.isDbMaintenance) setShowMaintenance(true);
       return;
     }
 
@@ -266,6 +269,7 @@ function GuestCheckoutForm({
 
   return (
     <form id="guest-checkout-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <DatabaseMaintenanceDialog open={showMaintenance} onOpenChange={setShowMaintenance} />
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" nonce={nonce} onLoad={() => setScriptReady(true)} />
 
       <div className="flex flex-col gap-1.5">

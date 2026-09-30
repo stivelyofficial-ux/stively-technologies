@@ -579,6 +579,27 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-035: Referral Program — built as an AD-007 freeze exception, purchase-triggered payout, manual disbursement
+
+**Date:** 2026-09-30
+**Problem:** The founder asked for a full referral program (any signed-in user gets a shareable link, earns a fixed reward when someone they refer buys a course, has their own analytics dashboard, admin can manage payouts) - a genuinely new major module, which the standing AD-007 architecture freeze normally blocks outright.
+**Options considered:**
+1. Refuse to build until the freeze lifts (first clients close), log it in ROADMAP.md as backlog only.
+2. Build now as an explicit, founder-confirmed freeze exception - same precedent as Certificates (AD-019) and the Course Sales dashboard (AD-020).
+3. A lighter-weight version (e.g. a manual admin-tracked spreadsheet-equivalent, no automated attribution) to reduce scope under the freeze.
+**Chosen solution:** Option 2 - confirmed directly with the founder (referral programs are a direct client/student-acquisition lever, the same reasoning the freeze already carves an exception for). Built as the real thing: automated click/signup/conversion tracking, not a manual admin spreadsheet.
+**Reason:** A referral program only works as a growth lever if attribution and crediting are trustworthy and automatic - a manual-tracking version wouldn't actually get used or trusted by either referrers or the admin reconciling it, defeating the point of building it now instead of waiting.
+**Trade-offs:**
+- **Payout is manual, not automated.** No payment-gateway payout integration exists in this codebase (Razorpay here is inbound-only) - an admin sends the ₹200/₹100 outside the platform (bank transfer/UPI) and marks the `Referral` row PAID from `/admin/referrals`, same human-approval pattern `SalesCommission` already uses for staff commissions. Real automated disbursement (RazorpayX or similar, KYC, compliance) is a materially bigger build, out of scope here - logged in TECH_DEBT.md.
+- **Fraud detection is minimal by design for v1.** Self-referral is blocked at attribution time (referrer.id === new user's id is dropped silently), and `Referral.referredUserId` is `@unique` so a person can only ever be credited to one referrer, ever - but there's no detection for a referrer farming ₹200 via multiple fake email accounts. Logged in TECH_DEBT.md as a known gap to watch once real money starts moving.
+- **Reward amount lives on `Offering.referralRewardAmount` (paise, nullable), not a separate program-config table.** Only `frontend-development` (₹200) and `generative-ai-prompt-engineering` (₹100) will be set once the DB is reachable again - every other offering (digital-store add-ons, consultation-only services) stays null and simply never triggers a payout. Scales automatically if a third paid offering launches; no new admin UI needed just to add a reward amount.
+**Database impact:** New `ReferralClick` and `Referral` models (`ReferralStatus`: SIGNED_UP → CONVERTED → PAID | REJECTED), `User.referralCode` (nullable, unique, lazily generated), `Offering.referralRewardAmount` (nullable paise), two new `NotificationType` values (`REFERRAL_CONVERTED`, `REFERRAL_PAID`). Migration not yet applied - Neon is unreachable (quota exhaustion) as of this decision; `prisma generate` was run schema-only (works offline) so the app compiles against the new types, but `prisma migrate dev` and full live verification (a real signup → purchase → conversion → payout round trip) are still pending until DB access returns.
+**API impact:** Three existing signup paths now call `attributeReferralSignup` (credentials register in `src/actions/auth.ts`, Google OAuth's `events.createUser` in `src/lib/auth.ts`, guest-checkout's auto-account-creation in `guest-fulfillment.ts`) - all three already-existing, unrelated to this feature's own new surface. One existing purchase-fulfillment function, `createEnrollmentFromOrder` (`features/enrollments/server/creation.ts`), now also calls `convertReferralOnEnrollment` - deliberately NOT hooked into `completeEnrollment` (which fires when a student *finishes* a course, sometimes months later or never) since the reward is purchase-triggered, not completion-triggered. New route `/referrals` (any signed-in `(portal)`-layout role, not gated to one role - see `PROTECTED_ROUTES` in `src/config/rbac.ts`) and `/admin/referrals` (ADMIN/SUPER_ADMIN).
+**Future considerations:** If real payout volume grows past what manual bank transfers can sanely handle, revisit automated disbursement (RazorpayX payouts) as its own ADR. If self-referral farming actually shows up in the data, add a fraud-signal pass (e.g. flag referrers whose referred accounts share an IP/device fingerprint) rather than building it speculatively now.
+**Related components:** `prisma/schema.prisma` (`Referral`, `ReferralClick`, `ReferralStatus`, `Offering.referralRewardAmount`, `User.referralCode`), `src/features/referrals/` (new feature), `src/features/enrollments/server/creation.ts`, `src/features/orders/server/guest-fulfillment.ts`, `src/actions/auth.ts`, `src/lib/auth.ts`, `src/config/rbac.ts`, `src/config/navigation/*.ts`, `src/app/(portal)/referrals/`, `src/app/(dashboard)/admin/referrals/`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

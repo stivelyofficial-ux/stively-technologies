@@ -16,6 +16,8 @@ const WHATSAPP_MESSAGES: Record<string, string> = {
     "Hi Stively, I'm interested in your Website Development service. I'd like to discuss my project.",
   "/start-project":
     "Hi Stively, I'd like to start a project. Can we talk?",
+  "/offerings/frontend-development":
+    "Hi Stively, I have a question about the Frontend Development internship.",
 };
 
 const DEFAULT_MESSAGE = "Hi Stively, I'd like to know more about your services.";

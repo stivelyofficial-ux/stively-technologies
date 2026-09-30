@@ -32,6 +32,11 @@ model User {
   isPrimeMember    Boolean   @default(false)
   primeMemberSince DateTime?
 
+  /// Lazily generated the first time this user opens /referrals - see
+  /// getOrCreateReferralCode (features/referrals/server/queries.ts). Null
+  /// until then, since most accounts will never look at that page.
+  referralCode String? @unique
+
   /// Null for OAuth-only accounts (Google). Set for anyone who registered
   /// or set a password via the Credentials provider - see src/lib/auth.ts.
   password String?
@@ -119,6 +124,17 @@ model User {
   /// name/email/phone to collect and nothing to qualify.
   studentQueries         StudentQuery[]
   resolvedStudentQueries StudentQuery[] @relation("StudentQueryResolvedBy")
+
+  /// Referral Program (AD-035) - every click their own code has drawn.
+  referralClicksReceived ReferralClick[]
+  /// Every person who signed up using this user's referral code, regardless
+  /// of whether it ever converted - see Referral below.
+  referralsSent Referral[] @relation("ReferralReferrer")
+  /// This user's own referral row, if they signed up via someone else's
+  /// code - at most one, ever (a person can only ever be referred once).
+  referredBy Referral? @relation("ReferralReferredUser")
+  /// Referrals this admin/super-admin has reviewed (marked paid or rejected).
+  referralsReviewed Referral[] @relation("ReferralReviewedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -907,6 +923,15 @@ model Offering {
   /// priority over saleEndsAt when both are set. See getOfferingPricing in
   /// features/offerings/lib/pricing.ts and AD-028.
   saleCycleMinutes Int?
+  /// Paise paid to the referrer once someone they referred completes THIS
+  /// offering's first paid enrollment - null means this offering doesn't
+  /// participate in the referral program at all (every offering except the
+  /// two currently sold - frontend-development, generative-ai-prompt-
+  /// engineering - stays null, so a digital-store add-on or a future
+  /// consultation-only service can never accidentally trigger a payout).
+  /// Read by createEnrollmentFromOrder (features/enrollments/server/creation.ts),
+  /// the one real purchase-fulfillment hook - see AD-035.
+  referralRewardAmount Int?
   pricingType   PricingType @default(FIXED)
   /// Free-text display duration ("6 Months", "4 Weeks", "Ongoing") - values
   /// vary too widely across categories (a training cohort vs. a dev project
@@ -973,6 +998,10 @@ model Offering {
 
   /// Every enrollment created against this offering - see OfferingEnrollment below.
   offeringEnrollments OfferingEnrollment[]
+
+  /// Every Referral that converted on THIS offering's purchase - see
+  /// Referral above. Empty for every offering that isn't referral-eligible.
+  referrals Referral[]
 
   /// Every Sales CRM quote that referenced this offering's price as a
   /// starting point - see SalesQuote. A B2B outbound deal, not a Request/
@@ -2821,6 +2850,15 @@ enum NotificationType {
   /// fired to every ADMIN/SUPER_ADMIN, never routed through the Lead
   /// pipeline - see notifyNewStudentQuery() (src/features/support/server/notify.ts).
   STUDENT_QUERY_SUBMITTED
+
+  // --- Referral Program ---
+  /// Someone this user referred completed their first paid enrollment on a
+  /// referral-eligible offering - a Referral row moves SIGNED_UP -> CONVERTED.
+  /// See createEnrollmentFromOrder (features/enrollments/server/creation.ts).
+  REFERRAL_CONVERTED
+  /// An admin marks a CONVERTED Referral as PAID - see markReferralPaid
+  /// (features/referrals/actions/admin-actions.ts).
+  REFERRAL_PAID
 }
 
 model Notification {
@@ -4364,6 +4402,98 @@ model SalesCommission {
   createdAt DateTime @default(now())
 
   @@index([salesPersonId, status])
+}
+
+// ============================================
+// REFERRAL PROGRAM (AD-035)
+// ============================================
+// Any signed-in user can share their own referralCode (User above); someone
+// who signs up through it and then completes their first paid enrollment on
+// a referral-eligible offering (Offering.referralRewardAmount) earns the
+// referrer a payout. Payout is manual today (no payment-gateway payout
+// integration exists yet) - an admin marks a Referral PAID from
+// /admin/referrals, the same reviewed-by-a-human pattern SalesCommission
+// above already uses for staff commissions.
+
+/// High-volume, low-detail - just enough to answer "how many people clicked
+/// my link" on the referrer's own dashboard. Not tied to a specific
+/// referred person (most clicks never sign up at all).
+model ReferralClick {
+  id String @id @default(cuid())
+
+  referrerId String
+  referrer   User   @relation(fields: [referrerId], references: [id], onDelete: Cascade)
+
+  /// Best-effort fraud/dedup signal only - never used to block a click from
+  /// being counted, since a shared office/college network can legitimately
+  /// produce many real clicks from one IP.
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([referrerId, createdAt])
+}
+
+enum ReferralStatus {
+  /// The referred person has an account (registered directly, via Google,
+  /// or was auto-created at guest-checkout fulfillment) but hasn't yet
+  /// completed a referral-eligible paid enrollment.
+  SIGNED_UP
+  /// Converted - a referral-eligible enrollment completed. offeringId/
+  /// rewardAmount/convertedAt are set. Owed, not yet paid.
+  CONVERTED
+  /// An admin paid the referrer (outside the platform - bank transfer/UPI)
+  /// and marked it here.
+  PAID
+  /// An admin rejected the payout (e.g. confirmed self-referral/fraud) -
+  /// rejectionReason explains why. Terminal, like PAID.
+  REJECTED
+}
+
+/// One row per referred PERSON, not per click - created the moment that
+/// person's account exists (registerUser, the Google OAuth createUser
+/// event, or guest-checkout auto-account-creation), whichever happens
+/// first. referredUserId is unique: once someone is referred, that
+/// attribution is permanent - a second click from a different code never
+/// overwrites it, and they can never be double-credited to two referrers.
+model Referral {
+  id String @id @default(cuid())
+
+  referrerId String
+  referrer   User   @relation("ReferralReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+
+  referredUserId String @unique
+  referredUser   User   @relation("ReferralReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  /// Snapshot of the code actually used - referrer.referralCode could
+  /// theoretically change identity if the account is ever deleted and
+  /// recreated, but this row's own record of what was clicked shouldn't.
+  code String
+
+  status ReferralStatus @default(SIGNED_UP)
+
+  /// Set only once status reaches CONVERTED - which offering's purchase
+  /// triggered it.
+  offeringId String?
+  offering   Offering? @relation(fields: [offeringId], references: [id], onDelete: SetNull)
+
+  /// Paise, snapshotted from Offering.referralRewardAmount at the moment of
+  /// conversion - so a later change to that offering's reward amount never
+  /// rewrites what this specific referral actually earned.
+  rewardAmount Int?
+  convertedAt  DateTime?
+  paidAt       DateTime?
+
+  /// Set when an admin marks this PAID or REJECTED - who reviewed it.
+  reviewedById String?
+  reviewedBy   User?   @relation("ReferralReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([referrerId, status])
+  @@index([status])
 }
 
 // ============================================

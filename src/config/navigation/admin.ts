@@ -16,6 +16,7 @@ import {
   MessageCircle,
   LifeBuoy,
   Rocket,
+  Gift,
 } from "lucide-react";
 
 import type { NavigationConfig } from "./types";
@@ -40,6 +41,7 @@ export const adminNavigation: NavigationConfig = [
       { label: "Learning", href: "/admin/learning", icon: BookOpen },
       { label: "Certificates", href: "/admin/certificates", icon: Award },
       { label: "Internships", href: "/admin/internships", icon: Rocket },
+      { label: "Referrals", href: "/admin/referrals", icon: Gift },
       { label: "Student Support", href: "/admin/student-support", icon: LifeBuoy },
       { label: "WhatsApp", href: "/admin/whatsapp", icon: MessageCircle },
       { label: "Mentors", href: "/admin/mentors", icon: UserRound },

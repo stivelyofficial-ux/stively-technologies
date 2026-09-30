@@ -1,7 +1,10 @@
+import { Suspense } from "react";
+
 import { auth } from "@/lib/auth";
 import { ROLE_HOME } from "@/config/rbac";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
+import { ReferralCaptureListener } from "@/features/referrals/components/referral-capture-listener";
 
 /**
  * Wraps every page under app/(marketing) - Home now, About/Training/etc.
@@ -20,6 +23,9 @@ export default async function MarketingLayout({ children }: { children: React.Re
 
   return (
     <>
+      <Suspense fallback={null}>
+        <ReferralCaptureListener />
+      </Suspense>
       <Navbar dashboardHref={dashboardHref} />
       <main id="main-content">{children}</main>
       <Footer />

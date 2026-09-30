@@ -8,6 +8,7 @@ import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
 import { PENDING_ROLE_COOKIE } from "@/lib/auth-constants";
+import { attributeReferralSignup } from "@/features/referrals/server/attribution";
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
@@ -179,6 +180,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // verify-email step for OAuth sign-ups.
         data: { role, emailVerified: new Date() },
       });
+      await attributeReferralSignup(user.id!);
     },
   },
   callbacks: {

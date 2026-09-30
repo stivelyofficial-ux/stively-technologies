@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { isDatabaseConnectivityError } from "@/lib/is-database-error";
+import { MAINTENANCE_HEADLINE, MAINTENANCE_BODY } from "@/lib/maintenance";
 
 /**
  * Catches errors thrown by the root layout itself (fonts, providers, etc.)
@@ -43,11 +44,8 @@ export default function GlobalError({
         >
           {isDbError ? (
             <>
-              <h1 style={{ fontSize: 24, fontWeight: 600 }}>We&apos;re under maintenance</h1>
-              <p style={{ color: "#666", maxWidth: 420 }}>
-                We&apos;ll be back online on <strong>October 1st</strong>. Sorry for the inconvenience - reach out
-                at team@stively.com if it&apos;s urgent.
-              </p>
+              <h1 style={{ fontSize: 24, fontWeight: 600 }}>{MAINTENANCE_HEADLINE}</h1>
+              <p style={{ color: "#666", maxWidth: 420 }}>{MAINTENANCE_BODY}</p>
             </>
           ) : (
             <h1 style={{ fontSize: 24, fontWeight: 600 }}>Something went wrong</h1>

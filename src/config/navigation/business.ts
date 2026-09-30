@@ -1,4 +1,4 @@
-import { LayoutDashboard, LayoutGrid, CalendarClock, FolderKanban, ClipboardList, CreditCard, Receipt } from "lucide-react";
+import { LayoutDashboard, LayoutGrid, CalendarClock, FolderKanban, ClipboardList, CreditCard, Receipt, Gift } from "lucide-react";
 
 import type { NavigationConfig } from "./types";
 
@@ -18,7 +18,10 @@ import type { NavigationConfig } from "./types";
  */
 export const businessNavigation: NavigationConfig = [
   {
-    items: [{ label: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard }],
+    items: [
+      { label: "Dashboard", href: "/client/dashboard", icon: LayoutDashboard },
+      { label: "Refer & Earn", href: "/referrals", icon: Gift },
+    ],
   },
   {
     title: "Work with us",
