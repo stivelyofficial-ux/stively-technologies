@@ -101,10 +101,24 @@ export async function generateMetadata({ params }: OfferingSlugPageProps): Promi
  * generateMetadata can't reuse getOfferingBySlug (the real, exported query)
  * without double-incrementing viewCount - metadata generation and the page
  * body both run per-request. A metadata-only lookup skips the write.
+ *
+ * Catches its own errors (unlike most queries, which let the caller's error
+ * boundary handle it) because generateMetadata runs in a separate Next.js
+ * phase that (marketing)/error.tsx never sees - a throw here produces
+ * Next's own generic "500: This page couldn't load" instead of our
+ * maintenance card, confirmed live during the 2026-09/10 Neon outage. A
+ * failure here just means a generic-but-real fallback title below; the
+ * page body's own, already-caught query is what actually degrades the
+ * visible content.
  */
 async function getOfferingBySlugForMetadata(slug: string) {
-  const { prisma } = await import("@/lib/prisma");
-  return prisma.offering.findFirst({ where: { slug, status: "PUBLISHED", visible: true } });
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    return await prisma.offering.findFirst({ where: { slug, status: "PUBLISHED", visible: true } });
+  } catch (error) {
+    console.error("getOfferingBySlugForMetadata failed:", error);
+    return null;
+  }
 }
 
 /**

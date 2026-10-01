@@ -31,7 +31,22 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: ProgramPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const program = await getProgramBySlug(slug);
+
+  // getProgramBySlug deliberately doesn't catch-and-degrade (see its own
+  // comment - a real DB failure must surface as an error, not look like a
+  // deleted program) - correct for the page body, but generateMetadata runs
+  // in a separate Next.js phase (marketing)/error.tsx never sees, so an
+  // uncaught throw here produces Next's own generic 500 page instead of our
+  // maintenance card. Caught here only, with a generic-but-honest fallback
+  // title - the page body below still throws through to the real error
+  // boundary as intended.
+  let program: Awaited<ReturnType<typeof getProgramBySlug>>;
+  try {
+    program = await getProgramBySlug(slug);
+  } catch (error) {
+    console.error("generateMetadata (training/[slug]) failed:", error);
+    return { title: "Training Program" };
+  }
 
   if (!program) {
     return { title: "Program not found" };

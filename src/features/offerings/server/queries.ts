@@ -81,9 +81,20 @@ export async function getOfferings(
  * here should surface as an error, not look identical to "no such offering".
  */
 export async function getOfferingBySlug(slug: string): Promise<Offering | null> {
-  const offering = await prisma.offering.findFirst({
-    where: { slug, status: "PUBLISHED", visible: true },
-  });
+  let offering: Offering | null;
+  try {
+    offering = await prisma.offering.findFirst({
+      where: { slug, status: "PUBLISHED", visible: true },
+    });
+  } catch (error) {
+    // Used by both generateMetadata (a separate Next.js phase (marketing)/error.tsx
+    // never sees - an uncaught throw here produces Next's own generic 500
+    // page, confirmed live during the 2026-09/10 Neon outage) and the page
+    // body itself, which DOES have an error boundary - catching here covers
+    // both call sites with one fix instead of two.
+    console.error("getOfferingBySlug failed:", error);
+    return null;
+  }
 
   if (offering) {
     prisma.offering
