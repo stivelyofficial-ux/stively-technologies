@@ -169,7 +169,7 @@ function LessonViewer({
                 <li key={item.id}>
                   <ItemTabLink
                     href={`/student/learning/${enrollmentId}/${lesson.id}?item=${item.id}`}
-                    icon={Icon}
+                    icon={<Icon className="size-4 shrink-0" aria-hidden="true" />}
                     isActive={isActive}
                     index={index}
                     title={item.title}
