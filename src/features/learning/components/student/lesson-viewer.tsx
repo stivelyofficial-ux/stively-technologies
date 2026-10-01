@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BlockRenderer } from "./block-renderer";
 import { LessonCompleteButton } from "./lesson-complete-button";
+import { ItemTabLink } from "./item-tab-link";
 import { ITEM_ICON } from "./course-sidebar";
 import { flattenLessons, isLessonUnlocked } from "../../lib/progress";
 import type { Curriculum, LessonView, CurriculumItem } from "../../server/queries";
@@ -166,24 +167,21 @@ function LessonViewer({
               const done = item.quizPassed ?? lessonCompleted;
               return (
                 <li key={item.id}>
-                  <Link
+                  <ItemTabLink
                     href={`/student/learning/${enrollmentId}/${lesson.id}?item=${item.id}`}
-                    aria-current={isActive ? "page" : undefined}
+                    icon={Icon}
+                    isActive={isActive}
+                    index={index}
+                    title={item.title}
+                    done={done}
+                    doneIcon={<Check className="text-success size-4 shrink-0" aria-hidden="true" />}
                     className={cn(
                       "-mb-px flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm whitespace-nowrap transition-colors",
                       isActive
                         ? "border-primary text-primary font-medium"
                         : "text-muted-foreground hover:text-foreground border-transparent"
                     )}
-                  >
-                    {done ? (
-                      <Check className="text-success size-4 shrink-0" aria-hidden="true" />
-                    ) : (
-                      <Icon className="size-4 shrink-0" aria-hidden="true" />
-                    )}
-                    <span className="text-muted-foreground/70 tabular-nums">{index + 1}.</span>
-                    {item.title}
-                  </Link>
+                  />
                 </li>
               );
             })}

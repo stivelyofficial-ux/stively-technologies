@@ -316,9 +316,6 @@ function GuestCheckoutForm({
       <Button type="submit" size="lg" loading={isPending} className="w-full">
         {ctaLabel} {formatPrice(total, offering.currency)}
       </Button>
-      <p className="text-primary -mt-2 text-center text-xs font-medium">
-        You&apos;re one step away - no distractions, just enroll.
-      </p>
 
       <Dialog open={!!alreadyOwned} onOpenChange={(open) => !open && setAlreadyOwned(undefined)}>
         <DialogContent>
