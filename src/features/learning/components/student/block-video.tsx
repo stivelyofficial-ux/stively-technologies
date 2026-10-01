@@ -68,10 +68,42 @@ function BlockVideo({
         isAttemptingRef.current = false;
       });
   }
-  function handleTimeUpdate(event: React.SyntheticEvent<HTMLVideoElement>) {
+  // Chrome (and some Cloudinary delivery configs) reports `duration` as
+  // Infinity for certain progressively-streamed videos until the browser
+  // has actually resolved it - `currentTime / Infinity` is ~0 forever, so
+  // the 90%-watched check below silently never fires for those videos,
+  // even when someone has genuinely watched the whole thing. The standard
+  // workaround: seek far past the end once, which forces the browser to
+  // resolve the real duration via `durationchange`, then seek back to
+  // where playback actually was.
+  function handleLoadedMetadata(event: React.SyntheticEvent<HTMLVideoElement>) {
     const video = event.currentTarget;
-    if (!video.duration || video.currentTime / video.duration < 0.9) return;
-    attemptAutoComplete();
+    if (video.duration === Infinity || Number.isNaN(video.duration)) {
+      const resumeAt = video.currentTime;
+      video.currentTime = 1e101;
+      const onDurationChange = () => {
+        video.currentTime = resumeAt;
+        video.removeEventListener("durationchange", onDurationChange);
+      };
+      video.addEventListener("durationchange", onDurationChange);
+    }
+  }
+
+  function hasWatchedEnough(video: HTMLVideoElement): boolean {
+    return Number.isFinite(video.duration) && video.duration > 0 && video.currentTime / video.duration >= 0.9;
+  }
+
+  function handleTimeUpdate(event: React.SyntheticEvent<HTMLVideoElement>) {
+    if (hasWatchedEnough(event.currentTarget)) attemptAutoComplete();
+  }
+
+  // Catches someone who pauses right at/near the end without technically
+  // triggering the `ended` event (e.g. pausing at 99% to re-read something
+  // on screen, or a brief stall near the end that leaves playback paused
+  // rather than finished) - same 90% bar as timeupdate, just checked again
+  // on pause so a near-complete watch isn't missed if they never resume.
+  function handlePause(event: React.SyntheticEvent<HTMLVideoElement>) {
+    if (hasWatchedEnough(event.currentTarget)) attemptAutoComplete();
   }
 
   const parsed = videoContentSchema.safeParse(block.content);
@@ -112,7 +144,9 @@ function BlockVideo({
             controls
             className="size-full"
             controlsList={canDownload ? undefined : "nodownload"}
+            onLoadedMetadata={handleLoadedMetadata}
             onTimeUpdate={handleTimeUpdate}
+            onPause={handlePause}
             onEnded={attemptAutoComplete}
           />
         )}

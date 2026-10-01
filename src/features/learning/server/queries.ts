@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { Module, Lesson, LessonBlock, LessonBlockType, LessonProgress, Resource, Assessment, LiveSession, AssessmentSubmission, AiTutorMessage } from "@prisma/client";
 import { getAccessPolicyForEnrollment } from "@/features/enrollments/server/access-policy";
@@ -74,7 +75,7 @@ const BLOCK_TYPE_LABEL: Partial<Record<LessonBlockType, string>> = {
  * access" and "no curriculum exists" alike - same "don't leak which one"
  * discipline as every ownership-scoped lookup in this codebase.
  */
-export async function getCurriculumForEnrollment(
+async function getCurriculumForEnrollmentImpl(
   enrollmentId: string,
   studentId: string
 ): Promise<Curriculum | null> {
@@ -212,14 +213,31 @@ export interface LessonView {
 }
 
 /**
+ * React's request-level cache - every call with the same (enrollmentId,
+ * studentId) within one request returns the same promise instead of
+ * re-running the query. The real win: getLessonForStudent below calls this
+ * internally, and the lesson page itself calls both this AND
+ * getLessonForStudent separately, plus generateMetadata calls
+ * getLessonForStudent again - without this, that's the same expensive
+ * LearningExperience query (full module/lesson tree) running up to 3x per
+ * page load. Confirmed as a real, reported perf issue on the lesson page -
+ * this is the fix, not a speculative optimization.
+ */
+export const getCurriculumForEnrollment = cache(getCurriculumForEnrollmentImpl);
+
+/**
  * Single-lesson view for the Lesson Viewer page - re-derives the same
  * curriculum sequence getCurriculumForEnrollment does (so unlock/prev/next
  * are always consistent with the curriculum nav), then loads that one
  * lesson's blocks with their resource/assessment/liveSession relations.
  * Returns null for "no access", "lesson doesn't belong to this
  * enrollment's curriculum", and "lesson not found" alike.
+ *
+ * Also cache()-wrapped (see getCurriculumForEnrollment's comment) - called
+ * once from generateMetadata and once from the page body with identical
+ * arguments every request.
  */
-export async function getLessonForStudent(
+async function getLessonForStudentImpl(
   lessonId: string,
   enrollmentId: string,
   studentId: string
@@ -261,6 +279,8 @@ export async function getLessonForStudent(
     blockedByUnpassedQuiz: await isLessonBlockedByUnpassedQuiz(lessonId, enrollmentId, blocks),
   };
 }
+
+export const getLessonForStudent = cache(getLessonForStudentImpl);
 
 /** The student's own attempt at an Assessment, if any - used by the assessment block to show current status/score instead of a blank form every time. */
 export async function getSubmissionForAssessment(

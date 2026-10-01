@@ -39,12 +39,26 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   const { enrollmentId, lessonId } = await params;
   const { item } = await searchParams;
 
-  const curriculum = await getCurriculumForEnrollment(enrollmentId, user.id);
+  // All three are independent of each other's result (getLessonForStudent
+  // and getAccessPolicyForEnrollment don't need `curriculum`'s output, just
+  // the same enrollmentId/studentId) - run together instead of three
+  // sequential round trips. getCurriculumForEnrollment and
+  // getLessonForStudent are both React cache()-wrapped (see queries.ts),
+  // so this and generateMetadata's own getLessonForStudent call above
+  // dedupe into real single executions per request, not three.
+  const [curriculum, lessonView, policy] = await Promise.all([
+    getCurriculumForEnrollment(enrollmentId, user.id),
+    getLessonForStudent(lessonId, enrollmentId, user.id),
+    // Only used for the "you're all caught up" panel's certificate link
+    // (see LessonViewer) - reuses the same access-policy check the
+    // enrollment overview page already gates CertificateCard on, so this
+    // never claims a certificate is available when canViewCertificates
+    // wouldn't actually render one there.
+    getAccessPolicyForEnrollment(enrollmentId, user.id),
+  ]);
   if (!curriculum) {
     notFound();
   }
-
-  const lessonView = await getLessonForStudent(lessonId, enrollmentId, user.id);
   if (!lessonView) {
     notFound();
   }
@@ -55,13 +69,6 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   if (lessonView.progress?.status !== "COMPLETED" && lessonView.progress?.status !== "IN_PROGRESS") {
     await markLessonStarted(enrollmentId, lessonId);
   }
-
-  // Only fetched for the "you're all caught up" panel's certificate link
-  // (see LessonViewer) - reuses the same access-policy check the
-  // enrollment overview page already gates CertificateCard on, so this
-  // never claims a certificate is available when canViewCertificates
-  // wouldn't actually render one there.
-  const policy = await getAccessPolicyForEnrollment(enrollmentId, user.id);
 
   // An unknown or missing ?item falls back to the lesson's first item rather
   // than rendering nothing - covers old links and hand-edited URLs.
