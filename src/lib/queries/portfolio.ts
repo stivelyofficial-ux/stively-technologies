@@ -34,14 +34,22 @@ export async function getAllPublishedPortfolioItems(): Promise<PortfolioItem[]> 
   }
 }
 
-/** The /work/[slug] case-study detail page's data source - published only (an unpublished item 404s for a public visitor, same as any other draft content). */
+/**
+ * The /work/[slug] case-study detail page's data source - published only
+ * (an unpublished item 404s for a public visitor, same as any other draft
+ * content).
+ *
+ * Deliberately does NOT catch-and-return-null on a DB failure (unlike the
+ * list queries in this file) - same reasoning as getOfferingBySlug/
+ * getProgramBySlug: collapsing "DB is down" into the same null the page
+ * body treats as "genuinely doesn't exist" would 404 a real, published
+ * case study during an outage instead of showing the maintenance card.
+ * generateMetadata's own call site (work/[slug]/page.tsx) catches around
+ * this separately, since that Next.js phase has no error boundary of its
+ * own to fall back on.
+ */
 export async function getPortfolioItemBySlug(slug: string): Promise<PortfolioItem | null> {
-  try {
-    return await prisma.portfolioItem.findFirst({ where: { slug, published: true } });
-  } catch (error) {
-    console.error("getPortfolioItemBySlug failed:", error);
-    return null;
-  }
+  return prisma.portfolioItem.findFirst({ where: { slug, published: true } });
 }
 
 /** generateStaticParams' data source for /work/[slug] - published slugs only. */

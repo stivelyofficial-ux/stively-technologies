@@ -32,7 +32,19 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PortfolioDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getPortfolioItemBySlug(slug);
+
+  // getPortfolioItemBySlug deliberately doesn't catch-and-degrade (see its
+  // own comment) - correct for the page body below, but generateMetadata
+  // runs in a separate Next.js phase (marketing)/error.tsx never sees, so
+  // an uncaught throw here produces Next's own generic 500 page instead of
+  // our maintenance card - same fix as offerings/[slug] etc.
+  let item: Awaited<ReturnType<typeof getPortfolioItemBySlug>>;
+  try {
+    item = await getPortfolioItemBySlug(slug);
+  } catch (error) {
+    console.error("generateMetadata (work/[slug]) failed:", error);
+    return { title: "Case Study" };
+  }
 
   if (!item) {
     return { title: "Project not found" };

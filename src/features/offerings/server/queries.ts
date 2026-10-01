@@ -80,21 +80,20 @@ export async function getOfferings(
  * the read itself, same reasoning as getProgramBySlug: a real DB failure
  * here should surface as an error, not look identical to "no such offering".
  */
+/**
+ * Deliberately does NOT catch-and-return-null on a DB failure - same
+ * reasoning as getProgramBySlug's own comment: a real outage must surface
+ * as an error (the page body's error boundary), not look identical to "no
+ * such offering" (notFound()/404), which would be a worse, misleading
+ * outcome and briefly 404 a real, live offering page. generateMetadata's
+ * own call site (offerings/[slug]/page.tsx) catches around this instead,
+ * same pattern as training/[slug]/page.tsx - this function stays honest
+ * for the call site that actually needs to distinguish the two cases.
+ */
 export async function getOfferingBySlug(slug: string): Promise<Offering | null> {
-  let offering: Offering | null;
-  try {
-    offering = await prisma.offering.findFirst({
-      where: { slug, status: "PUBLISHED", visible: true },
-    });
-  } catch (error) {
-    // Used by both generateMetadata (a separate Next.js phase (marketing)/error.tsx
-    // never sees - an uncaught throw here produces Next's own generic 500
-    // page, confirmed live during the 2026-09/10 Neon outage) and the page
-    // body itself, which DOES have an error boundary - catching here covers
-    // both call sites with one fix instead of two.
-    console.error("getOfferingBySlug failed:", error);
-    return null;
-  }
+  const offering = await prisma.offering.findFirst({
+    where: { slug, status: "PUBLISHED", visible: true },
+  });
 
   if (offering) {
     prisma.offering

@@ -22,7 +22,19 @@ interface DigitalProductPageProps {
 
 export async function generateMetadata({ params }: DigitalProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const offering = await getOfferingBySlug(slug);
+
+  // getOfferingBySlug deliberately doesn't catch-and-degrade (see its own
+  // comment) - correct for the page body below, but generateMetadata runs
+  // in a separate Next.js phase (marketing)/error.tsx never sees, so an
+  // uncaught throw here produces Next's own generic 500 page instead of our
+  // maintenance card - same fix as offerings/[slug] and training/[slug].
+  let offering: Awaited<ReturnType<typeof getOfferingBySlug>>;
+  try {
+    offering = await getOfferingBySlug(slug);
+  } catch (error) {
+    console.error("generateMetadata (digital-store/[slug]) failed:", error);
+    return {};
+  }
   if (!offering || offering.category !== "DIGITAL_PRODUCT") return {};
 
   return {
