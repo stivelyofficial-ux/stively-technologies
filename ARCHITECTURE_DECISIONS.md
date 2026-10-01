@@ -600,6 +600,23 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-036: Internship task submission captures a live URL + GitHub repo, not just a status flip
+
+**Date:** 2026-10-01
+**Problem:** `InternshipTask` already had a full review cycle (PENDING → SUBMITTED → APPROVED/CHANGES_REQUESTED), but "submit" was a bare one-click status change with no actual deliverable attached - an admin reviewing a task had no way to see what was built without chasing the student separately. Every real project brief this program sends interns (e.g. the e-commerce frontend spec) already requires "Live website URL + GitHub repository URL" as the final deliverable - the platform didn't capture either.
+**Options considered:**
+1. A new model for deliverable submissions, decoupled from `InternshipTask`.
+2. Two fields (`liveUrl`, `repoUrl`) directly on `InternshipTask`, filled in at the same moment the status flips to SUBMITTED.
+**Chosen solution:** Option 2.
+**Reason:** `InternshipTask` already IS the reviewable unit, with its own status machine and admin review UI (`TaskManager`/`ReviewButtons`) - a separate submissions model would duplicate that machinery for no real benefit. A project's overall "final submission" (the brief's §23) isn't a new concept either; an admin can just create one more task named "Final Submission" and the student submits the same two links there, reusing the identical mechanism rather than building a second, parallel one.
+**Trade-offs:** No submission history is kept - a resubmission after CHANGES_REQUESTED overwrites the previous links, same as `feedback` only ever holding the latest review note. If a mentor ever needs to compare "what changed between submission 2 and 3," that's not available without adding a history table later.
+**Database impact:** Two new nullable `String?` columns on `InternshipTask` (`liveUrl`, `repoUrl`). Migration not yet applied - blocked on the Neon outage (see [[project_neon_db_outage]]); `prisma generate` ran schema-only.
+**API impact:** `submitInternshipTask` now takes `{ taskId, liveUrl, repoUrl }` (both required, GitHub-repo-shaped validation on `repoUrl`) instead of a bare `taskId` - a breaking signature change, but the only caller (`TaskSubmitButton`) was updated in the same change.
+**Future considerations:** If the program later wants per-submission history (not just the latest), that's a real reason to introduce a separate `InternshipTaskSubmission` child model - revisit if that need actually shows up rather than building it speculatively now.
+**Related components:** `prisma/schema.prisma` (`InternshipTask.liveUrl`/`repoUrl`), `src/features/internships/validation.ts` (`submitTaskSchema`), `src/features/internships/actions/student-actions.ts`, `src/features/internships/components/student/task-submit-button.tsx`, `src/features/internships/components/admin/task-manager.tsx`, `src/app/(portal)/student/internships/page.tsx`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

@@ -144,6 +144,32 @@ export default async function StudentInternshipsPage() {
                         {task.status === "CHANGES_REQUESTED" && task.feedback && (
                           <p className="text-warning bg-warning/10 rounded-md p-2 text-xs text-pretty">{task.feedback}</p>
                         )}
+                        {(task.status === "SUBMITTED" || task.status === "APPROVED") && (task.liveUrl || task.repoUrl) && (
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                            {task.liveUrl && (
+                              <Link
+                                href={task.liveUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary inline-flex items-center gap-1 hover:underline"
+                              >
+                                Live URL
+                                <ExternalLink className="size-3" aria-hidden="true" />
+                              </Link>
+                            )}
+                            {task.repoUrl && (
+                              <Link
+                                href={task.repoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary inline-flex items-center gap-1 hover:underline"
+                              >
+                                GitHub repo
+                                <ExternalLink className="size-3" aria-hidden="true" />
+                              </Link>
+                            )}
+                          </div>
+                        )}
                         {(task.status === "PENDING" || task.status === "CHANGES_REQUESTED") && (
                           <div className="flex justify-end">
                             <TaskSubmitButton taskId={task.id} isRetry={task.status === "CHANGES_REQUESTED"} />

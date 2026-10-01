@@ -24,3 +24,14 @@ export const reviewTaskSchema = z.object({
   status: z.enum(["APPROVED", "CHANGES_REQUESTED"]),
   feedback: z.string().trim().max(5_000).optional(),
 });
+
+/** Both links required - matches every real project brief this program sends (see AD-036): "Live website URL + GitHub repository URL" are the two non-negotiable final deliverables. */
+export const submitTaskSchema = z.object({
+  taskId: z.string().min(1),
+  liveUrl: z.string().trim().url("Enter a valid URL, e.g. https://your-project.vercel.app"),
+  repoUrl: z
+    .string()
+    .trim()
+    .url("Enter a valid URL")
+    .refine((url) => /^https:\/\/(www\.)?github\.com\//i.test(url), "Enter a GitHub repository URL (https://github.com/...)"),
+});

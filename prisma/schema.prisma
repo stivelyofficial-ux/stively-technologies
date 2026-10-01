@@ -2614,6 +2614,16 @@ model InternshipTask {
   order       Int
   status      InternshipTaskStatus @default(PENDING)
 
+  /// The actual deliverable, submitted alongside the status flip to
+  /// SUBMITTED - a live deployed URL (Vercel/Netlify/GitHub Pages) and the
+  /// GitHub repo, matching what every real internship brief this program
+  /// sends out already asks for (see AD-036). Both set together, both
+  /// re-set on a resubmission after CHANGES_REQUESTED - there's no
+  /// per-submission history, just the current/latest links, same as how
+  /// `feedback` below holds only the latest review note.
+  liveUrl String?
+  repoUrl String?
+
   submittedAt DateTime?
   reviewedAt  DateTime?
   reviewedById String?

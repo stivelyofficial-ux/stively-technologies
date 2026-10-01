@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Trash2, ExternalLink, GitBranch } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,6 +125,32 @@ function TaskManager({ trackId, tasks }: { trackId: string; tasks: InternshipTas
               )}
             </div>
           </div>
+          {(task.liveUrl || task.repoUrl) && (
+            <div className="bg-muted/50 flex flex-wrap gap-x-4 gap-y-1 rounded-md p-2 text-xs">
+              {task.liveUrl && (
+                <Link
+                  href={task.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
+                >
+                  <ExternalLink className="size-3" aria-hidden="true" />
+                  Live URL
+                </Link>
+              )}
+              {task.repoUrl && (
+                <Link
+                  href={task.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
+                >
+                  <GitBranch className="size-3" aria-hidden="true" />
+                  GitHub repo
+                </Link>
+              )}
+            </div>
+          )}
           {task.feedback && <p className="text-warning bg-warning/10 rounded-md p-2 text-xs">{task.feedback}</p>}
           {task.status === "SUBMITTED" && <ReviewButtons taskId={task.id} />}
         </div>
