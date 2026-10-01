@@ -34,7 +34,7 @@ function StipendTermsCheckbox({ checked, onCheckedChange }: { checked: boolean; 
             }}
             className="text-primary underline underline-offset-2"
           >
-            internship stipend terms
+            terms and conditions
           </button>
         </span>
       </label>
