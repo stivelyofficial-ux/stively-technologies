@@ -617,6 +617,23 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-037: Certificate issuance made automatic on course completion; template parameterized per course
+
+**Date:** 2026-10-01
+**Problem:** Two gaps ahead of launching ads for Frontend Development: (1) certificate issuance was a manual "Generate My Certificate" button - the founder wants it automatic, no extra click. (2) `frontend-development` wasn't in `COURSE_CERTIFICATE_CONFIG` at all (certificate-ineligible), and the PDF template itself had GenAI-specific text hardcoded directly in JSX (a 5-item skills row - "AI Fundamentals & Tools," "Prompt Engineering" etc. - and the gold seal's subtitle "GENERATIVE AI & PROMPT ENGINEERING"), which would have shown on every course's certificate regardless of what was actually completed.
+**Options considered:**
+1. Leave issuance manual, just add a Frontend config entry and hardcode a second template variant for it.
+2. Make issuance automatic (call the existing, already-idempotent `getOrIssueCertificate` from `completeEnrollment`) and parameterize the template's skills/seal text through `CourseCertificateConfig`, same pattern the description field already used.
+**Chosen solution:** Option 2.
+**Reason:** `getOrIssueCertificate` was already fully idempotent and session-independent (ownership checked via the DB row, not an active request) - calling it automatically needed zero new issuance logic, just one more call alongside the already-automatic `ensureInternshipTrack`. A second hardcoded template variant for Frontend would have meant a third, fourth... copy for every future course; parameterizing the existing one scales the same way `description` already did.
+**Trade-offs:** None of substance - the skill-row icons stay fixed (only labels are per-course), so a course needing a genuinely different icon set would need a small template change later, not just a config edit.
+**Database impact:** None directly, but exposed that the Internship system's own migration had also never been applied (same Neon outage) - applied together with the Referral Program migration once the DB came back (see AD-035/AD-036).
+**API impact:** `CertificateTemplateData`/`Template01` now take `skills`/`sealSub` props instead of a hardcoded module constant; `renderCertificatePdf` resolves them from `CourseCertificateConfig` (falling back to the original GenAI values if a certificate's course config is ever missing, so an old certificate never fails to render).
+**Future considerations:** When the bonus Git/GitHub/Deployment module is added (expected within 24h of this decision per the founder), no certificate change is needed - `computeCertificateStats` already counts whatever modules are actually built at issuance time.
+**Related components:** `src/features/certificates/lib/course-config.ts`, `src/features/certificates/templates/template-01.tsx`, `src/features/certificates/server/render.ts`, `src/features/certificates/components/student/certificate-card.tsx` (added the Internship Dashboard link), `src/features/enrollments/server/creation.ts` (`completeEnrollment`'s new automatic-issuance call).
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

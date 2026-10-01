@@ -5,6 +5,7 @@ import type { OfferingEnrollment, Order, OfferingRequest, OfferingEnrollmentStat
 import { emitEnrollmentEvent } from "../lib/events";
 import { ensureInternshipTrack } from "@/features/internships/server/creation";
 import { convertReferralOnEnrollment } from "@/features/referrals/server/conversion";
+import { getOrIssueCertificate } from "@/features/certificates/server/issuance";
 
 interface CreateEnrollmentInput {
   studentId: string;
@@ -141,5 +142,19 @@ export async function completeEnrollment(enrollmentId: string): Promise<Offering
   });
   emitEnrollmentEvent("ENROLLMENT_COMPLETED", updated);
   await ensureInternshipTrack(enrollmentId, updated.studentId);
+
+  // Automatic certificate issuance - was previously a manual "Generate My
+  // Certificate" button; getOrIssueCertificate is already idempotent
+  // (unique on enrollmentId) and doesn't depend on an authenticated
+  // session, so calling it right here is safe and makes "automatically"
+  // literal rather than "the button now works slightly better." A no-op
+  // for any course without a COURSE_CERTIFICATE_CONFIG entry - returns a
+  // clean failure result, never throws.
+  try {
+    await getOrIssueCertificate(enrollmentId, updated.studentId);
+  } catch (error) {
+    console.error("completeEnrollment: automatic certificate issuance failed:", error);
+  }
+
   return updated;
 }

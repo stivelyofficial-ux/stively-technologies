@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle2, Download, ExternalLink, Ban } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, Ban, Rocket } from "lucide-react";
 import type { Certificate } from "@prisma/client";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -91,6 +91,17 @@ function CertificateCard({ enrollmentId, certificate }: { enrollmentId: string; 
               <Download aria-hidden="true" />
               Download PDF
             </a>
+          </Button>
+        </div>
+        <div className="border-border/70 flex w-full flex-col items-start gap-2 border-t pt-4">
+          <p className="text-muted-foreground text-sm">
+            You&apos;re done here - your internship track is ready, with a real project waiting.
+          </p>
+          <Button asChild variant="outline">
+            <Link href="/student/internships">
+              <Rocket aria-hidden="true" />
+              Go to Internship Dashboard
+            </Link>
           </Button>
         </div>
       </CardContent>

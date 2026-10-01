@@ -34,13 +34,8 @@ const LOGO_ON_CREAM = toDataUri(path.join(process.cwd(), "public/brand/logo-ligh
 const LOGO_ON_INK = toDataUri(path.join(process.cwd(), "public/brand/logo-dark-surface.png"));
 const LOGO_ASPECT = 900 / 263;
 
-const SKILLS = [
-  { label: "AI Fundamentals\n& Tools", icon: BRAIN },
-  { label: "Prompt\nEngineering", icon: PEN_LINE },
-  { label: "Practical Projects\n& Workflows", icon: SETTINGS_2 },
-  { label: "Real-world\nUse Cases", icon: LIGHTBULB },
-  { label: "Career Guidance\n& Opportunities", icon: TRENDING_UP },
-] as const;
+/** Fixed icon order every course's skill row uses - only the labels are course-specific (CourseCertificateConfig.skills), passed through as a prop. */
+const SKILL_ICONS = [BRAIN, PEN_LINE, SETTINGS_2, LIGHTBULB, TRENDING_UP] as const;
 
 const SIDEBAR_PILLARS = [
   { label: "Learn", icon: BOOK_OPEN },
@@ -376,6 +371,10 @@ export interface CertificateTemplateData {
   modulesCompleted: number;
   courseDurationMinutes: number;
   quizzesPassed: number;
+  /** Exactly 5 short labels (newline allowed for a two-line badge) - course-specific, see CourseCertificateConfig.skills. Paired with SKILL_ICONS by index. */
+  skills: readonly string[];
+  /** The gold seal's subtitle under "STIVELY CERTIFIED," e.g. "FRONTEND DEVELOPMENT" - see CourseCertificateConfig.sealSub. */
+  sealSub: string;
 }
 
 /**
@@ -403,6 +402,8 @@ export function Template01({
   modulesCompleted,
   courseDurationMinutes,
   quizzesPassed,
+  skills,
+  sealSub,
 }: CertificateTemplateData) {
   const issuedLabel = issuedAt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
 
@@ -458,12 +459,12 @@ export function Template01({
               <Text style={styles.description}>{courseDescription}</Text>
 
               <View style={styles.skillsRow}>
-                {SKILLS.map((skill) => (
-                  <View key={skill.label} style={styles.skillItem}>
+                {skills.map((label, index) => (
+                  <View key={label} style={styles.skillItem}>
                     <View style={styles.skillBadge}>
-                      <LucideIcon nodes={skill.icon as never} size={16} color={certificateColors.gold} strokeWidth={2} />
+                      <LucideIcon nodes={SKILL_ICONS[index] as never} size={16} color={certificateColors.gold} strokeWidth={2} />
                     </View>
-                    <Text style={styles.skillLabel}>{skill.label}</Text>
+                    <Text style={styles.skillLabel}>{label}</Text>
                   </View>
                 ))}
               </View>
@@ -513,7 +514,7 @@ export function Template01({
                 <LaurelWreath size={92} color={certificateColors.gold} />
                 <View style={styles.sealInner}>
                   <Text style={styles.sealText}>STIVELY{"\n"}CERTIFIED</Text>
-                  <Text style={styles.sealSub}>GENERATIVE AI & PROMPT ENGINEERING</Text>
+                  <Text style={styles.sealSub}>{sealSub}</Text>
                 </View>
               </View>
 
