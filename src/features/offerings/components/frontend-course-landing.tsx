@@ -665,7 +665,8 @@ function FrontendCourseLanding({
       {/* Persistent mobile purchase bar - same real component/behavior as CourseDetailView's. */}
       {payable != null && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t p-3 backdrop-blur lg:hidden" style={{ background: "rgba(6,27,21,0.95)", borderColor: "rgba(255,255,255,0.1)" }}>
-          <div className="flex items-center justify-between gap-3">
+          {/* pl-16 keeps the price clear of the floating WhatsApp chat widget pinned to the same bottom-left corner - same fix course-detail-view.tsx's own mobile bar already uses. */}
+          <div className="flex items-center justify-between gap-3 pl-16">
             <div className="flex flex-col">
               <span className="text-lg font-extrabold tabular-nums" style={{ color: "#F3DEA4" }}>
                 {formatPrice(payable, offering.currency)}
