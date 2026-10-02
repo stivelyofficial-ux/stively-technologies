@@ -64,7 +64,7 @@ async function main() {
       purchaseFlow: "CONSULTATION" as const,
       price: 2_499_900,
       pricingType: "FIXED" as const,
-      duration: "4-6 Weeks",
+      duration: "2-4 Weeks",
       benefits: [
         "Custom design",
         "CMS",

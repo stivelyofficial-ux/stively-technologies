@@ -31,7 +31,7 @@ async function main() {
       price: 99900,
       currency: "INR",
       pricingType: "FIXED",
-      duration: "6 Weeks",
+      duration: "2 to 4",
       mode: "ONLINE",
       difficulty: "BEGINNER",
       whatYoullLearn: [
