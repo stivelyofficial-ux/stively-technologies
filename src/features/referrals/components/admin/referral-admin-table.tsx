@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPrice } from "@/lib/utils";
-import { markReferralPaid, rejectReferral } from "../../actions/admin-actions";
+import { rejectReferral } from "../../actions/admin-actions";
 
 export interface AdminReferralRow {
   id: string;
@@ -32,13 +32,6 @@ function RowActions({ referralId }: { referralId: string }) {
   const [isPending, setIsPending] = React.useState(false);
   const [showReject, setShowReject] = React.useState(false);
   const [reason, setReason] = React.useState("");
-
-  async function handlePay() {
-    setIsPending(true);
-    await markReferralPaid(referralId);
-    setIsPending(false);
-    router.refresh();
-  }
 
   async function handleReject() {
     setIsPending(true);
@@ -72,9 +65,6 @@ function RowActions({ referralId }: { referralId: string }) {
 
   return (
     <div className="flex justify-end gap-2">
-      <Button size="sm" loading={isPending} onClick={handlePay}>
-        Mark paid
-      </Button>
       <Button size="sm" variant="outline" onClick={() => setShowReject(true)}>
         Reject
       </Button>
@@ -106,7 +96,9 @@ function ReferralAdminTable({ rows }: { rows: AdminReferralRow[] }) {
             <tr key={row.id} className="hover:bg-accent/40 align-top">
               <td className="px-4 py-3">
                 <div className="text-foreground font-medium">{row.referrerName}</div>
-                {row.referrerEmail && <div className="text-muted-foreground text-xs">{row.referrerEmail}</div>}
+                {row.referrerEmail && (
+                  <div className="text-muted-foreground text-xs">{row.referrerEmail}</div>
+                )}
               </td>
               <td className="text-foreground px-4 py-3">{row.referredUserName}</td>
               <td className="text-muted-foreground px-4 py-3">{row.offeringTitle ?? "—"}</td>
@@ -117,9 +109,15 @@ function ReferralAdminTable({ rows }: { rows: AdminReferralRow[] }) {
                 <Badge variant={STATUS_VARIANT[row.status]}>{row.status}</Badge>
               </td>
               <td className="text-muted-foreground px-4 py-3 whitespace-nowrap">
-                {row.createdAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                {row.createdAt.toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
               </td>
-              <td className="px-4 py-3">{row.status === "CONVERTED" && <RowActions referralId={row.id} />}</td>
+              <td className="px-4 py-3">
+                {row.status === "CONVERTED" && <RowActions referralId={row.id} />}
+              </td>
             </tr>
           ))}
         </tbody>

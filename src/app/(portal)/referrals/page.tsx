@@ -8,12 +8,24 @@ import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-titl
 import { Container } from "@/components/shared/container";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getOrCreateReferralCode, getReferralStatsForUser, getReferralsForUser } from "@/features/referrals/server/queries";
+import {
+  getOrCreateReferralCode,
+  getReferralStatsForUser,
+  getReferralsForUser,
+  getPayoutDetailsForUser,
+  getPayoutsForUser,
+  isReferralPaused,
+} from "@/features/referrals/server/queries";
+import { MIN_PAYOUT_PAISE, maskAccountNumber } from "@/features/referrals/lib/payout";
+import { PayoutCard } from "@/features/referrals/components/payout-card";
 import { ReferralLinkCard } from "@/features/referrals/components/referral-link-card";
 
 export const metadata: Metadata = { title: "Referrals" };
 
-const STATUS_BADGE: Record<string, { label: string; variant: "success" | "default" | "warning" | "secondary" }> = {
+const STATUS_BADGE: Record<
+  string,
+  { label: string; variant: "success" | "default" | "warning" | "secondary" }
+> = {
   SIGNED_UP: { label: "Signed up", variant: "secondary" },
   CONVERTED: { label: "Earned - pending payout", variant: "warning" },
   PAID: { label: "Paid", variant: "success" },
@@ -28,10 +40,13 @@ const STATUS_BADGE: Record<string, { label: string; variant: "success" | "defaul
  */
 export default async function ReferralsPage() {
   const user = await requireUser();
-  const [code, stats, referrals] = await Promise.all([
+  const [code, stats, referrals, payoutDetails, payouts, paused] = await Promise.all([
     getOrCreateReferralCode(user.id),
     getReferralStatsForUser(user.id),
     getReferralsForUser(user.id),
+    getPayoutDetailsForUser(user.id),
+    getPayoutsForUser(user.id),
+    isReferralPaused(user.id),
   ]);
 
   const link = `${siteConfig.url}/?ref=${code}`;
@@ -49,16 +64,32 @@ export default async function ReferralsPage() {
       <SetPageTitle title="Referrals" />
       <Container className="flex flex-col gap-6 py-8">
         <div>
-          <h1 className="text-foreground font-display text-2xl font-semibold tracking-tight">Refer & earn</h1>
+          <h1 className="text-foreground font-display text-2xl font-semibold tracking-tight">
+            Refer & earn
+          </h1>
           <p className="text-muted-foreground text-sm">
-            Share your link. When someone you refer enrolls in a course, you earn a reward once they pay.
+            Share your link. When someone you refer enrolls in a course, you earn a reward once they
+            pay.
           </p>
         </div>
+
+        {paused && (
+          <div
+            role="status"
+            className="border-warning/40 bg-warning/10 text-foreground rounded-lg border px-4 py-3 text-sm"
+          >
+            Your referral link is paused while we review recent activity, so new clicks and signups
+            aren&apos;t being tracked and payouts are on hold. Contact support if you think this is
+            a mistake.
+          </div>
+        )}
 
         <Card>
           <CardHeader>
             <CardTitle>Your referral link</CardTitle>
-            <CardDescription>Anyone who signs up through this link gets attributed to you.</CardDescription>
+            <CardDescription>
+              Anyone who signs up through this link gets attributed to you.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ReferralLinkCard link={link} />
@@ -73,7 +104,9 @@ export default async function ReferralsPage() {
                   <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
                     <Icon className="size-4" aria-hidden="true" />
                   </span>
-                  <span className="text-foreground font-display text-lg font-semibold tabular-nums">{value}</span>
+                  <span className="text-foreground font-display text-lg font-semibold tabular-nums">
+                    {value}
+                  </span>
                   <span className="text-muted-foreground text-xs">{label}</span>
                 </CardContent>
               </Card>
@@ -83,23 +116,61 @@ export default async function ReferralsPage() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Payouts</CardTitle>
+            <CardDescription>
+              Tell us where to send your earnings. Payouts go out once you reach the minimum.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PayoutCard
+              owedAmount={stats.pendingAmount}
+              minPayout={MIN_PAYOUT_PAISE}
+              saved={
+                payoutDetails
+                  ? {
+                      method: payoutDetails.method,
+                      upiId: payoutDetails.upiId,
+                      accountHolder: payoutDetails.accountHolder,
+                      accountMasked: maskAccountNumber(payoutDetails.accountNumber),
+                      ifsc: payoutDetails.ifsc,
+                    }
+                  : null
+              }
+              payouts={payouts.map((p) => ({ ...p, paidAt: p.paidAt.toISOString() }))}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Your referrals</CardTitle>
             <CardDescription>Every person who signed up through your link.</CardDescription>
           </CardHeader>
           <CardContent>
             {referrals.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No referrals yet - share your link to get started.</p>
+              <p className="text-muted-foreground text-sm">
+                No referrals yet - share your link to get started.
+              </p>
             ) : (
               <ul className="flex flex-col gap-3">
                 {referrals.map((referral) => {
                   const badge = STATUS_BADGE[referral.status];
                   return (
-                    <li key={referral.id} className="border-border/70 flex items-center justify-between gap-3 rounded-lg border p-3">
+                    <li
+                      key={referral.id}
+                      className="border-border/70 flex items-center justify-between gap-3 rounded-lg border p-3"
+                    >
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-foreground text-sm font-medium">{referral.referredUserName}</span>
+                        <span className="text-foreground text-sm font-medium">
+                          {referral.referredUserName}
+                        </span>
                         <span className="text-muted-foreground text-xs">
                           {referral.offeringTitle ?? "Not enrolled yet"} &middot;{" "}
-                          {referral.createdAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          {referral.createdAt.toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
                         </span>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">

@@ -1,6 +1,7 @@
 import type { Role } from "@prisma/client";
 
 import { DashboardTitleProvider } from "@/components/dashboard-shell/layout/dashboard-title-context";
+import { NavigationProgress } from "@/components/dashboard-shell/layout/navigation-progress";
 import { Sidebar } from "@/components/dashboard-shell/layout/sidebar";
 import { Topbar } from "@/components/dashboard-shell/layout/topbar";
 import type { Notification } from "@/components/dashboard-shell/notifications/notification-data";
@@ -40,6 +41,7 @@ function DashboardShell({
 }: DashboardShellProps) {
   return (
     <DashboardTitleProvider defaultTitle={defaultTitle}>
+      <NavigationProgress />
       <div className="bg-background flex h-dvh overflow-hidden">
         <Sidebar role={user.role} />
 

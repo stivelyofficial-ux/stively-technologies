@@ -2,6 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "../lib/code";
+import { describePayoutDestination } from "../lib/payout";
+import { computeReferralFlags, type ReferralFlag } from "../lib/fraud";
 
 /**
  * Most accounts never open /referrals, so the code is generated lazily
@@ -10,19 +12,34 @@ import { generateReferralCode } from "../lib/code";
  * are negligible, but @unique means a retry loop costs nothing to be safe).
  */
 export async function getOrCreateReferralCode(userId: string): Promise<string> {
-  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { referralCode: true } });
+  const existing = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { referralCode: true },
+  });
   if (existing?.referralCode) return existing.referralCode;
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = generateReferralCode();
     try {
-      const updated = await prisma.user.update({ where: { id: userId }, data: { referralCode: code } });
+      const updated = await prisma.user.update({
+        where: { id: userId },
+        data: { referralCode: code },
+      });
       return updated.referralCode!;
     } catch {
       // Unique-constraint collision - vanishingly rare at 36^7, retry with a new code.
     }
   }
   throw new Error("getOrCreateReferralCode: failed to generate a unique code after 5 attempts");
+}
+
+/** Whether an admin has paused this user's referral link (fraud review). */
+export async function isReferralPaused(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { referralBlockedAt: true },
+  });
+  return user?.referralBlockedAt != null;
 }
 
 export interface ReferralStats {
@@ -39,7 +56,10 @@ export interface ReferralStats {
 export async function getReferralStatsForUser(userId: string): Promise<ReferralStats> {
   const [clicks, referrals] = await Promise.all([
     prisma.referralClick.count({ where: { referrerId: userId } }),
-    prisma.referral.findMany({ where: { referrerId: userId }, select: { status: true, rewardAmount: true } }),
+    prisma.referral.findMany({
+      where: { referrerId: userId },
+      select: { status: true, rewardAmount: true },
+    }),
   ]);
 
   let signedUp = 0;
@@ -117,6 +137,102 @@ export async function getReferralsForAdmin() {
   });
 }
 
+export interface AdminReferrerRow {
+  id: string;
+  name: string;
+  email: string | null;
+  code: string;
+  clicks: number;
+  signedUp: number;
+  converted: number;
+  /** Paise - CONVERTED, not yet paid. */
+  owed: number;
+  /** Paise - already PAID. */
+  paid: number;
+  /** What the admin needs to send money, or null if the referrer hasn't added details yet. */
+  payoutTo: string | null;
+  /** Review flags - see lib/fraud.ts. Informational only. */
+  flags: ReferralFlag[];
+  /** Whole-number % of clicks that ended in a conversion; null with no clicks. */
+  conversionRate: number | null;
+  blocked: boolean;
+  blockedReason: string | null;
+}
+
+/** Everyone who has a referral code (self-serve or admin-created), with their funnel numbers - the per-referrer view the flat referral list can't give. */
+export async function getReferrersForAdmin(): Promise<AdminReferrerRow[]> {
+  const users = await prisma.user.findMany({
+    where: { referralCode: { not: null } },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      referralCode: true,
+      _count: { select: { referralClicksReceived: true } },
+      referralBlockedAt: true,
+      referralBlockedReason: true,
+      referralsSent: {
+        select: {
+          status: true,
+          rewardAmount: true,
+          signupIp: true,
+          convertedAt: true,
+          referredUser: { select: { email: true } },
+        },
+      },
+      referralPayoutDetails: true,
+    },
+  });
+
+  return users
+    .map((u) => {
+      let signedUp = 0;
+      let converted = 0;
+      let owed = 0;
+      let paid = 0;
+      for (const r of u.referralsSent) {
+        if (r.status === "SIGNED_UP") signedUp++;
+        if (r.status === "CONVERTED") {
+          converted++;
+          owed += r.rewardAmount ?? 0;
+        }
+        if (r.status === "PAID") {
+          converted++;
+          paid += r.rewardAmount ?? 0;
+        }
+      }
+      return {
+        id: u.id,
+        name: u.name ?? u.email ?? "Unnamed",
+        email: u.email,
+        code: u.referralCode!,
+        clicks: u._count.referralClicksReceived,
+        signedUp,
+        converted,
+        owed,
+        paid,
+        payoutTo: u.referralPayoutDetails
+          ? describePayoutDestination(u.referralPayoutDetails)
+          : null,
+        flags: computeReferralFlags({
+          referrerEmail: u.email,
+          referrals: u.referralsSent.map((r) => ({
+            signupIp: r.signupIp,
+            referredEmail: r.referredUser.email,
+            convertedAt: r.convertedAt,
+          })),
+        }),
+        conversionRate:
+          u._count.referralClicksReceived > 0
+            ? Math.round((converted / u._count.referralClicksReceived) * 100)
+            : null,
+        blocked: u.referralBlockedAt != null,
+        blockedReason: u.referralBlockedReason,
+      };
+    })
+    .sort((a, b) => b.owed + b.paid - (a.owed + a.paid) || b.clicks - a.clicks);
+}
+
 export interface ReferralAdminSummary {
   totalReferrers: number;
   totalClicks: number;
@@ -126,14 +242,25 @@ export interface ReferralAdminSummary {
   owedAmount: number;
   /** Paise - already PAID. */
   paidAmount: number;
+  /** Everyone who signed up through a link, any status except rejected-before-signup. */
+  totalSignups: number;
 }
 
 export async function getReferralSummaryForAdmin(): Promise<ReferralAdminSummary> {
-  const [totalReferrers, totalClicks, owed, paid] = await Promise.all([
+  const [totalReferrers, totalClicks, owed, paid, totalSignups] = await Promise.all([
     prisma.user.count({ where: { referralCode: { not: null } } }),
     prisma.referralClick.count(),
-    prisma.referral.aggregate({ where: { status: "CONVERTED" }, _sum: { rewardAmount: true }, _count: true }),
-    prisma.referral.aggregate({ where: { status: "PAID" }, _sum: { rewardAmount: true }, _count: true }),
+    prisma.referral.aggregate({
+      where: { status: "CONVERTED" },
+      _sum: { rewardAmount: true },
+      _count: true,
+    }),
+    prisma.referral.aggregate({
+      where: { status: "PAID" },
+      _sum: { rewardAmount: true },
+      _count: true,
+    }),
+    prisma.referral.count(),
   ]);
 
   return {
@@ -143,5 +270,20 @@ export async function getReferralSummaryForAdmin(): Promise<ReferralAdminSummary
     totalPaid: paid._count,
     owedAmount: owed._sum.rewardAmount ?? 0,
     paidAmount: paid._sum.rewardAmount ?? 0,
+    totalSignups,
   };
+}
+
+// ── Phase 2: payouts ────────────────────────────────────────────────
+
+export async function getPayoutDetailsForUser(userId: string) {
+  return prisma.referralPayoutDetails.findUnique({ where: { userId } });
+}
+
+export async function getPayoutsForUser(userId: string) {
+  return prisma.referralPayout.findMany({
+    where: { referrerId: userId },
+    orderBy: { paidAt: "desc" },
+    select: { id: true, amount: true, destination: true, reference: true, paidAt: true },
+  });
 }

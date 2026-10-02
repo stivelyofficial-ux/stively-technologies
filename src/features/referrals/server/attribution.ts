@@ -1,7 +1,19 @@
 import "server-only";
 
+import { headers } from "next/headers";
+
 import { prisma } from "@/lib/prisma";
 import { readReferralCookie, clearReferralCookie } from "../lib/cookie";
+
+/** Best-effort fraud signal; headers() can be unavailable outside a request (some OAuth callbacks), which must never break signup. */
+async function requestIp(): Promise<string | undefined> {
+  try {
+    const list = await headers();
+    return list.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Called once, right after a brand-new User row is created - from all
@@ -21,10 +33,14 @@ export async function attributeReferralSignup(newUserId: string): Promise<void> 
     const code = await readReferralCookie();
     if (!code) return;
 
-    const referrer = await prisma.user.findUnique({ where: { referralCode: code }, select: { id: true } });
-    // No matching code, or someone clicked their own link (self-referral) -
-    // silently drop the cookie either way, no Referral row created.
-    if (!referrer || referrer.id === newUserId) {
+    const referrer = await prisma.user.findUnique({
+      where: { referralCode: code },
+      select: { id: true, referralBlockedAt: true },
+    });
+    // No matching code, someone clicked their own link (self-referral), or the
+    // referrer is paused by an admin - silently drop the cookie either way, no
+    // Referral row created.
+    if (!referrer || referrer.id === newUserId || referrer.referralBlockedAt) {
       await clearReferralCookie();
       return;
     }
@@ -36,7 +52,12 @@ export async function attributeReferralSignup(newUserId: string): Promise<void> 
     // of throwing a unique-constraint error into a critical path.
     await prisma.referral.upsert({
       where: { referredUserId: newUserId },
-      create: { referrerId: referrer.id, referredUserId: newUserId, code },
+      create: {
+        referrerId: referrer.id,
+        referredUserId: newUserId,
+        code,
+        signupIp: await requestIp(),
+      },
       update: {},
     });
 

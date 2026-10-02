@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
-import { isPlausibleReferralCode } from "../lib/code";
+import { isPlausibleReferralCode, normalizeReferralCode } from "../lib/code";
 import { setReferralCookieIfAbsent } from "../lib/cookie";
 
 /**
@@ -15,12 +15,16 @@ import { setReferralCookieIfAbsent } from "../lib/cookie";
  * URL, so "how many people clicked my link" stays an honest visitor count
  * rather than a page-view count.
  */
-export async function captureReferralClick(code: string): Promise<void> {
+export async function captureReferralClick(rawCode: string): Promise<void> {
+  const code = normalizeReferralCode(rawCode);
   if (!isPlausibleReferralCode(code)) return;
 
   try {
-    const referrer = await prisma.user.findUnique({ where: { referralCode: code }, select: { id: true } });
-    if (!referrer) return;
+    const referrer = await prisma.user.findUnique({
+      where: { referralCode: code },
+      select: { id: true, referralBlockedAt: true },
+    });
+    if (!referrer || referrer.referralBlockedAt) return;
 
     const isNewCookie = await setReferralCookieIfAbsent(code);
     if (!isNewCookie) return;

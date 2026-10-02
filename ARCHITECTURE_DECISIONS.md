@@ -634,6 +634,25 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-038: Referral Program phased plan; admin-created referrers reuse the account system
+
+**Date:** 2026-10-02
+**Problem:** The founder wants referrers who aren't students (partners, influencers) to get a unique link and the same referral dashboard, created by an admin, and wants the rest of the program split into phases.
+**Options considered:** 1. A separate `ReferralPartner` model with its own login and dashboard. 2. Reuse `User` + the existing `/referrals` dashboard: admin enters name/email (+ optional vanity code), the system finds or creates the User, assigns `referralCode`, emails a set-password link.
+**Chosen solution:** Option 2.
+**Reason:** `/referrals` is already role-agnostic and `User.referralCode` already exists - a second partner identity would duplicate login, dashboard and payout plumbing for no gain. The partner is just a User who happens to have been invited by an admin.
+**Trade-offs:** An admin-created partner gets role STUDENT (the only role registration allows), so they also see an empty student dashboard; acceptable until a dedicated PARTNER role is worth adding. Changing an existing user's code breaks links already shared with the old one. The set-password link expires in 1 hour (the existing reset-token TTL); "Forgot password" covers the rest.
+**Phases:** 1 (done) link generation - self-serve, admin-created referrers, vanity codes, per-referrer admin table. 2 payout details (UPI/bank) collected from the referrer, minimum payout threshold, payout batches with CSV export. 3 analytics and fraud - source/UTM tracking, funnel chart, IP/device correlation flags per referrer, admin drill-down. 4 growth - tiered or per-referrer reward overrides, leaderboard, ready-made share copy, referred-user welcome offer.
+**Phase 2 (done 2026-10-02):** referrers save UPI/bank details on /referrals; a `MIN_PAYOUT_PAISE` (₹500) threshold gates payouts; an admin sends the money outside the platform and records ONE `ReferralPayout` per referrer with the UTR, which settles all their CONVERTED referrals in a single transaction (replaces the old per-referral "mark paid" so there is one path and the threshold can't be bypassed); `/api/admin/referrals/payouts.csv` exports the eligible people with their details. Found and fixed live while testing: `AuditLog.actorId` references TeamMember, not User, so the Phase 1 audit writes had been failing with an FK violation *after* the action succeeded - now resolved through the admin's TeamMember row (null if none, User id kept in metadata) and non-fatal.
+**Phase 3 (done 2026-10-03):** flag-only fraud review + analytics. `lib/fraud.ts` computes SHARED_IP (2+ referrals signing up from one IP, from the new `Referral.signupIp`), SIMILAR_EMAIL (referred email resembles the referrer's: dots/+tags/trailing digits) and BURST (3+ conversions in 24h) - shown as badges, never auto-blocking, since shared college networks and friends are legitimate. Admins can Pause a referrer (`User.referralBlockedAt/Reason`): clicks and new signups stop being attributed and `recordPayout` refuses until unblocked; earned referrals are untouched. Admin page gains a clicks→signed up→purchased→paid funnel and a per-referrer conversion rate. Note guest checkout creates the account at purchase, so "converted minutes after signup" is NOT a fraud signal here and was deliberately left out.
+**Database impact (Phase 3):** `Referral.signupIp`, `User.referralBlockedAt/referralBlockedReason` (migration `referral_fraud_controls`, additive).
+**Database impact:** Phase 1 none. Phase 2: `ReferralPayoutDetails`, `ReferralPayout`, `PayoutMethod`, `Referral.payoutId` (migration `referral_payouts`, additive).
+**API impact:** New `createReferrer` admin action; referral codes are now normalized uppercase and accept 4-20 letters/digits (generated 7-char codes still valid).
+**Future considerations:** If partners need to be distinguished from students in the UI (separate home page, nav), add a PARTNER role then.
+**Related components:** `src/features/referrals/actions/admin-actions.ts`, `src/features/referrals/components/admin/referrers-panel.tsx`, `src/features/referrals/server/queries.ts` (`getReferrersForAdmin`), `src/features/referrals/lib/code.ts`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

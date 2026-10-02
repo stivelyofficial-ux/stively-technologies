@@ -354,3 +354,31 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Portal navigation feedback (see navigation-progress.tsx): an indeterminate
+   top bar that creeps toward ~90% and waits, plus a busy state on the exact
+   link that was clicked. */
+@keyframes nav-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  60% {
+    transform: translateX(-25%);
+  }
+  100% {
+    transform: translateX(-8%);
+  }
+}
+.nav-progress-bar {
+  animation: nav-progress 8s cubic-bezier(0.1, 0.6, 0.2, 1) forwards;
+}
+a[data-navigating="true"] {
+  opacity: 0.6;
+  cursor: progress;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress-bar {
+    animation: none;
+    transform: translateX(-50%);
+  }
+}

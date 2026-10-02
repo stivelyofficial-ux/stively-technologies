@@ -18,7 +18,19 @@ export function generateReferralCode(): string {
   return code;
 }
 
-/** Loose shape check before ever touching the database with a `?ref=` value from the URL. */
+/** Codes are stored and matched uppercase - a link typed or shared in lowercase still resolves. */
+export function normalizeReferralCode(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+/**
+ * One shape for every code, generated or admin-chosen vanity (e.g.
+ * "RAHUL10") - 4-20 letters/digits. Loose on purpose: generated codes
+ * (7 chars, restricted alphabet) are a subset of this, and this is only a
+ * cheap pre-check before touching the database with a ?ref= value from the URL.
+ */
+const CODE_PATTERN = /^[A-Z0-9]{4,20}$/;
+
 export function isPlausibleReferralCode(value: string): boolean {
-  return new RegExp(`^[${ALPHABET}]{${CODE_LENGTH}}$`).test(value);
+  return CODE_PATTERN.test(value);
 }

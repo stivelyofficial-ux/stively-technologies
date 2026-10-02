@@ -24,9 +24,18 @@ function ReferralLinkCard({ link }: { link: string }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Input value={link} readOnly onFocus={(e) => e.currentTarget.select()} className="font-mono text-sm" />
+        <Input
+          value={link}
+          readOnly
+          onFocus={(e) => e.currentTarget.select()}
+          className="font-mono text-sm"
+        />
         <Button type="button" variant="outline" onClick={handleCopy} className="shrink-0 gap-1.5">
-          {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+          {copied ? (
+            <Check className="size-4" aria-hidden="true" />
+          ) : (
+            <Copy className="size-4" aria-hidden="true" />
+          )}
           {copied ? "Copied" : "Copy link"}
         </Button>
       </div>

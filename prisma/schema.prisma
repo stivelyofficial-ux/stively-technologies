@@ -37,6 +37,12 @@ model User {
   /// until then, since most accounts will never look at that page.
   referralCode String? @unique
 
+  /// Admin pause (fraud review). While set: this user's link stops tracking
+  /// clicks/new signups and payouts to them are refused - existing earned
+  /// referrals stay as they are until an admin unblocks or rejects them.
+  referralBlockedAt     DateTime?
+  referralBlockedReason String?
+
   /// Null for OAuth-only accounts (Google). Set for anyone who registered
   /// or set a password via the Credentials provider - see src/lib/auth.ts.
   password String?
@@ -135,6 +141,11 @@ model User {
   referredBy Referral? @relation("ReferralReferredUser")
   /// Referrals this admin/super-admin has reviewed (marked paid or rejected).
   referralsReviewed Referral[] @relation("ReferralReviewedBy")
+  /// Phase 2 - where this user wants referral payouts sent, and the payouts
+  /// already recorded for them / by them (as the admin).
+  referralPayoutDetails ReferralPayoutDetails? @relation("ReferralPayoutDetailsUser")
+  referralPayouts       ReferralPayout[]       @relation("ReferralPayoutReferrer")
+  referralPayoutsPaid   ReferralPayout[]       @relation("ReferralPayoutPaidBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2891,6 +2902,7 @@ model Notification {
 
   @@index([userId])
   @@index([userId, read])
+  @@index([userId, createdAt])
 }
 
 // ============================================
@@ -4481,6 +4493,10 @@ model Referral {
   /// recreated, but this row's own record of what was clicked shouldn't.
   code String
 
+  /// IP of the request that created the account - fraud signal only (several
+  /// referrals from one IP). Never used to block a signup.
+  signupIp String?
+
   status ReferralStatus @default(SIGNED_UP)
 
   /// Set only once status reaches CONVERTED - which offering's purchase
@@ -4500,10 +4516,70 @@ model Referral {
   reviewedBy   User?   @relation("ReferralReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
   rejectionReason String?
 
+  /// The payout that settled this referral - set when an admin records a
+  /// payout for the referrer (see ReferralPayout), null until then.
+  payoutId String?
+  payout   ReferralPayout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
 
   @@index([referrerId, status])
   @@index([status])
+  @@index([payoutId])
+}
+
+enum PayoutMethod {
+  UPI
+  BANK
+}
+
+/// Where a referrer wants to be paid - one row per user, edited in place.
+/// Plain text today (admin needs the real values to send money); see
+/// TECH_DEBT.md on encrypting these at rest.
+model ReferralPayoutDetails {
+  id String @id @default(cuid())
+
+  userId String @unique
+  user   User   @relation("ReferralPayoutDetailsUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  method PayoutMethod
+
+  upiId String?
+
+  accountHolder String?
+  accountNumber String?
+  ifsc          String?
+
+  updatedAt DateTime @updatedAt
+}
+
+/// One real money transfer to a referrer, recorded by an admin after
+/// sending it outside the platform (bank transfer/UPI). Settles every
+/// CONVERTED referral they had at that moment (Referral.payoutId).
+model ReferralPayout {
+  id String @id @default(cuid())
+
+  referrerId String
+  referrer   User   @relation("ReferralPayoutReferrer", fields: [referrerId], references: [id], onDelete: Restrict)
+
+  /// Paise - the sum of the settled referrals' rewardAmount.
+  amount Int
+
+  /// Human-readable snapshot of where it was sent (e.g. "UPI: name@bank"), so
+  /// the record stays true even if the referrer later edits their details.
+  destination String
+
+  /// The bank/UPI transaction reference (UTR) the admin entered.
+  reference String
+
+  paidAt DateTime @default(now())
+
+  paidById String?
+  paidBy   User?   @relation("ReferralPayoutPaidBy", fields: [paidById], references: [id], onDelete: SetNull)
+
+  referrals Referral[]
+
+  @@index([referrerId, paidAt])
 }
 
 // ============================================

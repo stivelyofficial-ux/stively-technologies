@@ -100,6 +100,12 @@ Every shortcut, gap, or deferred decision goes here the moment it's identified â
 **Priority:** P2 - revisit once Phase 2 (inbound) has real conversation volume to see how often this gap actually fires.
 **Estimated effort:** ~2-3 hours to expand the keyword list from real missed cases, or fold in an AI-classification pass if keyword coverage proves insufficient.
 
+## Referral payout details are stored in plain text
+
+**Reason:** `ReferralPayoutDetails` holds UPI IDs and bank account numbers unencrypted - the admin needs the real values to send money, and field-level encryption (key management, rotation) was out of scope for Phase 2. Mitigations in place: only the owner sees their own row (account number shown masked after saving), only ADMIN/SUPER_ADMIN can read others' via the admin page and CSV export, payouts store a text snapshot of the destination.
+**Priority:** P2 - before payout volume or the number of referrers grows meaningfully.
+**Estimated effort:** ~half a day (encrypt `accountNumber`/`upiId` with an app-level key via a small helper; decrypt only in the admin page and CSV route).
+
 ## Referral payout is fully manual (no automated disbursement)
 
 **Reason:** AD-035's Referral Program marks a converted referral PAID only after an admin has actually sent the â‚¹200/â‚¹100 outside the platform (bank transfer/UPI) and confirms it in `/admin/referrals` - no payment-gateway payout integration exists in this codebase (Razorpay here is inbound-only). Fine at low volume; becomes real ongoing admin overhead once referral volume grows.
@@ -108,7 +114,7 @@ Every shortcut, gap, or deferred decision goes here the moment it's identified â
 
 ## Referral Program has minimal fraud detection
 
-**Reason:** AD-035 blocks the one fraud case that's free to block (self-referral - the referrer and referred-user id are compared and silently dropped at attribution time) and guarantees a person is only ever credited to one referrer (`Referral.referredUserId` is `@unique`). It does not detect a referrer farming the reward via multiple fake email accounts referring themselves under different identities - no device/IP-fingerprint correlation, no velocity limits on signups from one referral code.
+**Reason:** (Phase 3 since added flag-only review - shared signup IP, look-alike emails, conversion bursts - plus an admin Pause; see AD-035. Remaining gaps: no device fingerprinting, IPs are shared on mobile/college networks, nothing auto-blocks.) AD-035 blocks the one fraud case that's free to block (self-referral - the referrer and referred-user id are compared and silently dropped at attribution time) and guarantees a person is only ever credited to one referrer (`Referral.referredUserId` is `@unique`). It does not detect a referrer farming the reward via multiple fake email accounts referring themselves under different identities - no device/IP-fingerprint correlation, no velocity limits on signups from one referral code.
 **Priority:** P2 - revisit if/when real payout volume shows a suspicious pattern (e.g. one referrer with many low-quality conversions in a short window).
 **Estimated effort:** ~4-6 hours for a first pass (flag, don't auto-block - correlate `ReferralClick.ipAddress`/`userAgent` across a referrer's converted referrals, surface a warning badge in `/admin/referrals` for a human to review before paying).
 
