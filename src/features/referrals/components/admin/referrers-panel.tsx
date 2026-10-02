@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatPrice } from "@/lib/utils";
 import { createReferrer, recordPayout, setReferrerBlocked } from "../../actions/admin-actions";
+import { courseReferralLink, DEFAULT_REFERRAL_SLUG } from "../../lib/shareable";
 import { FLAG_LABELS, type ReferralFlag } from "../../lib/fraud";
 import { MIN_PAYOUT_PAISE } from "../../lib/payout";
 
@@ -361,7 +362,9 @@ function ReferrersPanel({ rows, siteUrl }: { rows: ReferrersPanelRow[]; siteUrl:
                   </td>
                   <td className="px-4 py-3 text-right">
                     <BlockControl row={row} />
-                    <CopyLinkButton link={`${siteUrl}/?ref=${row.code}`} />
+                    <CopyLinkButton
+                      link={courseReferralLink(siteUrl, DEFAULT_REFERRAL_SLUG, row.code)}
+                    />
                   </td>
                 </tr>
               ))

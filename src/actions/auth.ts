@@ -14,6 +14,7 @@ import {
   deletePasswordResetToken,
 } from "@/lib/auth-tokens";
 import { attributeReferralSignup } from "@/features/referrals/server/attribution";
+import { readReferralCookie } from "@/features/referrals/lib/cookie";
 import { isDatabaseConnectivityError } from "@/lib/is-database-error";
 import { MAINTENANCE_BODY } from "@/lib/maintenance";
 import {
@@ -48,7 +49,8 @@ export type AuthActionResult =
  * credentials are wrong when the real cause is the database being down.
  */
 function dbMaintenanceResultIfApplicable(error: unknown): AuthActionResult | null {
-  const original = error instanceof Error ? ((error.cause as { err?: Error })?.err ?? error) : undefined;
+  const original =
+    error instanceof Error ? ((error.cause as { err?: Error })?.err ?? error) : undefined;
   if (original instanceof Error && isDatabaseConnectivityError(original)) {
     return { success: false, error: MAINTENANCE_BODY, isDbMaintenance: true };
   }
@@ -121,7 +123,12 @@ export async function registerUser(
     };
   } catch (error) {
     console.error("registerUser failed:", error);
-    return dbMaintenanceResultIfApplicable(error) ?? { success: false, error: "Something went wrong. Please try again." };
+    return (
+      dbMaintenanceResultIfApplicable(error) ?? {
+        success: false,
+        error: "Something went wrong. Please try again.",
+      }
+    );
   }
 }
 
@@ -206,7 +213,12 @@ export async function resetPassword(
     return { success: true, message: "Password updated. You can now sign in." };
   } catch (error) {
     console.error("resetPassword failed:", error);
-    return dbMaintenanceResultIfApplicable(error) ?? { success: false, error: "Something went wrong. Please try again." };
+    return (
+      dbMaintenanceResultIfApplicable(error) ?? {
+        success: false,
+        error: "Something went wrong. Please try again.",
+      }
+    );
   }
 }
 
@@ -282,7 +294,8 @@ export async function loginUser(
       if (code === "account_locked") {
         return {
           success: false,
-          error: "Too many failed attempts. Your account is temporarily locked - try again in 15 minutes.",
+          error:
+            "Too many failed attempts. Your account is temporarily locked - try again in 15 minutes.",
         };
       }
       if (code === "email_not_verified") {
@@ -296,6 +309,22 @@ export async function loginUser(
   }
 }
 
+/** Pages whose visitors are prospective business clients, not students. */
+const BUSINESS_CALLBACK =
+  /^\/(request-proposal|start-project|proposal|onboarding|discovery|client|website-development|services)(\/|\?|$)/;
+
+/**
+ * /login's Google button has no Student/Business toggle, so a brand-new
+ * account's role comes from context. STUDENT is the default - most visitors
+ * (every course ad, every referral link) are students, and a student landing
+ * in the Client portal is a broken first experience (found live with a
+ * referred friend). CLIENT only when they arrived from a business flow.
+ */
+async function resolveNewAccountRole(callbackUrl: string): Promise<"STUDENT" | "CLIENT"> {
+  if (await readReferralCookie()) return "STUDENT";
+  return BUSINESS_CALLBACK.test(callbackUrl) ? "CLIENT" : "STUDENT";
+}
+
 /**
  * Backs the "Continue with Google" button on both /login and /register
  * (src/components/forms/login-form.tsx, register-form.tsx). `role` is only
@@ -304,7 +333,11 @@ export async function loginUser(
  * only. Same redirectTo-defaults-to-/login trick as loginUser above.
  */
 export async function googleSignIn(formData: FormData): Promise<void> {
-  const role = formData.get("role");
+  const callbackUrl = (formData.get("callbackUrl") as string | null) || "/login";
+  const role =
+    formData.get("roleIsDefault") === "1"
+      ? await resolveNewAccountRole(callbackUrl)
+      : formData.get("role");
   if (role === "STUDENT" || role === "CLIENT") {
     const store = await cookies();
     store.set(PENDING_ROLE_COOKIE, role, {
@@ -315,13 +348,13 @@ export async function googleSignIn(formData: FormData): Promise<void> {
     });
   }
 
-  const callbackUrl = (formData.get("callbackUrl") as string | null) || "/login";
   // login_hint pre-selects (never forces - Google doesn't offer a true
   // restriction here) this Google account on the picker screen, for the
   // same "prefill, don't lock" case as the plain email field above it -
   // see AD-017.
   const emailHint = formData.get("email");
-  const authorizationParams = typeof emailHint === "string" && emailHint ? { login_hint: emailHint } : undefined;
+  const authorizationParams =
+    typeof emailHint === "string" && emailHint ? { login_hint: emailHint } : undefined;
   await signIn("google", { redirectTo: callbackUrl }, authorizationParams);
 }
 

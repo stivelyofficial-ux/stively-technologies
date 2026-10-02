@@ -112,7 +112,9 @@ function ContactForm({
           required
           rows={5}
           defaultValue={
-            enquiryType === "BUSINESS" && offeringTitle ? `Regarding: ${offeringTitle}\n\n` : undefined
+            enquiryType === "BUSINESS" && offeringTitle
+              ? `Regarding: ${offeringTitle}\n\n`
+              : undefined
           }
         />
       </FormField>

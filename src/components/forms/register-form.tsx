@@ -94,9 +94,19 @@ function RegisterForm({ defaultRole = "STUDENT", callbackUrl, defaultEmail }: Re
         <FormField
           id="email"
           label="Email"
-          helpText={defaultEmail ? "This matches your recent inquiry to Stively - change it if you'd like to use a different one." : undefined}
+          helpText={
+            defaultEmail
+              ? "This matches your recent inquiry to Stively - change it if you'd like to use a different one."
+              : undefined
+          }
         >
-          <Input name="email" type="email" required autoComplete="email" defaultValue={defaultEmail} />
+          <Input
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            defaultValue={defaultEmail}
+          />
         </FormField>
 
         {role === "CLIENT" && (
@@ -105,7 +115,11 @@ function RegisterForm({ defaultRole = "STUDENT", callbackUrl, defaultEmail }: Re
           </FormField>
         )}
 
-        <FormField id="password" label="Password" helpText="At least 8 characters, with a letter and a number.">
+        <FormField
+          id="password"
+          label="Password"
+          helpText="At least 8 characters, with a letter and a number."
+        >
           <Input name="password" type="password" required autoComplete="new-password" />
         </FormField>
 

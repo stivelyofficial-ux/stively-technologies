@@ -12,6 +12,7 @@ import { createPasswordResetToken } from "@/lib/auth-tokens";
 import type { ActionResult } from "@/actions/leads";
 import { generateReferralCode, normalizeReferralCode, isPlausibleReferralCode } from "../lib/code";
 import { createReferrerSchema, recordPayoutSchema } from "../validation";
+import { courseReferralLink, DEFAULT_REFERRAL_SLUG } from "../lib/shareable";
 import { MIN_PAYOUT_PAISE, describePayoutDestination } from "../lib/payout";
 
 /**
@@ -272,7 +273,7 @@ export async function createReferrer(input: unknown): Promise<ActionResult & { l
     }
     await prisma.user.update({ where: { id: user.id }, data: { referralCode: resolved.code } });
 
-    const link = `${siteConfig.url}/?ref=${resolved.code}`;
+    const link = courseReferralLink(siteConfig.url, DEFAULT_REFERRAL_SLUG, resolved.code);
 
     try {
       const token = await createPasswordResetToken(user.id);

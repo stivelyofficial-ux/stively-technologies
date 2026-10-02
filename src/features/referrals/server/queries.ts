@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { generateReferralCode } from "../lib/code";
 import { describePayoutDestination } from "../lib/payout";
+import { SHAREABLE_REFERRAL_SLUGS } from "../lib/shareable";
 import { computeReferralFlags, type ReferralFlag } from "../lib/fraud";
 
 /**
@@ -31,6 +32,29 @@ export async function getOrCreateReferralCode(userId: string): Promise<string> {
     }
   }
   throw new Error("getOrCreateReferralCode: failed to generate a unique code after 5 attempts");
+}
+
+export interface ShareableOffering {
+  slug: string;
+  title: string;
+  /** Paise earned per successful referral. */
+  reward: number;
+}
+
+/** Courses a referrer can pick from - see lib/shareable.ts. Only published ones with a reward set. */
+export async function getShareableOfferings(): Promise<ShareableOffering[]> {
+  const rows = await prisma.offering.findMany({
+    where: {
+      slug: { in: [...SHAREABLE_REFERRAL_SLUGS] },
+      status: "PUBLISHED",
+      referralRewardAmount: { not: null },
+    },
+    select: { slug: true, title: true, referralRewardAmount: true },
+  });
+  return SHAREABLE_REFERRAL_SLUGS.flatMap((slug) => {
+    const row = rows.find((r) => r.slug === slug);
+    return row ? [{ slug: row.slug, title: row.title, reward: row.referralRewardAmount! }] : [];
+  });
 }
 
 /** Whether an admin has paused this user's referral link (fraud review). */

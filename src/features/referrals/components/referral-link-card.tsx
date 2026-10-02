@@ -6,7 +6,7 @@ import { Check, Copy, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-function ReferralLinkCard({ link }: { link: string }) {
+function ReferralLinkCard({ link, shareText }: { link: string; shareText?: string }) {
   const [copied, setCopied] = React.useState(false);
 
   async function handleCopy() {
@@ -19,7 +19,7 @@ function ReferralLinkCard({ link }: { link: string }) {
     }
   }
 
-  const shareText = `I'm learning with Stively - use my link to get started: ${link}`;
+  const message = shareText ?? `I'm learning with Stively - use my link to get started: ${link}`;
 
   return (
     <div className="flex flex-col gap-3">
@@ -40,7 +40,7 @@ function ReferralLinkCard({ link }: { link: string }) {
         </Button>
       </div>
       <a
-        href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
+        href={`https://wa.me/?text=${encodeURIComponent(message)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-primary inline-flex w-fit items-center gap-1.5 text-sm font-medium hover:underline"

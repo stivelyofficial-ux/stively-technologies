@@ -15,10 +15,12 @@ import {
   getPayoutDetailsForUser,
   getPayoutsForUser,
   isReferralPaused,
+  getShareableOfferings,
 } from "@/features/referrals/server/queries";
 import { MIN_PAYOUT_PAISE, maskAccountNumber } from "@/features/referrals/lib/payout";
 import { PayoutCard } from "@/features/referrals/components/payout-card";
-import { ReferralLinkCard } from "@/features/referrals/components/referral-link-card";
+import { CourseReferralLinks } from "@/features/referrals/components/course-referral-links";
+import { courseReferralLink } from "@/features/referrals/lib/shareable";
 
 export const metadata: Metadata = { title: "Referrals" };
 
@@ -40,16 +42,20 @@ const STATUS_BADGE: Record<
  */
 export default async function ReferralsPage() {
   const user = await requireUser();
-  const [code, stats, referrals, payoutDetails, payouts, paused] = await Promise.all([
+  const [code, stats, referrals, payoutDetails, payouts, paused, offerings] = await Promise.all([
     getOrCreateReferralCode(user.id),
     getReferralStatsForUser(user.id),
     getReferralsForUser(user.id),
     getPayoutDetailsForUser(user.id),
     getPayoutsForUser(user.id),
     isReferralPaused(user.id),
+    getShareableOfferings(),
   ]);
 
-  const link = `${siteConfig.url}/?ref=${code}`;
+  const courseLinks = offerings.map((o) => ({
+    ...o,
+    link: courseReferralLink(siteConfig.url, o.slug, code),
+  }));
 
   const statCards = [
     { icon: MousePointerClick, label: "Link clicks", value: stats.clicks.toLocaleString("en-IN") },
@@ -86,13 +92,14 @@ export default async function ReferralsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Your referral link</CardTitle>
+            <CardTitle>Share a course</CardTitle>
             <CardDescription>
-              Anyone who signs up through this link gets attributed to you.
+              Pick a course and share its link. Friends land straight on that course&apos;s page and
+              can enroll there - you earn when they pay.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ReferralLinkCard link={link} />
+            <CourseReferralLinks courses={courseLinks} />
           </CardContent>
         </Card>
 
