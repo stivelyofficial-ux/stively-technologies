@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { DatabaseMaintenanceDialog } from "@/components/shared/database-maintenance-dialog";
-import { StipendTermsCheckbox } from "./stipend-terms-checkbox";
+// import { StipendTermsCheckbox } from "./stipend-terms-checkbox";
 import { formatPrice } from "@/lib/utils";
 import "@/lib/razorpay-client-types";
 import { trackMetaPurchase, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
@@ -305,7 +305,7 @@ function GuestCheckoutForm({
         </label>
       )}
 
-      <StipendTermsCheckbox checked={acceptedStipendTerms} onCheckedChange={setAcceptedStipendTerms} />
+      {/* <StipendTermsCheckbox checked={acceptedStipendTerms} onCheckedChange={setAcceptedStipendTerms} /> */}
 
       {error && (
         <p role="alert" className="text-destructive text-sm">
