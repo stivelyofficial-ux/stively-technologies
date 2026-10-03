@@ -10,17 +10,23 @@ function OrderCard({ order, href }: { order: OrderWithOffering; href: string }) 
   return (
     <Link
       href={href}
-      className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="focus-visible:ring-ring focus-visible:ring-offset-background block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
     >
       <Card variant="interactive" className="h-full">
         <CardHeader>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-muted-foreground font-mono text-xs">{formatOrderNumber(order.sequence)}</span>
+            <span className="text-muted-foreground font-mono text-xs">
+              {formatOrderNumber(order.sequence)}
+            </span>
             <OrderStatusBadge status={order.status} />
           </div>
           <CardTitle className="font-display">{order.offering.title}</CardTitle>
           <CardDescription>
-            {order.createdAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+            {order.createdAt.toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
           </CardDescription>
         </CardHeader>
         <CardFooter className="border-border/70 mt-auto justify-between border-t pt-4">

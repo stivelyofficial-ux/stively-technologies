@@ -9,13 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { DatabaseMaintenanceDialog } from "@/components/shared/database-maintenance-dialog";
 import { StipendTermsCheckbox } from "./stipend-terms-checkbox";
 import { formatPrice } from "@/lib/utils";
 import "@/lib/razorpay-client-types";
 import { trackMetaPurchase, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
-import { createGuestOrder, verifyGuestPayment, setGuestLearnerName } from "../actions/guest-checkout-actions";
+import {
+  createGuestOrder,
+  verifyGuestPayment,
+  setGuestLearnerName,
+} from "../actions/guest-checkout-actions";
 
 export interface GuestCheckoutFormProps {
   offering: {
@@ -74,14 +85,18 @@ function GuestCheckoutForm({
   const [addPromptPack, setAddPromptPack] = React.useState(false);
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
-  const [alreadyOwned, setAlreadyOwned] = React.useState<{ message: string; redirectUrl?: string } | undefined>();
+  const [alreadyOwned, setAlreadyOwned] = React.useState<
+    { message: string; redirectUrl?: string } | undefined
+  >();
   const [showMaintenance, setShowMaintenance] = React.useState(false);
   const [acceptedStipendTerms, setAcceptedStipendTerms] = React.useState(false);
   // Set once verifyGuestPayment succeeds - holds everything the profile
   // step and its eventual redirect need, so the redirect itself only ever
   // happens from one place (handleProfileSubmit) instead of being
   // duplicated between "collect name" and "skip straight there" paths.
-  const [paidResult, setPaidResult] = React.useState<{ orderId: string; email: string; redirectTo: string } | undefined>();
+  const [paidResult, setPaidResult] = React.useState<
+    { orderId: string; email: string; redirectTo: string } | undefined
+  >();
   const [learnerName, setLearnerName] = React.useState("");
   const [profilePending, setProfilePending] = React.useState(false);
   // Guards against Razorpay's documented "handler can fire more than once"
@@ -97,7 +112,13 @@ function GuestCheckoutForm({
   // available (better value per prompt), otherwise the 100-pack. Mirrors
   // createGuestOrder's own server-side resolution exactly, so the price
   // shown here can never drift from what actually gets charged.
-  const availableAddon: { tier: "promptsPack500" | "promptsPack"; price: number; label: string; description: string; badge?: string } | null =
+  const availableAddon: {
+    tier: "promptsPack500" | "promptsPack";
+    price: number;
+    label: string;
+    description: string;
+    badge?: string;
+  } | null =
     offering.promptsPack500Price != null
       ? {
           tier: "promptsPack500",
@@ -125,6 +146,13 @@ function GuestCheckoutForm({
     event.preventDefault();
     if (!acceptedStipendTerms) {
       setError("Please accept the internship stipend terms to continue.");
+      return;
+    }
+    // Checked BEFORE the order exists: finding out the payment script isn't
+    // ready only after createGuestOrder leaves an orphan PENDING order and a
+    // buyer staring at an error at the exact moment they were ready to pay.
+    if (!scriptReady || typeof window.Razorpay !== "function") {
+      setError("Payment is still loading - give it a second and tap again.");
       return;
     }
     setIsPending(true);
@@ -158,7 +186,11 @@ function GuestCheckoutForm({
     // submission never fires it. `result.amount` is the real order total
     // (base price + any add-on chosen), same paise->rupees conversion as
     // the Purchase event below.
-    trackMetaInitiateCheckout({ contentName: offering.title, value: result.amount / 100, currency: result.currency });
+    trackMetaInitiateCheckout({
+      contentName: offering.title,
+      value: result.amount / 100,
+      currency: result.currency,
+    });
 
     const razorpay = new window.Razorpay({
       key: result.keyId,
@@ -240,7 +272,11 @@ function GuestCheckoutForm({
     if (!paidResult) return;
     setProfilePending(true);
     try {
-      await setGuestLearnerName({ orderId: paidResult.orderId, email: paidResult.email, name: learnerName });
+      await setGuestLearnerName({
+        orderId: paidResult.orderId,
+        email: paidResult.email,
+        name: learnerName,
+      });
     } catch (err) {
       console.error("setGuestLearnerName failed:", err);
     }
@@ -251,8 +287,12 @@ function GuestCheckoutForm({
     return (
       <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5 text-center">
-          <span className="text-foreground font-display text-xl font-semibold">🎉 You&apos;re enrolled!</span>
-          <span className="text-muted-foreground text-sm">Let&apos;s set up your learner profile.</span>
+          <span className="text-foreground font-display text-xl font-semibold">
+            🎉 You&apos;re enrolled!
+          </span>
+          <span className="text-muted-foreground text-sm">
+            Let&apos;s set up your learner profile.
+          </span>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="gc-learner-name">Full name</Label>
@@ -264,7 +304,9 @@ function GuestCheckoutForm({
             autoFocus
             required
           />
-          <span className="text-muted-foreground text-xs">This name will appear on your Stively Certificate of Completion.</span>
+          <span className="text-muted-foreground text-xs">
+            This name will appear on your Stively Certificate of Completion.
+          </span>
         </div>
         <Button type="submit" size="lg" loading={profilePending} className="w-full">
           Continue to Course
@@ -276,22 +318,41 @@ function GuestCheckoutForm({
   return (
     <form id="guest-checkout-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
       <DatabaseMaintenanceDialog open={showMaintenance} onOpenChange={setShowMaintenance} />
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" nonce={nonce} onLoad={() => setScriptReady(true)} />
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="afterInteractive"
+        nonce={nonce}
+        onLoad={() => setScriptReady(true)}
+      />
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="gc-email">Email</Label>
-        <Input id="gc-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="For your account" required />
+        <Input
+          id="gc-email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="For your account"
+          required
+        />
       </div>
 
       {availableAddon && (
         <label
           htmlFor="gc-addon"
-          className="border-border hover:border-primary/40 flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+          className="border-border hover:border-primary/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5 flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition-colors"
         >
-          <Checkbox id="gc-addon" checked={addPromptPack} onCheckedChange={(v) => setAddPromptPack(v === true)} className="mt-0.5" />
+          <Checkbox
+            id="gc-addon"
+            checked={addPromptPack}
+            onCheckedChange={(v) => setAddPromptPack(v === true)}
+            className="mt-0.5"
+          />
           <span className="flex-1">
             <span className="flex flex-wrap items-center gap-1.5">
-              <span className="text-foreground text-sm font-medium">Add {availableAddon.label}</span>
+              <span className="text-foreground text-sm font-medium">
+                Add {availableAddon.label}
+              </span>
               {availableAddon.badge && (
                 <Badge variant="success" className="font-normal">
                   {availableAddon.badge}
@@ -305,7 +366,10 @@ function GuestCheckoutForm({
         </label>
       )}
 
-      <StipendTermsCheckbox checked={acceptedStipendTerms} onCheckedChange={setAcceptedStipendTerms} />
+      <StipendTermsCheckbox
+        checked={acceptedStipendTerms}
+        onCheckedChange={setAcceptedStipendTerms}
+      />
 
       {error && (
         <p role="alert" className="text-destructive text-sm">

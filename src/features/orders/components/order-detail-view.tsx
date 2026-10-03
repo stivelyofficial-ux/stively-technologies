@@ -17,16 +17,23 @@ import type { OrderWithMeetings } from "../server/queries";
  */
 function OrderDetailView({ order }: { order: OrderWithMeetings }) {
   const hasDownload =
-    order.status === "PAID" && !!order.downloadToken && !!order.downloadTokenExpiresAt && order.downloadTokenExpiresAt > new Date();
+    order.status === "PAID" &&
+    !!order.downloadToken &&
+    !!order.downloadTokenExpiresAt &&
+    order.downloadTokenExpiresAt > new Date();
 
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-muted-foreground font-mono text-sm">{formatOrderNumber(order.sequence)}</span>
+          <span className="text-muted-foreground font-mono text-sm">
+            {formatOrderNumber(order.sequence)}
+          </span>
           <OrderStatusBadge status={order.status} />
         </div>
-        <h2 className="font-display text-2xl font-semibold tracking-tight">{order.offering.title}</h2>
+        <h2 className="font-display text-2xl font-semibold tracking-tight">
+          {order.offering.title}
+        </h2>
       </header>
 
       <Card className="max-w-md">
@@ -40,30 +47,43 @@ function OrderDetailView({ order }: { order: OrderWithMeetings }) {
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground text-sm">Order date</span>
             <span className="text-foreground text-sm">
-              {order.createdAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              {order.createdAt.toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
             </span>
           </div>
           {order.paidAt && (
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">Paid on</span>
               <span className="text-foreground text-sm">
-                {order.paidAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                {order.paidAt.toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
               </span>
             </div>
           )}
           {order.status === "PAID" && !hasDownload && (
             <p className="text-success text-sm font-medium">
-              You&apos;re confirmed for {order.offering.title}. Our team will be in touch with next steps.
+              You&apos;re confirmed for {order.offering.title}. Our team will be in touch with next
+              steps.
             </p>
           )}
           {order.status === "PAID" && hasDownload && (
-            <p className="text-success text-sm font-medium">Your payment for {order.offering.title} is confirmed.</p>
+            <p className="text-success text-sm font-medium">
+              Your payment for {order.offering.title} is confirmed.
+            </p>
           )}
           {order.status === "PENDING" && (
             <p className="text-muted-foreground text-sm">This payment hasn&apos;t completed yet.</p>
           )}
           {order.status === "FAILED" && (
-            <p className="text-destructive text-sm">This payment didn&apos;t go through - you can try again.</p>
+            <p className="text-destructive text-sm">
+              This payment didn&apos;t go through - you can try again.
+            </p>
           )}
 
           {hasDownload && (
@@ -76,7 +96,11 @@ function OrderDetailView({ order }: { order: OrderWithMeetings }) {
               </Button>
               <p className="text-muted-foreground text-center text-xs">
                 Works until{" "}
-                {order.downloadTokenExpiresAt!.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}{" "}
+                {order.downloadTokenExpiresAt!.toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
                 - come back to this page to re-download any time before then.
               </p>
             </div>
@@ -86,7 +110,10 @@ function OrderDetailView({ order }: { order: OrderWithMeetings }) {
 
       <OrderMeetings meetings={order.meetings} />
 
-      <Link href={`/offerings/${order.offering.slug}`} className="text-primary text-sm font-medium underline-offset-4 hover:underline">
+      <Link
+        href={`/offerings/${order.offering.slug}`}
+        className="text-primary text-sm font-medium underline-offset-4 hover:underline"
+      >
         View offering
       </Link>
     </div>

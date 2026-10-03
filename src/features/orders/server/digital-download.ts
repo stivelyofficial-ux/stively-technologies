@@ -60,9 +60,10 @@ export async function resolveDigitalDownloadAccess(token: string): Promise<Digit
   if (order.offering.category === "DIGITAL_PRODUCT" && order.offering.digitalAssetPath) {
     assetPath = order.offering.digitalAssetPath;
   } else {
-    const addons = order.addons as
-      | { promptsPack?: { purchased?: boolean }; promptsPack500?: { purchased?: boolean } }
-      | null;
+    const addons = order.addons as {
+      promptsPack?: { purchased?: boolean };
+      promptsPack500?: { purchased?: boolean };
+    } | null;
     // Either/or by construction (see Offering.promptsPack500Price's own
     // comment) - 500 checked first only because if a tampered request ever
     // got both flags set, that's the higher-value item and the one to honor.
@@ -83,7 +84,10 @@ export async function resolveDigitalDownloadAccess(token: string): Promise<Digit
 
   if (!assetPath) return { ok: false, reason: "not_found" };
 
-  return { ok: true, access: { order, productTitle, assetPath, expiresAt: order.downloadTokenExpiresAt } };
+  return {
+    ok: true,
+    access: { order, productTitle, assetPath, expiresAt: order.downloadTokenExpiresAt },
+  };
 }
 
 /** Resolves a validated access's assetPath to an absolute filesystem path - rejects anything that isn't a plain, contained relative path, even though `assetPath` only ever comes from our own DB, never user input. */

@@ -31,10 +31,17 @@ function OrderMeetings({ meetings }: { meetings: Meeting[] }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {meetings.map((meeting) => (
-          <div key={meeting.id} className="border-border flex flex-col gap-1 border-b pb-3 last:border-b-0 last:pb-0">
+          <div
+            key={meeting.id}
+            className="border-border flex flex-col gap-1 border-b pb-3 last:border-b-0 last:pb-0"
+          >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-foreground text-sm font-medium">{formatDateTime(meeting.scheduledAt)}</span>
-              <Badge variant={STATUS_VARIANT[meeting.status]}>{meeting.status.replaceAll("_", " ")}</Badge>
+              <span className="text-foreground text-sm font-medium">
+                {formatDateTime(meeting.scheduledAt)}
+              </span>
+              <Badge variant={STATUS_VARIANT[meeting.status]}>
+                {meeting.status.replaceAll("_", " ")}
+              </Badge>
             </div>
             {meeting.notes && <p className="text-muted-foreground text-sm">{meeting.notes}</p>}
           </div>

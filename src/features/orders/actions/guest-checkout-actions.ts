@@ -3,7 +3,11 @@
 import { prisma } from "@/lib/prisma";
 import { auth, signIn } from "@/lib/auth";
 import { isNextRedirectError } from "@/lib/next-redirect";
-import { createRazorpayOrder, verifyRazorpaySignature, describeRazorpayError } from "@/lib/razorpay";
+import {
+  createRazorpayOrder,
+  verifyRazorpaySignature,
+  describeRazorpayError,
+} from "@/lib/razorpay";
 import type { ActionResult } from "@/actions/leads";
 import type { AuthActionResult } from "@/actions/auth";
 import {
@@ -46,7 +50,8 @@ export type CreateGuestOrderResult =
  */
 export async function createGuestOrder(input: unknown): Promise<CreateGuestOrderResult> {
   const parsed = createGuestOrderSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   const data = parsed.data;
 
   let offering: Awaited<ReturnType<typeof prisma.offering.findFirst>>;
@@ -71,7 +76,10 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
       where: {
         offeringId: offering.id,
         status: "PAID",
-        OR: [{ guestEmail: { equals: data.email, mode: "insensitive" } }, { user: { email: { equals: data.email, mode: "insensitive" } } }],
+        OR: [
+          { guestEmail: { equals: data.email, mode: "insensitive" } },
+          { user: { email: { equals: data.email, mode: "insensitive" } } },
+        ],
       },
       select: { id: true, userId: true, downloadToken: true },
     });
@@ -85,20 +93,27 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
   const keyId = process.env.RAZORPAY_KEY_ID;
   if (!keyId || !process.env.RAZORPAY_KEY_SECRET) {
     // See createOrder's identical comment - same two-causes-one-message problem.
-    console.error("createGuestOrder: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET are not set in this environment.");
+    console.error(
+      "createGuestOrder: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET are not set in this environment."
+    );
     return { success: false, error: "Payments aren't set up yet - please contact us directly." };
   }
 
   if (existingOrder) {
     const session = await auth();
-    const isSignedInAsOwner = existingOrder.userId != null && session?.user?.id === existingOrder.userId;
+    const isSignedInAsOwner =
+      existingOrder.userId != null && session?.user?.id === existingOrder.userId;
     return {
       success: false,
       alreadyOwned: true,
       error: isSignedInAsOwner
         ? "You already own this - here's your account."
         : `You already own this. Please log in with ${data.email} to get access.`,
-      redirectUrl: isSignedInAsOwner ? (existingOrder.downloadToken ? `/student/orders/${existingOrder.id}` : "/student/learning") : undefined,
+      redirectUrl: isSignedInAsOwner
+        ? existingOrder.downloadToken
+          ? `/student/orders/${existingOrder.id}`
+          : "/student/learning"
+        : undefined,
     };
   }
 
@@ -145,7 +160,14 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
       },
     });
 
-    return { success: true, orderId: order.id, razorpayOrderId: razorpayOrder.id, amount, currency: offering.currency, keyId };
+    return {
+      success: true,
+      orderId: order.id,
+      razorpayOrderId: razorpayOrder.id,
+      amount,
+      currency: offering.currency,
+      keyId,
+    };
   } catch (error) {
     if (isDatabaseConnectivityError(error as Error)) {
       return { success: false, error: MAINTENANCE_BODY, isDbMaintenance: true };
@@ -180,7 +202,8 @@ export type VerifyGuestPaymentResult = ActionResult & {
  */
 export async function verifyGuestPayment(input: unknown): Promise<VerifyGuestPaymentResult> {
   const parsed = verifyGuestPaymentSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   const { orderId, razorpayPaymentId, razorpaySignature } = parsed.data;
 
   const order = await prisma.order.findUnique({ where: { id: orderId } });
@@ -196,7 +219,11 @@ export async function verifyGuestPayment(input: unknown): Promise<VerifyGuestPay
   // customer their own successful payment "has already been processed."
   if (order.status === "PAID") {
     const result = await waitForGuestOrderFulfillment(orderId);
-    if (!result) return { success: false, error: "Something went wrong finishing your order. We'll follow up by email." };
+    if (!result)
+      return {
+        success: false,
+        error: "Something went wrong finishing your order. We'll follow up by email.",
+      };
     return {
       success: true,
       autoLoginLink: result.autoLoginLink ?? undefined,
@@ -205,11 +232,19 @@ export async function verifyGuestPayment(input: unknown): Promise<VerifyGuestPay
       currency: order.currency,
     };
   }
-  if (order.status !== "PENDING") {
+  // FAILED is still payable: Razorpay lets a buyer retry inside the same modal
+  // (same order_id), and a first failed attempt flips the order to FAILED via
+  // the webhook - a later successful retry (signature verified below) must
+  // still fulfil, or the customer is charged and never enrolled.
+  if (order.status !== "PENDING" && order.status !== "FAILED") {
     return { success: false, error: "This order has already been processed." };
   }
 
-  const isValid = verifyRazorpaySignature({ orderId: order.razorpayOrderId, paymentId: razorpayPaymentId, signature: razorpaySignature });
+  const isValid = verifyRazorpaySignature({
+    orderId: order.razorpayOrderId,
+    paymentId: razorpayPaymentId,
+    signature: razorpaySignature,
+  });
   if (!isValid) {
     // Same reasoning as verifyPayment - don't mark FAILED off a possibly
     // spoofed client call, only a real webhook/payment.failed event does that.
@@ -217,9 +252,16 @@ export async function verifyGuestPayment(input: unknown): Promise<VerifyGuestPay
   }
 
   try {
-    await prisma.order.update({ where: { id: orderId }, data: { razorpayPaymentId, razorpaySignature } });
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { razorpayPaymentId, razorpaySignature },
+    });
     const result = await fulfillGuestOrder(orderId);
-    if (!result) return { success: false, error: "Something went wrong finishing your order. We'll follow up by email." };
+    if (!result)
+      return {
+        success: false,
+        error: "Something went wrong finishing your order. We'll follow up by email.",
+      };
     return {
       success: true,
       autoLoginLink: result.autoLoginLink ?? undefined,
@@ -248,11 +290,16 @@ export async function verifyGuestPayment(input: unknown): Promise<VerifyGuestPay
  */
 export async function setGuestLearnerName(input: unknown): Promise<ActionResult> {
   const parsed = setGuestLearnerNameSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   const { orderId, email, name } = parsed.data;
 
-  const order = await prisma.order.findUnique({ where: { id: orderId }, select: { status: true, guestEmail: true, userId: true } });
-  if (!order || order.status !== "PAID" || !order.userId) return { success: false, error: "Order not found." };
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { status: true, guestEmail: true, userId: true },
+  });
+  if (!order || order.status !== "PAID" || !order.userId)
+    return { success: false, error: "Order not found." };
   if (!order.guestEmail || order.guestEmail.toLowerCase() !== email.toLowerCase()) {
     return { success: false, error: "That email doesn't match this order." };
   }
@@ -286,7 +333,10 @@ async function waitForGuestOrderFulfillment(orderId: string, attempts = 5, delay
  * same as every other token-authenticated action in this codebase trusting
  * the token's own unguessability as the credential.
  */
-export async function acceptOrderAutoLogin(_prevState: AuthActionResult | null, formData: FormData): Promise<AuthActionResult> {
+export async function acceptOrderAutoLogin(
+  _prevState: AuthActionResult | null,
+  formData: FormData
+): Promise<AuthActionResult> {
   const parsed = acceptOrderAutoLoginSchema.safeParse({ token: formData.get("token") });
   if (!parsed.success) return { success: false, error: "This link isn't valid." };
 
@@ -299,7 +349,10 @@ export async function acceptOrderAutoLogin(_prevState: AuthActionResult | null, 
   // eBook add-on) goes to My Purchases instead, where that file's
   // download button actually lives - landing on the (empty, for a
   // standalone digital product) LMS would be a dead end.
-  const order = await prisma.order.findUnique({ where: { autoLoginToken: parsed.data.token }, select: { id: true, downloadToken: true } });
+  const order = await prisma.order.findUnique({
+    where: { autoLoginToken: parsed.data.token },
+    select: { id: true, downloadToken: true },
+  });
   const redirectTo = order?.downloadToken ? `/student/orders/${order.id}` : "/student/learning";
 
   try {
@@ -308,6 +361,10 @@ export async function acceptOrderAutoLogin(_prevState: AuthActionResult | null, 
   } catch (error) {
     if (isNextRedirectError(error)) throw error;
     console.error("acceptOrderAutoLogin failed:", error);
-    return { success: false, error: "This link isn't valid or has expired. Try signing in, or use \"Forgot password\" with the email you used to purchase." };
+    return {
+      success: false,
+      error:
+        'This link isn\'t valid or has expired. Try signing in, or use "Forgot password" with the email you used to purchase.',
+    };
   }
 }

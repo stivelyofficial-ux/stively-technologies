@@ -69,7 +69,8 @@ function buildWelcomeEmail(params: {
   const loginUrl = `${siteConfig.url}/login`;
 
   const subject = `You're in - your ${params.courseName} is ready`;
-  const preview = "Your Stively course is ready. Here's how to access your account and set your password.";
+  const preview =
+    "Your Stively course is ready. Here's how to access your account and set your password.";
 
   const detailRow = (label: string, value: string) => `
     <tr>
@@ -255,7 +256,11 @@ function buildDigitalDownloadEmail(params: {
   const firstName = escapeHtml(params.firstName);
   const productName = escapeHtml(params.productName);
   const amountLabel = escapeHtml(params.amountLabel);
-  const expiresLabel = params.expiresAt.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+  const expiresLabel = params.expiresAt.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   const subject = `Your ${params.productName} is ready to download`;
   const preview = "Your Stively purchase is ready. Here's your download link.";
@@ -380,14 +385,22 @@ function buildDigitalDownloadEmail(params: {
  */
 async function ensureDownloadUnlocked(
   order: Order & { offering: { category: OfferingCategory } }
-): Promise<{ downloadUrl: string | null; downloadTokenExpiresAt: Date | null; freshlyGenerated: boolean }> {
+): Promise<{
+  downloadUrl: string | null;
+  downloadTokenExpiresAt: Date | null;
+  freshlyGenerated: boolean;
+}> {
   const isDigitalProduct = order.offering.category === "DIGITAL_PRODUCT";
-  const addons = order.addons as
-    | { promptsPack?: { purchased?: boolean }; promptsPack500?: { purchased?: boolean } }
-    | null;
+  const addons = order.addons as {
+    promptsPack?: { purchased?: boolean };
+    promptsPack500?: { purchased?: boolean };
+  } | null;
   const needsDownload =
-    isDigitalProduct || addons?.promptsPack?.purchased === true || addons?.promptsPack500?.purchased === true;
-  if (!needsDownload) return { downloadUrl: null, downloadTokenExpiresAt: null, freshlyGenerated: false };
+    isDigitalProduct ||
+    addons?.promptsPack?.purchased === true ||
+    addons?.promptsPack500?.purchased === true;
+  if (!needsDownload)
+    return { downloadUrl: null, downloadTokenExpiresAt: null, freshlyGenerated: false };
 
   if (order.downloadToken && order.downloadTokenExpiresAt) {
     return {
@@ -405,7 +418,11 @@ async function ensureDownloadUnlocked(
       data: { downloadToken, downloadTokenExpiresAt },
     });
     if (claim.count > 0) {
-      return { downloadUrl: `${siteConfig.url}/digital-store/download/${downloadToken}`, downloadTokenExpiresAt, freshlyGenerated: true };
+      return {
+        downloadUrl: `${siteConfig.url}/digital-store/download/${downloadToken}`,
+        downloadTokenExpiresAt,
+        freshlyGenerated: true,
+      };
     }
   } catch (error) {
     console.error("ensureDownloadUnlocked: token write failed:", error);
@@ -418,7 +435,9 @@ async function ensureDownloadUnlocked(
     select: { downloadToken: true, downloadTokenExpiresAt: true },
   });
   return {
-    downloadUrl: fresh?.downloadToken ? `${siteConfig.url}/digital-store/download/${fresh.downloadToken}` : null,
+    downloadUrl: fresh?.downloadToken
+      ? `${siteConfig.url}/digital-store/download/${fresh.downloadToken}`
+      : null,
     downloadTokenExpiresAt: fresh?.downloadTokenExpiresAt ?? null,
     freshlyGenerated: false,
   };
@@ -436,7 +455,9 @@ async function ensureDownloadUnlocked(
  * whichever caller flips PENDING->PAID first does the account-creation/
  * enrollment/email side effects, the other just reports the outcome.
  */
-export async function fulfillGuestOrder(orderId: string): Promise<GuestOrderFulfillmentResult | null> {
+export async function fulfillGuestOrder(
+  orderId: string
+): Promise<GuestOrderFulfillmentResult | null> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: { offering: { select: { title: true, category: true } } },
@@ -444,7 +465,8 @@ export async function fulfillGuestOrder(orderId: string): Promise<GuestOrderFulf
   if (!order) return null;
 
   const claim = await prisma.order.updateMany({
-    where: { id: orderId, status: "PENDING" },
+    // FAILED included: a failed first attempt followed by a successful retry on the same Razorpay order.
+    where: { id: orderId, status: { in: ["PENDING", "FAILED"] } },
     data: { status: "PAID", paidAt: new Date() },
   });
   const claimed = claim.count > 0;
@@ -487,7 +509,8 @@ export async function fulfillGuestOrder(orderId: string): Promise<GuestOrderFulf
     // effects.
     await handleOrderPaid(orderId);
 
-    const { downloadUrl, downloadTokenExpiresAt, freshlyGenerated } = await ensureDownloadUnlocked(current);
+    const { downloadUrl, downloadTokenExpiresAt, freshlyGenerated } =
+      await ensureDownloadUnlocked(current);
     if (freshlyGenerated && current.guestEmail) {
       // The original attempt's email likely never sent either (it comes
       // after token generation in the normal flow) - send the real one now
@@ -523,14 +546,19 @@ export async function fulfillGuestOrder(orderId: string): Promise<GuestOrderFulf
     return {
       claimed: false,
       userId: current.userId,
-      autoLoginLink: current.autoLoginToken ? `${siteConfig.url}/orders/auto-login?token=${current.autoLoginToken}` : null,
+      autoLoginLink: current.autoLoginToken
+        ? `${siteConfig.url}/orders/auto-login?token=${current.autoLoginToken}`
+        : null,
       downloadUrl,
     };
   }
 
   let userId = order.userId;
   if (!userId) {
-    if (!order.guestEmail) throw new Error(`fulfillGuestOrder: order ${orderId} has no userId and no guestEmail - can't create an account`);
+    if (!order.guestEmail)
+      throw new Error(
+        `fulfillGuestOrder: order ${orderId} has no userId and no guestEmail - can't create an account`
+      );
 
     const existing = await prisma.user.findUnique({ where: { email: order.guestEmail } });
     if (existing) {
@@ -589,7 +617,10 @@ export async function fulfillGuestOrder(orderId: string): Promise<GuestOrderFulf
   // the same downloadToken mechanism (see digital-download.ts and
   // ensureDownloadUnlocked's own comment on why this is a shared, re-entry-
   // safe helper rather than being written inline here).
-  const { downloadUrl, downloadTokenExpiresAt } = await ensureDownloadUnlocked({ ...paidOrder, offering: order.offering });
+  const { downloadUrl, downloadTokenExpiresAt } = await ensureDownloadUnlocked({
+    ...paidOrder,
+    offering: order.offering,
+  });
 
   try {
     // First name only - "Hi Priya" reads like a person wrote it, "Hi Priya Sharma" doesn't.

@@ -23,7 +23,10 @@ import { createNotification } from "@/features/notifications/server/creation";
  * the same purchase. The in-app Notification is still written either way -
  * only the email is guest-specific redundant, not the dashboard record.
  */
-export async function notifyOrderPaid(order: Order, options?: { sendEmail?: boolean }): Promise<void> {
+export async function notifyOrderPaid(
+  order: Order,
+  options?: { sendEmail?: boolean }
+): Promise<void> {
   const sendEmail = options?.sendEmail ?? true;
   // Same "should never actually be null by the time an order is PAID" note
   // as createEnrollmentFromOrder - guest-checkout orders get userId
@@ -56,7 +59,9 @@ export async function notifyOrderPaid(order: Order, options?: { sendEmail?: bool
   if (!user.email || !sendEmail) return;
 
   const greeting = user.name ? `Hi ${user.name},` : "Hi there,";
-  const subject = isPaidPurchase ? `Payment received - ${offering.title}` : `You're confirmed - ${offering.title}`;
+  const subject = isPaidPurchase
+    ? `Payment received - ${offering.title}`
+    : `You're confirmed - ${offering.title}`;
   const html = isPaidPurchase
     ? `<p>${greeting}</p><p>Thanks - we've received your payment of <strong>${formatPrice(order.amount, order.currency)}</strong> for <strong>${offering.title}</strong>. Our team will be in touch with next steps shortly.</p><p><a href="${siteConfig.url}${link}">View your order</a></p>`
     : `<p>${greeting}</p><p>You're confirmed for <strong>${offering.title}</strong>. Our team will be in touch with next steps shortly.</p><p><a href="${siteConfig.url}${link}">View your order</a></p>`;

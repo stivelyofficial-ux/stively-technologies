@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { verifyWhatsAppWebhookSignature, getWebhookVerifyToken, sendWhatsAppFreeformMessage, isWhatsAppSendConfigured } from "@/lib/whatsapp-cloud-api";
+import {
+  verifyWhatsAppWebhookSignature,
+  getWebhookVerifyToken,
+  sendWhatsAppFreeformMessage,
+  isWhatsAppSendConfigured,
+} from "@/lib/whatsapp-cloud-api";
 import {
   upsertWhatsAppContact,
   markInboundReceived,
@@ -14,8 +19,15 @@ import {
 } from "@/features/whatsapp/server/contact";
 import { classifyAgencyIntent, classifyOptOut } from "@/features/whatsapp/lib/routing";
 import { generateWhatsAppReply } from "@/features/whatsapp/server/reply-engine";
-import { promoteWhatsAppContactToLead, promoteWhatsAppContactToSalesLead } from "@/features/whatsapp/server/promotion";
-import { WHATSAPP_AI_DAILY_MESSAGE_LIMIT, WHATSAPP_AI_HISTORY_TURNS, startOfTodayUtc } from "@/features/whatsapp/lib/rate-limit";
+import {
+  promoteWhatsAppContactToLead,
+  promoteWhatsAppContactToSalesLead,
+} from "@/features/whatsapp/server/promotion";
+import {
+  WHATSAPP_AI_DAILY_MESSAGE_LIMIT,
+  WHATSAPP_AI_HISTORY_TURNS,
+  startOfTodayUtc,
+} from "@/features/whatsapp/lib/rate-limit";
 
 /**
  * The production WhatsApp Cloud API webhook endpoint. Both handlers are
@@ -131,8 +143,15 @@ async function handleInboundMessage(contactId: string, text: string): Promise<vo
     if (!contact || contact.optedOutAt) return;
 
     if (classifyAgencyIntent(text)) {
-      await promoteWhatsAppContactToSalesLead(contact, `Inbound message matched agency intent: "${text.slice(0, 120)}"`);
-      await replyToContact(contact.id, contact.phoneNumber, "Thanks for reaching out - I've passed this to our team and someone from Stively will get back to you shortly.");
+      await promoteWhatsAppContactToSalesLead(
+        contact,
+        `Inbound message matched agency intent: "${text.slice(0, 120)}"`
+      );
+      await replyToContact(
+        contact.id,
+        contact.phoneNumber,
+        "Thanks for reaching out - I've passed this to our team and someone from Stively will get back to you shortly."
+      );
       return;
     }
 
@@ -141,7 +160,11 @@ async function handleInboundMessage(contactId: string, text: string): Promise<vo
       where: { whatsappContactId: contactId, direction: "INBOUND", createdAt: { gte: since } },
     });
     if (usedToday > WHATSAPP_AI_DAILY_MESSAGE_LIMIT) {
-      await replyToContact(contact.id, contact.phoneNumber, "You've reached today's message limit - a Stively team member will follow up with you.");
+      await replyToContact(
+        contact.id,
+        contact.phoneNumber,
+        "You've reached today's message limit - a Stively team member will follow up with you."
+      );
       await setConversationState(contact.id, "ESCALATED_TO_HUMAN");
       return;
     }
@@ -160,10 +183,16 @@ async function handleInboundMessage(contactId: string, text: string): Promise<vo
 
     const result = await generateWhatsAppReply(priorHistory, text);
 
-    await setConversationState(contact.id, result.shouldEscalate ? "ESCALATED_TO_HUMAN" : "AI_HANDLING");
+    await setConversationState(
+      contact.id,
+      result.shouldEscalate ? "ESCALATED_TO_HUMAN" : "AI_HANDLING"
+    );
 
     if (result.shouldEscalate) {
-      await promoteWhatsAppContactToSalesLead(contact, result.escalationReason ?? "AI flagged for human follow-up");
+      await promoteWhatsAppContactToSalesLead(
+        contact,
+        result.escalationReason ?? "AI flagged for human follow-up"
+      );
     } else if (result.detectedInterest) {
       await promoteWhatsAppContactToLead(contact, result.detectedInterest);
     }
@@ -174,7 +203,12 @@ async function handleInboundMessage(contactId: string, text: string): Promise<vo
   }
 }
 
-async function replyToContact(contactId: string, phoneNumber: string, text: string, aiGenerated = false): Promise<void> {
+async function replyToContact(
+  contactId: string,
+  phoneNumber: string,
+  text: string,
+  aiGenerated = false
+): Promise<void> {
   if (!isWhatsAppSendConfigured()) return;
 
   const result = await sendWhatsAppFreeformMessage({ to: phoneNumber, text });

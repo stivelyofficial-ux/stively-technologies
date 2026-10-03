@@ -58,8 +58,15 @@ function CheckoutButton({
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
 
-  const total = basePrice != null ? basePrice + (promptsPack && promptsPackPrice ? promptsPackPrice : 0) : undefined;
-  const payLabel = isFree ? "Get access" : total != null ? `Pay ${formatPrice(total, currency)}` : `Pay ${priceLabel}`;
+  const total =
+    basePrice != null
+      ? basePrice + (promptsPack && promptsPackPrice ? promptsPackPrice : 0)
+      : undefined;
+  const payLabel = isFree
+    ? "Get access"
+    : total != null
+      ? `Pay ${formatPrice(total, currency)}`
+      : `Pay ${priceLabel}`;
 
   async function handleClick() {
     setIsPending(true);
@@ -89,7 +96,11 @@ function CheckoutButton({
     // modal actually opens, using the real order amount (result.amount),
     // never on the FREE short-circuit above (alreadyPaid returns before
     // this point - there's no checkout to initiate for a ₹0 offering).
-    trackMetaInitiateCheckout({ contentName: offeringTitle, value: result.amount / 100, currency: result.currency });
+    trackMetaInitiateCheckout({
+      contentName: offeringTitle,
+      value: result.amount / 100,
+      currency: result.currency,
+    });
 
     const razorpay = new window.Razorpay({
       key: result.keyId,
@@ -153,10 +164,19 @@ function CheckoutButton({
 
       {!isFree && promptsPackPrice != null && (
         <div className="border-primary/30 bg-primary/5 flex items-start gap-2.5 rounded-lg border p-3">
-          <Checkbox id="checkout-prompts-pack" checked={promptsPack} onCheckedChange={(v) => setPromptsPack(v === true)} className="mt-0.5" />
+          <Checkbox
+            id="checkout-prompts-pack"
+            checked={promptsPack}
+            onCheckedChange={(v) => setPromptsPack(v === true)}
+            className="mt-0.5"
+          />
           <Label htmlFor="checkout-prompts-pack" className="flex-1 cursor-pointer font-normal">
-            <span className="text-foreground font-medium">Add 100+ ready-to-use prompt templates</span>
-            <span className="text-muted-foreground block text-sm">One-time add-on, {formatPrice(promptsPackPrice, currency)}</span>
+            <span className="text-foreground font-medium">
+              Add 100+ ready-to-use prompt templates
+            </span>
+            <span className="text-muted-foreground block text-sm">
+              One-time add-on, {formatPrice(promptsPackPrice, currency)}
+            </span>
           </Label>
         </div>
       )}

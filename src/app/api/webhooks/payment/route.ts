@@ -62,7 +62,10 @@ export async function POST(req: NextRequest) {
       // client-side - fulfillGuestOrder's own atomic claim makes this a
       // no-op in that case.
       try {
-        await prisma.order.update({ where: { id: matchedOrder.id }, data: { razorpayPaymentId: paymentId } });
+        await prisma.order.update({
+          where: { id: matchedOrder.id },
+          data: { razorpayPaymentId: paymentId },
+        });
         await fulfillGuestOrder(matchedOrder.id);
       } catch (error) {
         console.error("fulfillGuestOrder (webhook) failed:", error);
@@ -76,7 +79,7 @@ export async function POST(req: NextRequest) {
       // let this webhook and a concurrent verifyPayment() call both pass
       // the read and both run the full side-effect triplet.
       await prisma.order.updateMany({
-        where: { id: matchedOrder.id, status: "PENDING" },
+        where: { id: matchedOrder.id, status: { in: ["PENDING", "FAILED"] } },
         data: { status: "PAID", razorpayPaymentId: paymentId, paidAt: new Date() },
       });
       // handleOrderPaid is independently idempotent (its own
@@ -91,7 +94,28 @@ export async function POST(req: NextRequest) {
   }
 
   if (event.event === "payment.failed") {
-    const orderId: string = event.payload.payment.entity.order_id;
+    const entity = event.payload.payment.entity;
+    const orderId: string = entity.order_id;
+
+    // Keep Razorpay's own reason on the order so "why do people abandon at
+    // payment" is answerable from data (bank decline? UPI timeout?) instead
+    // of guessed - appended to Order.notes, one line per failed attempt.
+    const failedOrder = await prisma.order.findFirst({
+      where: { razorpayOrderId: orderId },
+      select: { id: true, notes: true },
+    });
+    if (failedOrder) {
+      const line = `[${new Date().toISOString()}] payment failed (${entity.method ?? "?"}): ${entity.error_code ?? "?"} / ${entity.error_reason ?? "?"} - ${entity.error_description ?? "no description"} (step: ${entity.error_step ?? "?"})`;
+      await prisma.order.update({
+        where: { id: failedOrder.id },
+        data: {
+          notes: failedOrder.notes
+            ? `${failedOrder.notes}
+${line}`
+            : line,
+        },
+      });
+    }
 
     await prisma.order.updateMany({
       where: { razorpayOrderId: orderId, status: "PENDING" },

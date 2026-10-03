@@ -3,7 +3,13 @@
 import * as React from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { STIPEND_TERMS_TEXT } from "@/features/internships/lib/stipend-terms";
 
@@ -17,13 +23,24 @@ import { STIPEND_TERMS_TEXT } from "@/features/internships/lib/stipend-terms";
  * kept (out of scope for this pass) - this is a client-side gate on the
  * Enroll button only.
  */
-function StipendTermsCheckbox({ checked, onCheckedChange }: { checked: boolean; onCheckedChange: (checked: boolean) => void }) {
+function StipendTermsCheckbox({
+  checked,
+  onCheckedChange,
+}: {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
   const [open, setOpen] = React.useState(false);
 
   return (
     <>
       <label htmlFor="stipend-terms" className="flex items-start gap-2 text-xs leading-snug">
-        <Checkbox id="stipend-terms" checked={checked} onCheckedChange={(v) => onCheckedChange(v === true)} className="mt-0.5" />
+        <Checkbox
+          id="stipend-terms"
+          checked={checked}
+          onCheckedChange={(v) => onCheckedChange(v === true)}
+          className="mt-0.5"
+        />
         <span className="text-muted-foreground">
           I accept the{" "}
           <button
@@ -44,7 +61,9 @@ function StipendTermsCheckbox({ checked, onCheckedChange }: { checked: boolean; 
           <DialogHeader>
             <DialogTitle>Internship Stipend Terms &amp; Conditions</DialogTitle>
           </DialogHeader>
-          <pre className="text-muted-foreground font-sans text-sm whitespace-pre-wrap">{STIPEND_TERMS_TEXT}</pre>
+          <pre className="text-muted-foreground font-sans text-sm whitespace-pre-wrap">
+            {STIPEND_TERMS_TEXT}
+          </pre>
           <DialogFooter>
             <Button
               onClick={() => {

@@ -7,7 +7,11 @@ import type { OrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/session";
-import { createRazorpayOrder, verifyRazorpaySignature, describeRazorpayError } from "@/lib/razorpay";
+import {
+  createRazorpayOrder,
+  verifyRazorpaySignature,
+  describeRazorpayError,
+} from "@/lib/razorpay";
 import type { ActionResult } from "@/actions/leads";
 import { emitOrderEvent } from "../lib/events";
 import { handleOrderPaid } from "../server/post-purchase";
@@ -38,7 +42,11 @@ export type CreateOrderResult =
  * (Offering.promptsPackPrice / Order.addons), just reachable from the
  * normal authenticated checkout too, not only the guest-checkout flow.
  */
-export async function createOrder(offeringId: string, phone?: string, promptsPack?: boolean): Promise<CreateOrderResult> {
+export async function createOrder(
+  offeringId: string,
+  phone?: string,
+  promptsPack?: boolean
+): Promise<CreateOrderResult> {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: "You must be signed in." };
@@ -64,7 +72,10 @@ export async function createOrder(offeringId: string, phone?: string, promptsPac
   }
 
   if (offering.pricingType === "CUSTOM_QUOTE") {
-    return { success: false, error: "This offering requires a custom quote - please request a proposal instead." };
+    return {
+      success: false,
+      error: "This offering requires a custom quote - please request a proposal instead.",
+    };
   }
 
   // FREE offerings skip Razorpay entirely - a ₹0 order can't be created
@@ -112,7 +123,9 @@ export async function createOrder(offeringId: string, phone?: string, promptsPac
     // deliberately vague message to the buyer, but "no keys in this
     // environment" and "Razorpay rejected our keys" need very different
     // fixes, and are otherwise indistinguishable in production.
-    console.error("createOrder: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET are not set in this environment.");
+    console.error(
+      "createOrder: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET are not set in this environment."
+    );
     return { success: false, error: "Payments aren't set up yet - please contact us directly." };
   }
 
@@ -137,7 +150,9 @@ export async function createOrder(offeringId: string, phone?: string, promptsPac
         status: "PENDING",
         razorpayOrderId: razorpayOrder.id,
         phone,
-        addons: wantsPromptsPack ? { promptsPack: { purchased: true, price: offering.promptsPackPrice } } : undefined,
+        addons: wantsPromptsPack
+          ? { promptsPack: { purchased: true, price: offering.promptsPackPrice } }
+          : undefined,
       },
     });
 
@@ -166,7 +181,10 @@ export async function createOrder(offeringId: string, phone?: string, promptsPac
  * rather than creating a duplicate - OfferingRequest.orderId is @unique,
  * so a second Order row could never link anyway.
  */
-export async function createOrderFromApprovedQuote(requestId: string, phone?: string): Promise<CreateOrderResult> {
+export async function createOrderFromApprovedQuote(
+  requestId: string,
+  phone?: string
+): Promise<CreateOrderResult> {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: "You must be signed in." };
@@ -189,7 +207,11 @@ export async function createOrderFromApprovedQuote(requestId: string, phone?: st
     }
     if (request.order.status === "PENDING" && request.order.razorpayOrderId) {
       const keyId = process.env.RAZORPAY_KEY_ID;
-      if (!keyId) return { success: false, error: "Payments aren't set up yet - please contact us directly." };
+      if (!keyId)
+        return {
+          success: false,
+          error: "Payments aren't set up yet - please contact us directly.",
+        };
       return {
         success: true,
         orderId: request.order.id,
@@ -223,7 +245,13 @@ export async function createOrderFromApprovedQuote(requestId: string, phone?: st
     const order = request.order
       ? await prisma.order.update({
           where: { id: request.order.id },
-          data: { status: "PENDING", razorpayOrderId: razorpayOrder.id, razorpayPaymentId: null, razorpaySignature: null, phone },
+          data: {
+            status: "PENDING",
+            razorpayOrderId: razorpayOrder.id,
+            razorpayPaymentId: null,
+            razorpaySignature: null,
+            phone,
+          },
         })
       : await prisma.order.create({
           data: {
@@ -238,7 +266,10 @@ export async function createOrderFromApprovedQuote(requestId: string, phone?: st
         });
 
     if (!request.order) {
-      await prisma.offeringRequest.update({ where: { id: requestId }, data: { orderId: order.id } });
+      await prisma.offeringRequest.update({
+        where: { id: requestId },
+        data: { orderId: order.id },
+      });
     }
 
     return {
@@ -276,7 +307,8 @@ export async function verifyPayment(
   // double-submit (e.g. a re-rendered page re-firing the handler) a clean
   // "already processed" message without ever reaching Razorpay verification
   // again for an order genuinely still PENDING.
-  if (order.status !== "PENDING") {
+  // FAILED stays payable - see verifyGuestPayment (a retry in the same Razorpay modal can succeed after a failed attempt).
+  if (order.status !== "PENDING" && order.status !== "FAILED") {
     return { success: false, error: "This order has already been processed." };
   }
   if (!order.razorpayOrderId) {
@@ -303,12 +335,15 @@ export async function verifyPayment(
     // double-written - handleOrderPaid below is independently idempotent
     // either way, so this still safely converges on the same "done" state.
     const claim = await prisma.order.updateMany({
-      where: { id: orderId, status: "PENDING" },
+      where: { id: orderId, status: { in: ["PENDING", "FAILED"] } },
       data: { status: "PAID", razorpayPaymentId, razorpaySignature, paidAt: new Date() },
     });
 
     if (claim.count === 0) {
-      const current = await prisma.order.findUnique({ where: { id: orderId }, select: { status: true } });
+      const current = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: { status: true },
+      });
       if (current?.status !== "PAID") {
         return { success: false, error: "This order has already been processed." };
       }
@@ -343,7 +378,10 @@ export async function markOrderFailed(orderId: string): Promise<ActionResult> {
   }
 
   try {
-    const updated = await prisma.order.update({ where: { id: orderId }, data: { status: "FAILED" } });
+    const updated = await prisma.order.update({
+      where: { id: orderId },
+      data: { status: "FAILED" },
+    });
     emitOrderEvent("ORDER_FAILED", updated);
     return { success: true };
   } catch (error) {
@@ -359,7 +397,10 @@ export async function markOrderFailed(orderId: string): Promise<ActionResult> {
  * src/features/operations/actions/operation-actions.ts's
  * changeOperationStatus for ORDER-type items.
  */
-export async function updateOrderStatusAdmin(orderId: string, status: OrderStatus): Promise<ActionResult> {
+export async function updateOrderStatusAdmin(
+  orderId: string,
+  status: OrderStatus
+): Promise<ActionResult> {
   await requireRole("ADMIN", "SUPER_ADMIN");
   try {
     // Not routed through emitOrderEvent - that stub's OrderEventType covers

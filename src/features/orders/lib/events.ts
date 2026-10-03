@@ -7,6 +7,13 @@ export type OrderEventType = "ORDER_CREATED" | "ORDER_PAID" | "ORDER_FAILED";
  * emitOfferingRequestEvent - the one call site real receipt emails / payment
  * notifications will eventually wire into.
  */
-export function emitOrderEvent(type: OrderEventType, order: Pick<Order, "id" | "userId" | "status">): void {
-  console.log(`[order-event] ${type}`, { orderId: order.id, userId: order.userId, status: order.status });
+export function emitOrderEvent(
+  type: OrderEventType,
+  order: Pick<Order, "id" | "userId" | "status">
+): void {
+  console.log(`[order-event] ${type}`, {
+    orderId: order.id,
+    userId: order.userId,
+    status: order.status,
+  });
 }
