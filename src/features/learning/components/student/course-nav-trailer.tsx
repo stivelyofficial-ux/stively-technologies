@@ -22,10 +22,10 @@ function CourseNavTrailer({ unlocked }: { unlocked: boolean }) {
       </span>
       {unlocked ? (
         <Link
-          href="/student/internships"
+          href="/intern"
           className="text-foreground hover:bg-accent flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150"
         >
-          Intern portal
+          Start your internship
         </Link>
       ) : (
         <span

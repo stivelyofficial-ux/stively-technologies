@@ -100,6 +100,12 @@ Every shortcut, gap, or deferred decision goes here the moment it's identified â
 **Priority:** P2 - revisit once Phase 2 (inbound) has real conversation volume to see how often this gap actually fires.
 **Estimated effort:** ~2-3 hours to expand the keyword list from real missed cases, or fold in an AI-classification pass if keyword coverage proves insufficient.
 
+## Retired per-task review columns still on InternshipTask
+
+**Reason:** The intern portal moved to self-managed task progress plus one final submission (AD-039 amendment). `InternshipTask.status`, `liveUrl`, `repoUrl`, `feedback`, `submittedAt`, `reviewedAt`, `reviewedById` and the `InternshipTaskStatus` enum are no longer written by anything (the enum is still reused for `InternshipProject.finalStatus`). Left in place to avoid a destructive migration in the same change.
+**Priority:** P3
+**Estimated effort:** ~1 hour (drop the unused task columns in one migration; keep the enum).
+
 ## Referral payout details are stored in plain text
 
 **Reason:** `ReferralPayoutDetails` holds UPI IDs and bank account numbers unencrypted - the admin needs the real values to send money, and field-level encryption (key management, rotation) was out of scope for Phase 2. Mitigations in place: only the owner sees their own row (account number shown masked after saving), only ADMIN/SUPER_ADMIN can read others' via the admin page and CSV export, payouts store a text snapshot of the destination.

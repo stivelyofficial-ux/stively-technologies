@@ -27,7 +27,7 @@ export const SEARCH_RESULTS: SearchResult[] = [
   {
     label: "Internships",
     description: "Find an internship placement",
-    href: "/student/internships",
+    href: "/intern",
     icon: Briefcase,
     group: "Explore",
   },

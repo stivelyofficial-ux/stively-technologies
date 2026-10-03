@@ -48,8 +48,8 @@ const BASE_QUICK_ACTIONS = [
 /** Real copy for a student who's actually unlocked a track (project, tasks, daily reports) vs. the generic "go find one" framing for everyone else - the internships page itself handles both cases, but the dashboard entry point shouldn't promise "browse placements" to someone who already has a real dashboard waiting. */
 function internshipQuickAction(hasTrack: boolean) {
   return hasTrack
-    ? { label: "Intern Dashboard", description: "Your project, tasks & daily reports", icon: Briefcase, href: "/student/internships" }
-    : { label: "Internships", description: "Unlocks once you finish a course", icon: Briefcase, href: "/student/internships" };
+    ? { label: "Intern Dashboard", description: "Your project, tasks & daily reports", icon: Briefcase, href: "/intern" }
+    : { label: "Internships", description: "Unlocks once you finish a course", icon: Briefcase, href: "/intern" };
 }
 
 // Platform-level messaging, not a claim about outcomes or a testimonial -

@@ -98,7 +98,7 @@ function CertificateCard({ enrollmentId, certificate }: { enrollmentId: string; 
             You&apos;re done here - your internship track is ready, with a real project waiting.
           </p>
           <Button asChild variant="outline">
-            <Link href="/student/internships">
+            <Link href="/intern">
               <Rocket aria-hidden="true" />
               Go to Internship Dashboard
             </Link>

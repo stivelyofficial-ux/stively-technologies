@@ -50,7 +50,7 @@ export const PROTECTED_ROUTES: ProtectedRoute[] = [
   { prefix: "/mentor", roles: ["MENTOR"] },
   { prefix: "/client", roles: ["CLIENT"] },
   { prefix: "/company", roles: ["COMPANY"] },
-  { prefix: "/intern", roles: ["INTERN"] },
+  { prefix: "/intern", roles: ["STUDENT", "INTERN"] }, // STUDENT: unlocked by having an InternshipTrack (getInternContext)
   { prefix: "/team", roles: ["TEAM_MEMBER"] },
   { prefix: "/admin", roles: ["ADMIN", "SUPER_ADMIN"] },
   { prefix: "/ceo", roles: ["SUPER_ADMIN"] },

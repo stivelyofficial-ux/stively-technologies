@@ -19,6 +19,11 @@ export const siteConfig = {
   // silently produce double-slash URLs like https://www.stively.com//about
   // everywhere at once, not just in one place.
   url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.stively.com").replace(/\/+$/, ""),
+  // The live site, regardless of environment. Use this (not `url`) for anything PRINTED or saved outside
+  // the app - QR codes on ID cards, documents - because those must keep working long after (and no matter
+  // where) they were generated; `url` follows NEXT_PUBLIC_SITE_URL, which is http://localhost:3001 on a
+  // developer machine.
+  productionUrl: "https://www.stively.com",
   links: {
     linkedin: "https://www.linkedin.com/company/stively-technologies/",
     instagram: "https://www.instagram.com/stivelytechnologies/",

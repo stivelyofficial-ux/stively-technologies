@@ -653,6 +653,23 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-039: Intern Portal at /intern - a standalone shell, gated by InternshipTrack, with a real onboarding step
+
+**Date:** 2026-10-03
+**Problem:** Finishing the course dropped students straight into the Student sidebar dashboard's internship page. The founder wants the internship to feel like a separate, intern-focused place, with an onboarding step (choose a duration) before the work starts. (AD-007 freeze exception, requested by the founder.)
+**Options considered:** 1. Switch the user's role to INTERN. 2. Keep the account a STUDENT and gate a new /intern portal on having an InternshipTrack. 3. Keep extending the Student dashboard page.
+**Chosen solution:** Option 2. `/intern` is its own layout (top-nav, "Intern Portal" branding, link back to the Student dashboard) with Overview, Tasks and Daily report. The route allows STUDENT and INTERN; the real gate is the track (`getInternContext`). A track that exists but has no `onboardedAt` redirects every page to `/intern/start`, where the student picks 1/2/3 months and accepts the stipend terms; that records `durationMonths`, `endsAt`, `termsAcceptedAt`, `termsVersion` and resets `startedAt` so Day 1 is the day they chose to begin. Old `/student/internships` and `/intern/dashboard` redirect to `/intern`.
+**Reason:** One user keeps one role - switching to INTERN would strip course access and certificates unless rebuilt inside the new portal. The InternshipTrack already exists and is the true "has unlocked an internship" fact. Onboarding gives the stipend terms a recorded acceptance, closing the gap left when the tick-box moved off checkout.
+**Trade-offs:** The portal is minimal (no stipend ledger, no documents page yet). `/intern` is open at the route level to every STUDENT; each page shows a "finish your course" state without a track. A single `InternshipTrack` per student remains (see ensureInternshipTrack).
+**Database impact:** `InternshipTrack.onboardedAt/durationMonths/endsAt/termsAcceptedAt/termsVersion`, `InternshipTask.dueDay` (migration `intern_onboarding`, additive).
+**API impact:** New `startInternship` (student) and `assignProjectTemplate` (admin) actions; project templates live in `features/internships/lib/project-templates.ts` (first: StivelyShop, 8 tasks due Day 1-8) and are assigned from the admin track page - never automatically.
+**Future considerations:** Automatic project assignment on onboarding; a "Final Submission" task; mentor review checklist; a documents tab (offer letter, certificates); duration-aware task schedules for the 2 and 3 month tracks.
+**Amendment (2026-10-04) - no-pressure model, final-submission-only:** the portal follows the founder's design (Overview / Tasks / Daily report / Final submission). Tasks are self-managed (To do / In progress / Done, `InternshipTask.progress`) with NO per-task or per-day deadlines - the only deadline is `InternshipTrack.endsAt`. The assigned project's tasks are its core roadmap; admins attach optional *add-on feature* tasks (`isAddon`) on top. Nothing is reviewed per task: the stipend is decided on the ONE final submission (`InternshipProject.final*` fields: live URL, GitHub repo, optional note, reviewer decision). The earlier per-task submit/review flow (AD-036) and `InternshipTask.dueDay` were removed; `InternshipTask.status/liveUrl/repoUrl/feedback/review*` columns remain unused (see TECH_DEBT). Project facts shown on the card live in `InternshipProject.details` (JSON).
+**Amendment (2026-10-04) - Intern ID card and intern-only account menu:** each track gets a stable running number (`InternshipTrack.sequence`) shown as `STV-FEI-0001`; `/intern/id-card` renders the founder's front/back badge design (sized in container-query units so it scales and prints cleanly, saved via the browser's Print -> Save as PDF) and its QR resolves to a public, read-only `/verify/intern/[internId]` page that reveals only name, program, validity and status. The portal header uses its own `InternProfileMenu` (ID card, Intern profile, Help Center, Sign out - labelled "Intern") instead of the shared student `ProfileDropdown`, so nothing student-branded appears inside `/intern`; `/intern/profile` and `/intern/help` replace the shared `/profile` and `/help` there.
+**Related components:** `src/app/intern/*`, `src/features/internships/server/access.ts`, `src/features/internships/components/intern/*`, `src/features/internships/actions/student-actions.ts`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

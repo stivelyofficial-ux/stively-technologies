@@ -10,7 +10,10 @@ import { prisma } from "@/lib/prisma";
  * track, they keep their one active one (real internship capacity is
  * finite - this isn't a per-course reward loop).
  */
-export async function ensureInternshipTrack(enrollmentId: string, studentId: string): Promise<void> {
+export async function ensureInternshipTrack(
+  enrollmentId: string,
+  studentId: string
+): Promise<void> {
   const existing = await prisma.internshipTrack.findFirst({ where: { studentId } });
   if (existing) return;
 
