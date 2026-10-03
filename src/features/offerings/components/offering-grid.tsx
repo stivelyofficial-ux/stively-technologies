@@ -11,7 +11,12 @@ export interface OfferingGridProps {
   hrefBase?: string;
 }
 
-function OfferingGrid({ offerings, hasActiveFilters, clearFiltersHref, hrefBase }: OfferingGridProps) {
+function OfferingGrid({
+  offerings,
+  hasActiveFilters,
+  clearFiltersHref,
+  hrefBase,
+}: OfferingGridProps) {
   if (offerings.length === 0) {
     return (
       <EmptyState

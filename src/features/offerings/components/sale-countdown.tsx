@@ -27,7 +27,15 @@ function formatRemaining(ms: number): string {
  * launch in" instead, since that's a different true fact about the same
  * deadline, not a second countdown to build.
  */
-function SaleCountdown({ endsAt, className, label = "Offer price ends in" }: { endsAt: string; className?: string; label?: string }) {
+function SaleCountdown({
+  endsAt,
+  className,
+  label = "Offer price ends in",
+}: {
+  endsAt: string;
+  className?: string;
+  label?: string;
+}) {
   const target = React.useMemo(() => new Date(endsAt).getTime(), [endsAt]);
   const [remaining, setRemaining] = React.useState<number | null>(null);
   const [expired, setExpired] = React.useState(false);

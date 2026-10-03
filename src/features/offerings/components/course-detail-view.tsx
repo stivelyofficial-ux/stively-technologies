@@ -63,25 +63,43 @@ const HOW_LEARNING_WORKS = [
   { icon: PlayCircle, title: "Watch", description: "A short, focused video lesson." },
   { icon: BookOpen, title: "Read", description: "Written notes covering the same ground." },
   { icon: Sparkles, title: "Practice", description: "Apply it yourself, hands-on." },
-  { icon: ClipboardCheck, title: "Quiz", description: "Six questions to check you actually got it." },
+  {
+    icon: ClipboardCheck,
+    title: "Quiz",
+    description: "Six questions to check you actually got it.",
+  },
   { icon: Unlock, title: "Unlock", description: "Pass, and the next lesson opens." },
 ] as const;
 
 const COMPARISON = [
-  { typical: "Hours of video you watch passively", stively: "Short lessons, then you actually try it" },
-  { typical: "No way to know if you understood", stively: "A quiz gates every lesson before the next unlocks" },
-  { typical: "Notes that go stale as tools and versions change", stively: "The reasoning behind it, so it transfers to real, changing work" },
-  { typical: "Certificate for finishing the video", stively: "Certificate that reflects passed assessments" },
+  {
+    typical: "Hours of video you watch passively",
+    stively: "Short lessons, then you actually try it",
+  },
+  {
+    typical: "No way to know if you understood",
+    stively: "A quiz gates every lesson before the next unlocks",
+  },
+  {
+    typical: "Notes that go stale as tools and versions change",
+    stively: "The reasoning behind it, so it transfers to real, changing work",
+  },
+  {
+    typical: "Certificate for finishing the video",
+    stively: "Certificate that reflects passed assessments",
+  },
 ] as const;
 
 const DEFAULT_COURSE_FAQS = [
   {
     question: "Do I need any prior experience?",
-    answer: "No. The course starts from the fundamentals and builds up from there - no prior experience assumed.",
+    answer:
+      "No. The course starts from the fundamentals and builds up from there - no prior experience assumed.",
   },
   {
     question: "What do I need to follow along?",
-    answer: "A laptop or desktop with a modern browser. Everything else the course needs, it tells you when you need it.",
+    answer:
+      "A laptop or desktop with a modern browser. Everything else the course needs, it tells you when you need it.",
   },
   {
     question: "How long do I have access?",
@@ -155,7 +173,7 @@ function CourseDetailView({
         </span>
         {hasAnchorPrice && (
           <>
-            <span className="text-ink-muted-foreground text-xl line-through tabular-nums">
+            <span className="text-ink-muted-foreground text-xl tabular-nums line-through">
               {formatPrice(anchor!, offering.currency)}
             </span>
             {percentOff != null && <Badge variant="success">{percentOff}% OFF</Badge>}
@@ -180,7 +198,9 @@ function CourseDetailView({
     // topics. No separate "X lessons" count here, deliberately - that
     // paired with "8 modules" is exactly the mismatch that used to read as
     // broken/incomplete.
-    curriculum ? { icon: Layers, label: `${curriculum.moduleCount} modules`, sub: "Structured path" } : null,
+    curriculum
+      ? { icon: Layers, label: `${curriculum.moduleCount} modules`, sub: "Structured path" }
+      : null,
     { icon: PlayCircle, label: "Video + reading + quiz", sub: "Every lesson" },
     { icon: ClipboardCheck, label: "Quizzes", sub: "Gate every lesson" },
     { icon: Award, label: "Certificate", sub: "On completion" },
@@ -198,7 +218,7 @@ function CourseDetailView({
             </span>
             {hasAnchorPrice && (
               <>
-                <span className="text-muted-foreground text-base line-through tabular-nums">
+                <span className="text-muted-foreground text-base tabular-nums line-through">
                   {formatPrice(anchor!, offering.currency)}
                 </span>
                 {percentOff != null && <Badge variant="success">{percentOff}% OFF</Badge>}
@@ -246,18 +266,22 @@ function CourseDetailView({
           )
         )}
 
-        {offering.allowsGuestCheckout && (offering.promptsPackPrice != null || offering.promptsPack500Price != null) && (
-          <Link href="/digital-store" className="text-primary text-center text-xs font-medium hover:underline">
-            Just want a prompt pack? Buy one on its own in the Digital Store →
-          </Link>
-        )}
+        {offering.allowsGuestCheckout &&
+          (offering.promptsPackPrice != null || offering.promptsPack500Price != null) && (
+            <Link
+              href="/digital-store"
+              className="text-primary text-center text-xs font-medium hover:underline"
+            >
+              Just want a prompt pack? Buy one on its own in the Digital Store →
+            </Link>
+          )}
 
         <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-xs">
           <ShieldCheck className="size-3.5" aria-hidden="true" />
           Secure payment powered by Razorpay
         </p>
 
-        <ul className="flex flex-col gap-2.5 border-t border-border/70 pt-4">
+        <ul className="border-border/70 flex flex-col gap-2.5 border-t pt-4">
           {INCLUDED.map(({ icon: Icon, label }) => (
             <li key={label} className="text-foreground flex items-start gap-2.5 text-sm">
               <Icon className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -306,7 +330,9 @@ function CourseDetailView({
 
             <div className="flex flex-wrap gap-2">
               {offering.featured && <Badge variant="gradient">Bestseller</Badge>}
-              {offering.difficulty && <Badge variant="ink">{DIFFICULTY_LABEL[offering.difficulty]}</Badge>}
+              {offering.difficulty && (
+                <Badge variant="ink">{DIFFICULTY_LABEL[offering.difficulty]}</Badge>
+              )}
               <Badge variant="ink">{MODE_LABEL[offering.mode]}</Badge>
               {offering.duration && <Badge variant="ink">{offering.duration}</Badge>}
             </div>
@@ -426,8 +452,9 @@ function CourseDetailView({
                 You&apos;ve probably tried to learn this before. Did it stick?
               </h2>
               <p className="text-muted-foreground text-pretty">
-                Most people watch a tutorial, feel like they understood it, then can&apos;t reproduce it
-                a week later. Usually that isn&apos;t on you - it&apos;s how the material was taught.
+                Most people watch a tutorial, feel like they understood it, then can&apos;t
+                reproduce it a week later. Usually that isn&apos;t on you - it&apos;s how the
+                material was taught.
               </p>
               <ul className="grid gap-3 sm:grid-cols-2">
                 {[
@@ -438,7 +465,10 @@ function CourseDetailView({
                   "Nothing repeatable - starting from scratch every time",
                   "No feedback until you're already stuck",
                 ].map((problem) => (
-                  <li key={problem} className="text-muted-foreground flex items-start gap-2.5 text-sm">
+                  <li
+                    key={problem}
+                    className="text-muted-foreground flex items-start gap-2.5 text-sm"
+                  >
                     <X className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden="true" />
                     <span className="text-pretty">{problem}</span>
                   </li>
@@ -489,9 +519,11 @@ function CourseDetailView({
                     Course curriculum
                   </h2>
                   <p className="text-muted-foreground text-sm">
-                    {curriculum.moduleCount} modules, structured start to finish. Every lesson: a recorded
-                    video, reading notes, and a graded quiz
-                    {curriculum.averageLessonMinutes != null && ` - about ${curriculum.averageLessonMinutes} min average`}.
+                    {curriculum.moduleCount} modules, structured start to finish. Every lesson: a
+                    recorded video, reading notes, and a graded quiz
+                    {curriculum.averageLessonMinutes != null &&
+                      ` - about ${curriculum.averageLessonMinutes} min average`}
+                    .
                   </p>
                 </div>
                 <Accordion type="single" collapsible className="w-full">
@@ -510,7 +542,8 @@ function CourseDetailView({
                             {module.lessonCount > 0 ? (
                               <span className="text-muted-foreground text-xs font-normal">
                                 {module.lessonCount} lesson{module.lessonCount === 1 ? "" : "s"}
-                                {module.totalMinutes != null && ` · ${formatMinutes(module.totalMinutes)}`}
+                                {module.totalMinutes != null &&
+                                  ` · ${formatMinutes(module.totalMinutes)}`}
                               </span>
                             ) : (
                               curriculum.averageLessonMinutes != null && (
@@ -538,7 +571,10 @@ function CourseDetailView({
                               {module.lessons.map((lesson) => {
                                 const showLessonTitle = lesson.title !== module.title;
                                 return (
-                                  <li key={lesson.id} className="border-border/70 rounded-lg border">
+                                  <li
+                                    key={lesson.id}
+                                    className="border-border/70 rounded-lg border"
+                                  >
                                     <div className="flex items-center gap-3 px-3.5 py-3">
                                       <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
                                         <PlayCircle className="size-4" aria-hidden="true" />
@@ -547,7 +583,9 @@ function CourseDetailView({
                                         <span className="text-foreground text-sm font-semibold">
                                           {showLessonTitle ? lesson.title : "Video lesson"}
                                         </span>
-                                        <span className="text-muted-foreground text-xs">Recorded lecture</span>
+                                        <span className="text-muted-foreground text-xs">
+                                          Recorded lecture
+                                        </span>
                                       </span>
                                       {lesson.estimatedMinutes != null && (
                                         <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
@@ -559,7 +597,9 @@ function CourseDetailView({
                                       <span className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
                                         <BookOpen className="size-4" aria-hidden="true" />
                                       </span>
-                                      <span className="text-foreground text-sm font-medium">Reading notes</span>
+                                      <span className="text-foreground text-sm font-medium">
+                                        Reading notes
+                                      </span>
                                     </div>
                                     <div className="border-border/70 flex items-center gap-3 border-t px-3.5 py-2.5">
                                       <span className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
@@ -579,14 +619,22 @@ function CourseDetailView({
                           ) : topics.length > 0 ? (
                             <ul className="grid gap-2 sm:grid-cols-2">
                               {topics.map((topic) => (
-                                <li key={topic} className="text-muted-foreground flex items-start gap-2 text-sm">
-                                  <Check className="text-primary mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                                <li
+                                  key={topic}
+                                  className="text-muted-foreground flex items-start gap-2 text-sm"
+                                >
+                                  <Check
+                                    className="text-primary mt-0.5 size-3.5 shrink-0"
+                                    aria-hidden="true"
+                                  />
                                   <span className="text-pretty">{topic}</span>
                                 </li>
                               ))}
                             </ul>
                           ) : (
-                            <p className="text-muted-foreground text-sm">Full lesson breakdown added soon.</p>
+                            <p className="text-muted-foreground text-sm">
+                              Full lesson breakdown added soon.
+                            </p>
                           )}
                         </AccordionContent>
                       </AccordionItem>
@@ -612,15 +660,17 @@ function CourseDetailView({
                         <span className="text-foreground text-sm font-semibold">
                           {index + 1}. {title}
                         </span>
-                        <span className="text-muted-foreground text-xs text-pretty">{description}</span>
+                        <span className="text-muted-foreground text-xs text-pretty">
+                          {description}
+                        </span>
                       </CardContent>
                     </Card>
                   </li>
                 ))}
               </ol>
               <p className="text-muted-foreground text-sm">
-                You need at least half the questions correct to pass a quiz. Get it wrong and you can
-                retry - the point is that you actually understood it, not that you got one shot.
+                You need at least half the questions correct to pass a quiz. Get it wrong and you
+                can retry - the point is that you actually understood it, not that you got one shot.
               </p>
             </div>
 
@@ -751,8 +801,8 @@ function CourseDetailView({
                   <span className="text-foreground font-semibold">
                     {formatPrice(anchor, offering.currency)}
                   </span>{" "}
-                  once this countdown ends - lock it in now rather than hope the price is still
-                  low next time you check.
+                  once this countdown ends - lock it in now rather than hope the price is still low
+                  next time you check.
                 </>
               )}{" "}
               Lifetime access and every future update are covered either way - joining now just
@@ -801,12 +851,16 @@ function CourseDetailView({
                 A real, verifiable certificate - not just a PDF
               </h2>
               <p className="text-muted-foreground text-pretty">
-                Finish the course and its assessments, and you get a certificate with a unique ID and QR
-                code. Anyone can scan it to confirm it&apos;s genuine on our public verification page - no
-                guessing whether a certificate is real.
+                Finish the course and its assessments, and you get a certificate with a unique ID
+                and QR code. Anyone can scan it to confirm it&apos;s genuine on our public
+                verification page - no guessing whether a certificate is real.
               </p>
               <ul className="flex flex-col gap-2.5">
-                {["Personalized with your name automatically", "Unique certificate ID", "Publicly verifiable, anytime"].map((item) => (
+                {[
+                  "Personalized with your name automatically",
+                  "Unique certificate ID",
+                  "Publicly verifiable, anytime",
+                ].map((item) => (
                   <li key={item} className="text-foreground flex items-start gap-2.5 text-sm">
                     <Check className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
                     {item}
@@ -850,12 +904,14 @@ function CourseDetailView({
             />
           )}
           <ul className="text-ink-muted-foreground flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
-            {["Lifetime access", "Certificate included", "Quizzes and practical exercises"].map((item) => (
-              <li key={item} className="flex items-center gap-1.5">
-                <Check className="text-brand-teal size-4" aria-hidden="true" />
-                {item}
-              </li>
-            ))}
+            {["Lifetime access", "Certificate included", "Quizzes and practical exercises"].map(
+              (item) => (
+                <li key={item} className="flex items-center gap-1.5">
+                  <Check className="text-brand-teal size-4" aria-hidden="true" />
+                  {item}
+                </li>
+              )
+            )}
           </ul>
           {cta && (
             <EnrollCta
@@ -879,7 +935,7 @@ function CourseDetailView({
                 {formatPrice(payable, offering.currency)}
               </span>
               {hasAnchorPrice && (
-                <span className="text-muted-foreground text-xs line-through tabular-nums">
+                <span className="text-muted-foreground text-xs tabular-nums line-through">
                   {formatPrice(anchor!, offering.currency)}
                 </span>
               )}

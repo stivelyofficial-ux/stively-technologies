@@ -2,7 +2,11 @@ import Link from "next/link";
 import type { Offering } from "@prisma/client";
 
 import { Button, type ButtonProps } from "@/components/ui/button";
-import { getOfferingCtaActions, OFFERING_CTA_PRIMARY_VARIANT, OFFERING_CTA_SECONDARY_VARIANT } from "../lib/purchase-cta";
+import {
+  getOfferingCtaActions,
+  OFFERING_CTA_PRIMARY_VARIANT,
+  OFFERING_CTA_SECONDARY_VARIANT,
+} from "../lib/purchase-cta";
 
 export interface OfferingCTAProps {
   offering: Offering;
@@ -33,7 +37,12 @@ function OfferingCTA({
   return (
     <div className={className ?? "flex flex-wrap gap-3"}>
       {actions.map((action, index) => (
-        <Button key={action.href} size={size} variant={index === 0 ? primaryVariant : secondaryVariant} asChild>
+        <Button
+          key={action.href}
+          size={size}
+          variant={index === 0 ? primaryVariant : secondaryVariant}
+          asChild
+        >
           <Link href={action.href}>{action.label}</Link>
         </Button>
       ))}

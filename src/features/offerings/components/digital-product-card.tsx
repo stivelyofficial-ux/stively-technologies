@@ -32,7 +32,10 @@ function DigitalProductCard({ offering }: { offering: Offering }) {
           alt={offering.title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-          className={cn("object-cover transition-transform duration-500", isAvailable && "group-hover:scale-[1.03]")}
+          className={cn(
+            "object-cover transition-transform duration-500",
+            isAvailable && "group-hover:scale-[1.03]"
+          )}
         />
       )}
       {!isAvailable && <div className="absolute inset-0 bg-white/55" aria-hidden="true" />}
@@ -51,8 +54,12 @@ function DigitalProductCard({ offering }: { offering: Offering }) {
   const body = (
     <CardContent className="flex flex-1 flex-col gap-3 px-4 pb-4">
       <div className="flex flex-1 flex-col gap-1">
-        <h3 className="font-display text-foreground text-sm leading-snug font-semibold text-balance">{offering.title}</h3>
-        <p className="text-muted-foreground line-clamp-2 text-xs text-pretty">{offering.shortDescription}</p>
+        <h3 className="font-display text-foreground text-sm leading-snug font-semibold text-balance">
+          {offering.title}
+        </h3>
+        <p className="text-muted-foreground line-clamp-2 text-xs text-pretty">
+          {offering.shortDescription}
+        </p>
       </div>
 
       <div className="flex items-center justify-between gap-2 pt-1">

@@ -7,7 +7,13 @@ import { OfferingAudience, Difficulty, Mode } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { useOfferingFilters } from "../hooks/use-offering-filters";
 import { AUDIENCE_LABEL, DIFFICULTY_LABEL, MODE_LABEL } from "../lib/labels";
 import { PRICE_BUCKETS, PRICE_BUCKET_LABEL } from "../lib/price-buckets";

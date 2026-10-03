@@ -4,6 +4,8 @@ import * as React from "react";
 import Script from "next/script";
 import Link from "next/link";
 
+import { ShieldCheck } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +20,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { DatabaseMaintenanceDialog } from "@/components/shared/database-maintenance-dialog";
-import { StipendTermsCheckbox } from "./stipend-terms-checkbox";
 import { formatPrice } from "@/lib/utils";
 import "@/lib/razorpay-client-types";
 import { trackMetaPurchase, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
@@ -89,7 +90,7 @@ function GuestCheckoutForm({
     { message: string; redirectUrl?: string } | undefined
   >();
   const [showMaintenance, setShowMaintenance] = React.useState(false);
-  const [acceptedStipendTerms, setAcceptedStipendTerms] = React.useState(false);
+  const [phone, setPhone] = React.useState("");
   // Set once verifyGuestPayment succeeds - holds everything the profile
   // step and its eventual redirect need, so the redirect itself only ever
   // happens from one place (handleProfileSubmit) instead of being
@@ -144,10 +145,6 @@ function GuestCheckoutForm({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!acceptedStipendTerms) {
-      setError("Please accept the internship stipend terms to continue.");
-      return;
-    }
     // Checked BEFORE the order exists: finding out the payment script isn't
     // ready only after createGuestOrder leaves an orphan PENDING order and a
     // buyer staring at an error at the exact moment they were ready to pay.
@@ -161,6 +158,7 @@ function GuestCheckoutForm({
     const result = await createGuestOrder({
       offeringId: offering.id,
       email,
+      phone,
       addPromptPack,
     });
     if (!result.success) {
@@ -203,7 +201,7 @@ function GuestCheckoutForm({
       // flow, only where it actually needs one (UPI, etc.) - see
       // guest-checkout-schemas.ts's comment on why this form no longer
       // asks for it upfront.
-      prefill: { email },
+      prefill: { email, contact: `+91${phone.replace(/D/g, "").slice(-10)}` },
       theme: { color: "#ec3013" },
       handler: async (response) => {
         const verifyResult = await verifyGuestPayment({
@@ -337,6 +335,20 @@ function GuestCheckoutForm({
         />
       </div>
 
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="gc-phone">Mobile number</Label>
+        <Input
+          id="gc-phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel-national"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="For payment updates on WhatsApp"
+          required
+        />
+      </div>
+
       {availableAddon && (
         <label
           htmlFor="gc-addon"
@@ -366,10 +378,10 @@ function GuestCheckoutForm({
         </label>
       )}
 
-      <StipendTermsCheckbox
-        checked={acceptedStipendTerms}
-        onCheckedChange={setAcceptedStipendTerms}
-      />
+      <p className="text-foreground flex items-center justify-center gap-1.5 text-sm font-semibold">
+        <ShieldCheck className="size-4 text-emerald-600" aria-hidden="true" />
+        Internship guaranteed on course completion
+      </p>
 
       {error && (
         <p role="alert" className="text-destructive text-sm">

@@ -9,7 +9,9 @@ import { z } from "zod";
  * topics instead of either a fabricated lesson breakdown or an empty gap.
  */
 const curriculumTopicsSchema = z.object({
-  modules: z.array(z.object({ title: z.string(), topics: z.array(z.string()).default([]) })).default([]),
+  modules: z
+    .array(z.object({ title: z.string(), topics: z.array(z.string()).default([]) }))
+    .default([]),
 });
 
 /** Returns a title -> topics map, or an empty map if the stored JSON doesn't match. */

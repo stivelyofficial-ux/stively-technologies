@@ -46,7 +46,10 @@ export async function updateOffering(id: string, input: OfferingAdminInput): Pro
   }
 
   try {
-    await prisma.offering.update({ where: { id }, data: { ...parsed.data, updatedById: admin.id } });
+    await prisma.offering.update({
+      where: { id },
+      data: { ...parsed.data, updatedById: admin.id },
+    });
     revalidatePath("/offerings");
     revalidatePath(`/offerings/${parsed.data.slug}`);
     return { success: true };

@@ -43,9 +43,18 @@ function OfferingCatalog({
         {totalCount} offering{totalCount === 1 ? "" : "s"} found
       </p>
 
-      <OfferingGrid offerings={offerings} hasActiveFilters={hasActiveFilters} clearFiltersHref={basePath} />
+      <OfferingGrid
+        offerings={offerings}
+        hasActiveFilters={hasActiveFilters}
+        clearFiltersHref={basePath}
+      />
 
-      <OfferingPagination page={page} totalPages={totalPages} searchParams={searchParams} basePath={basePath} />
+      <OfferingPagination
+        page={page}
+        totalPages={totalPages}
+        searchParams={searchParams}
+        basePath={basePath}
+      />
     </Container>
   );
 }

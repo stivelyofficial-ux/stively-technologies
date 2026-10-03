@@ -23,7 +23,12 @@ function OfferingPricingCard({ offering, nonce }: { offering: Offering; nonce?: 
         <Card className="w-full max-w-md rounded-3xl">
           <CardContent className="flex flex-col items-center gap-4 text-center">
             <span className="text-foreground font-display text-3xl font-semibold tabular-nums">
-              {formatOfferingPrice(offering.price, offering.currency, offering.pricingType, formatPrice)}
+              {formatOfferingPrice(
+                offering.price,
+                offering.currency,
+                offering.pricingType,
+                formatPrice
+              )}
             </span>
             {offering.discountPrice != null && offering.price != null && (
               <span className="text-muted-foreground text-sm line-through">

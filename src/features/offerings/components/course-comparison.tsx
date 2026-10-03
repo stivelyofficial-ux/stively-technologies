@@ -127,15 +127,19 @@ function CourseComparison() {
         {/* Desktop / tablet: full table, Stively's column visually raised */}
         <div className="border-border bg-card hidden overflow-hidden rounded-2xl border shadow-sm sm:block">
           <div className="grid grid-cols-[1.1fr_1.3fr_1fr_1fr]">
-            <div className="border-border/70 border-b border-r p-4" />
+            <div className="border-border/70 border-r border-b p-4" />
             <div className="bg-primary/5 border-border/70 border-b p-4">
               <span className="text-primary text-sm font-semibold">Stively</span>
             </div>
             <div className="border-border/70 border-b border-l p-4">
-              <span className="text-muted-foreground text-sm font-semibold">Free YouTube tutorials</span>
+              <span className="text-muted-foreground text-sm font-semibold">
+                Free YouTube tutorials
+              </span>
             </div>
             <div className="border-border/70 border-b border-l p-4">
-              <span className="text-muted-foreground text-sm font-semibold">Typical paid bootcamp</span>
+              <span className="text-muted-foreground text-sm font-semibold">
+                Typical paid bootcamp
+              </span>
             </div>
 
             {ROWS.map((row, i) => (
@@ -178,7 +182,9 @@ function CourseComparison() {
                 >
                   <div className="flex items-start gap-2">
                     <VerdictIcon verdict={row.bootcampVerdict} />
-                    <span className="text-muted-foreground text-sm text-pretty">{row.bootcamp}</span>
+                    <span className="text-muted-foreground text-sm text-pretty">
+                      {row.bootcamp}
+                    </span>
                   </div>
                 </div>
               </Fragment>
@@ -188,16 +194,19 @@ function CourseComparison() {
 
         {/* Mobile: one card per option, same rows stacked */}
         <div className="flex flex-col gap-4 sm:hidden">
-          {(
-            [
-              { name: "Stively", key: "stively" as const, highlight: true },
-              { name: "Free YouTube tutorials", key: "youtube" as const, highlight: false },
-              { name: "Typical paid bootcamp", key: "bootcamp" as const, highlight: false },
-            ]
-          ).map((col) => (
+          {[
+            { name: "Stively", key: "stively" as const, highlight: true },
+            { name: "Free YouTube tutorials", key: "youtube" as const, highlight: false },
+            { name: "Typical paid bootcamp", key: "bootcamp" as const, highlight: false },
+          ].map((col) => (
             <Card key={col.name} className={cn(col.highlight && "border-primary/40 bg-primary/5")}>
               <CardContent className="flex flex-col gap-3">
-                <span className={cn("text-sm font-semibold", col.highlight ? "text-primary" : "text-foreground")}>
+                <span
+                  className={cn(
+                    "text-sm font-semibold",
+                    col.highlight ? "text-primary" : "text-foreground"
+                  )}
+                >
                   {col.name}
                 </span>
                 <ul className="flex flex-col gap-2.5">

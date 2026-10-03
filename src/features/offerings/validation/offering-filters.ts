@@ -34,7 +34,9 @@ export const offeringFiltersSchema = z.object({
 export type OfferingFiltersInput = z.infer<typeof offeringFiltersSchema>;
 
 /** Parses raw (string | undefined) searchParams into validated filters - invalid/unknown values are dropped rather than rejected, same "silently ignore a bad query param" tolerance as isValidProgramLevel etc. in programs.ts. */
-export function parseOfferingFilters(raw: Record<string, string | undefined>): OfferingFiltersInput {
+export function parseOfferingFilters(
+  raw: Record<string, string | undefined>
+): OfferingFiltersInput {
   const result = offeringFiltersSchema.safeParse(raw);
   return result.success ? result.data : {};
 }

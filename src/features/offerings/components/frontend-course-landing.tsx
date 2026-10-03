@@ -36,6 +36,7 @@ import { EnrollCta } from "@/features/orders/components/enroll-cta";
 import { SaleCountdown } from "./sale-countdown";
 import { ViewContentTracker } from "./view-content-tracker";
 import { FrontendLandingFaq } from "./frontend-landing-faq";
+import { FrontendStipendTerms } from "./frontend-stipend-terms";
 
 function formatMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
@@ -87,14 +88,32 @@ const MODULE_ACCENTS = [
 ] as const;
 
 const COMPARISON = {
-  typical: ["Hours of video to watch", "No notes, no quizzes", "Certificate just for watching", "You're on your own after"],
-  stively: ["Video + reading material", "Quiz gates every lesson", "Certificate you earn by passing", "Paid internship with auto offer letter"],
+  typical: [
+    "Hours of video to watch",
+    "No notes, no quizzes",
+    "Certificate just for watching",
+    "You're on your own after",
+  ],
+  stively: [
+    "Video + reading material",
+    "Quiz gates every lesson",
+    "Certificate you earn by passing",
+    "Paid internship with auto offer letter",
+  ],
 } as const;
 
 const AUDIENCE = [
-  { icon: GraduationCap, bold: "College students", rest: "who want real experience on their resume before placements" },
+  {
+    icon: GraduationCap,
+    bold: "College students",
+    rest: "who want real experience on their resume before placements",
+  },
   { icon: UserPlus, bold: "Freshers", rest: "tired of “experience required” on every job post" },
-  { icon: Repeat, bold: "Career switchers", rest: "who tried YouTube tutorials and want structure" },
+  {
+    icon: Repeat,
+    bold: "Career switchers",
+    rest: "who tried YouTube tutorials and want structure",
+  },
 ] as const;
 
 const DEFAULT_FAQS = [
@@ -114,7 +133,8 @@ const DEFAULT_FAQS = [
   },
   {
     question: "Which certificates and letters will I get?",
-    answer: "Training Certificate, Internship Offer Letter, Internship Completion Certificate, Letter of Recommendation and Experience Letter.",
+    answer:
+      "Training Certificate, Internship Offer Letter, Internship Completion Certificate, Letter of Recommendation and Experience Letter.",
   },
   {
     question: "What do I need to start?",
@@ -167,7 +187,8 @@ function FrontendCourseLanding({
   const curriculumTopics = parseOfferingCurriculumTopics(offering.curriculum);
   const modules = curriculum?.modules ?? [];
   const enrollHref = offering.allowsGuestCheckout ? "#enroll" : `/checkout/${offering.slug}`;
-  const enrollLabel = payable != null ? `Enroll Now for ${formatPrice(payable, offering.currency)}` : "Enroll Now";
+  const enrollLabel =
+    payable != null ? `Enroll Now for ${formatPrice(payable, offering.currency)}` : "Enroll Now";
   const hasGuestForm = offering.allowsGuestCheckout && payable != null;
   const whatsappHref = getWhatsAppUrl(`/offerings/${offering.slug}`);
 
@@ -203,14 +224,21 @@ function FrontendCourseLanding({
 
             <h1
               className="font-sans font-extrabold text-balance"
-              style={{ fontSize: "clamp(2.625rem, 6.4vw, 4.75rem)", lineHeight: 1.02, letterSpacing: "-0.03em" }}
+              style={{
+                fontSize: "clamp(2.625rem, 6.4vw, 4.75rem)",
+                lineHeight: 1.02,
+                letterSpacing: "-0.03em",
+              }}
             >
               Get Trained. Get Hired.
               <br />
               <span style={{ color: "#23C08A" }}>Get Paid {STIPEND_DISPLAY}</span> Per Project.
             </h1>
 
-            <p className="max-w-xl text-pretty text-[17px] leading-relaxed sm:text-[20px]" style={{ color: "#D5E9E0" }}>
+            <p
+              className="max-w-xl text-[17px] leading-relaxed text-pretty sm:text-[20px]"
+              style={{ color: "#D5E9E0" }}
+            >
               Stively&apos;s Frontend Development training takes you from zero to React, with no
               experience needed. Finish the course and your intern portal unlocks with an{" "}
               <b style={{ color: "#fff" }}>offer letter sent automatically</b>.
@@ -225,10 +253,16 @@ function FrontendCourseLanding({
               />
               {hasDiscount && (
                 <div className="flex flex-col leading-tight">
-                  <span className="text-[15px] line-through tabular-nums" style={{ color: "#9FB3AB" }}>
+                  <span
+                    className="text-[15px] tabular-nums line-through"
+                    style={{ color: "#9FB3AB" }}
+                  >
                     {formatPrice(anchor, offering.currency)}
                   </span>
-                  <span className="text-[15px] font-bold whitespace-nowrap" style={{ color: "#F3DEA4" }}>
+                  <span
+                    className="text-[15px] font-bold whitespace-nowrap"
+                    style={{ color: "#F3DEA4" }}
+                  >
                     {percentOff != null ? `${percentOff}% off · ` : ""}founding price
                   </span>
                 </div>
@@ -269,7 +303,10 @@ function FrontendCourseLanding({
               className="absolute bottom-2 left-[6%] flex items-center gap-3.5 rounded-2xl px-5 py-4 shadow-[0_20px_44px_rgba(0,0,0,0.4)]"
               style={{ background: "#fff", color: "#061B15" }}
             >
-              <span className="flex size-[46px] shrink-0 items-center justify-center rounded-full" style={{ background: "#CDEBDD" }}>
+              <span
+                className="flex size-[46px] shrink-0 items-center justify-center rounded-full"
+                style={{ background: "#CDEBDD" }}
+              >
                 <IndianRupee className="size-6" style={{ color: "#0B5C43" }} aria-hidden="true" />
               </span>
               <div className="flex flex-col">
@@ -290,9 +327,15 @@ function FrontendCourseLanding({
         </div>
         <h2
           className="mt-3 max-w-3xl font-sans font-extrabold"
-          style={{ fontSize: "clamp(2rem, 4.4vw, 3.25rem)", lineHeight: 1.08, letterSpacing: "-0.02em", color: "#0A2A22" }}
+          style={{
+            fontSize: "clamp(2rem, 4.4vw, 3.25rem)",
+            lineHeight: 1.08,
+            letterSpacing: "-0.02em",
+            color: "#0A2A22",
+          }}
         >
-          From enrollment to offer letter. <span style={{ color: "#0E7C5A" }}>No interviews, no waiting.</span>
+          From enrollment to offer letter.{" "}
+          <span style={{ color: "#0E7C5A" }}>No interviews, no waiting.</span>
         </h2>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {HOW_IT_WORKS.map(({ icon: Icon, title }, index) => {
@@ -304,13 +347,23 @@ function FrontendCourseLanding({
                 style={isLast ? { background: "#061B15", color: "#fff" } : { background: "#fff" }}
               >
                 <div className="flex items-center justify-between">
-                  <Icon className="size-9" style={{ color: isLast ? "#F3DEA4" : "#0E7C5A" }} aria-hidden="true" />
-                  <span className="text-sm font-extrabold" style={{ color: isLast ? "#9FD9C4" : "#6B7F77" }}>
+                  <Icon
+                    className="size-9"
+                    style={{ color: isLast ? "#F3DEA4" : "#0E7C5A" }}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="text-sm font-extrabold"
+                    style={{ color: isLast ? "#9FD9C4" : "#6B7F77" }}
+                  >
                     {String(index + 1).padStart(2, "0")}
                   </span>
                 </div>
                 <div className="text-xl font-extrabold">{title}</div>
-                <div className="text-[15px] leading-relaxed" style={{ color: isLast ? "#D5E9E0" : "#4B5D56" }}>
+                <div
+                  className="text-[15px] leading-relaxed"
+                  style={{ color: isLast ? "#D5E9E0" : "#4B5D56" }}
+                >
                   {HOW_IT_WORKS_BODY[index]}
                 </div>
               </div>
@@ -321,7 +374,7 @@ function FrontendCourseLanding({
 
       {/* ── WHAT YOU WALK AWAY WITH ──────────────────────── */}
       <div className="mx-auto grid max-w-[1180px] items-center gap-12 px-5 py-16 md:grid-cols-2">
-        <div className="relative mx-auto aspect-[1.3] w-full max-h-[480px] max-w-[480px]">
+        <div className="relative mx-auto aspect-[1.3] max-h-[480px] w-full max-w-[480px]">
           <div className="absolute top-0 left-0 w-[76%] -rotate-3 overflow-hidden rounded-lg shadow-[0_24px_50px_rgba(6,27,21,0.25)]">
             <Image
               src="/certificates/frontend/training-certificate.png"
@@ -357,7 +410,12 @@ function FrontendCourseLanding({
           </div>
           <h2
             className="font-sans font-extrabold"
-            style={{ fontSize: "clamp(2rem, 4.4vw, 3.25rem)", lineHeight: 1.08, letterSpacing: "-0.02em", color: "#0A2A22" }}
+            style={{
+              fontSize: "clamp(2rem, 4.4vw, 3.25rem)",
+              lineHeight: 1.08,
+              letterSpacing: "-0.02em",
+              color: "#0A2A22",
+            }}
           >
             5 documents that make your resume stand out
           </h2>
@@ -384,14 +442,18 @@ function FrontendCourseLanding({
             </div>
             <h2
               className="font-sans font-extrabold"
-              style={{ fontSize: "clamp(2rem, 4.4vw, 3.25rem)", lineHeight: 1.08, letterSpacing: "-0.02em" }}
+              style={{
+                fontSize: "clamp(2rem, 4.4vw, 3.25rem)",
+                lineHeight: 1.08,
+                letterSpacing: "-0.02em",
+              }}
             >
               We train you from <span style={{ color: "#23C08A" }}>basic to advanced.</span>
             </h2>
             <p className="text-lg leading-relaxed text-pretty" style={{ color: "#D5E9E0" }}>
-              {curriculum ? `${curriculum.moduleCount} structured modules.` : "Structured modules,"} Every lesson has a
-              short video, written notes and a quiz you must pass to unlock the next one, so you actually learn
-              instead of just watching.
+              {curriculum ? `${curriculum.moduleCount} structured modules.` : "Structured modules,"}{" "}
+              Every lesson has a short video, written notes and a quiz you must pass to unlock the
+              next one, so you actually learn instead of just watching.
             </p>
             <div className="mt-1.5 flex flex-wrap gap-2.5">
               {TRAINING_PILLS.map(({ icon: Icon, label }) => (
@@ -408,44 +470,46 @@ function FrontendCourseLanding({
           </div>
 
           <div className="flex flex-col gap-3">
-            {modules.length > 0
-              ? modules.map((module, index) => {
-                  const accent = MODULE_ACCENTS[index % MODULE_ACCENTS.length];
-                  const topics = curriculumTopics.get(module.title) ?? [];
-                  const subtitle =
-                    module.lessonCount > 0
-                      ? `${module.lessonCount} lesson${module.lessonCount === 1 ? "" : "s"}${
-                          module.totalMinutes != null ? ` · ${formatMinutes(module.totalMinutes)}` : ""
-                        }`
-                      : topics.length > 0
-                        ? topics.slice(0, 2).join(" · ")
-                        : "Curriculum coming soon";
-                  return (
+            {modules.length > 0 ? (
+              modules.map((module, index) => {
+                const accent = MODULE_ACCENTS[index % MODULE_ACCENTS.length];
+                const topics = curriculumTopics.get(module.title) ?? [];
+                const subtitle =
+                  module.lessonCount > 0
+                    ? `${module.lessonCount} lesson${module.lessonCount === 1 ? "" : "s"}${
+                        module.totalMinutes != null
+                          ? ` · ${formatMinutes(module.totalMinutes)}`
+                          : ""
+                      }`
+                    : topics.length > 0
+                      ? topics.slice(0, 2).join(" · ")
+                      : "Curriculum coming soon";
+                return (
+                  <div
+                    key={module.id}
+                    className="flex items-center gap-[18px] rounded-2xl px-5 py-[18px]"
+                    style={{ background: "rgba(255,255,255,0.05)" }}
+                  >
                     <div
-                      key={module.id}
-                      className="flex items-center gap-[18px] rounded-2xl px-5 py-[18px]"
-                      style={{ background: "rgba(255,255,255,0.05)" }}
+                      className="flex size-12 shrink-0 items-center justify-center rounded-full text-[17px] font-extrabold"
+                      style={{ background: accent.bg, color: accent.text }}
                     >
-                      <div
-                        className="flex size-12 shrink-0 items-center justify-center rounded-full text-[17px] font-extrabold"
-                        style={{ background: accent.bg, color: accent.text }}
-                      >
-                        {String(index + 1).padStart(2, "0")}
-                      </div>
-                      <div className="flex flex-col gap-0.5">
-                        <div className="text-lg font-extrabold">{module.title}</div>
-                        <div className="text-sm" style={{ color: "#9FD9C4" }}>
-                          {subtitle}
-                        </div>
+                      {String(index + 1).padStart(2, "0")}
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="text-lg font-extrabold">{module.title}</div>
+                      <div className="text-sm" style={{ color: "#9FD9C4" }}>
+                        {subtitle}
                       </div>
                     </div>
-                  );
-                })
-              : (
-                <p className="text-sm" style={{ color: "#9FD9C4" }}>
-                  Full module breakdown added soon.
-                </p>
-              )}
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm" style={{ color: "#9FD9C4" }}>
+                Full module breakdown added soon.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -457,17 +521,29 @@ function FrontendCourseLanding({
         </div>
         <h2
           className="mt-3 font-sans font-extrabold"
-          style={{ fontSize: "clamp(2rem, 4.4vw, 3.25rem)", lineHeight: 1.08, letterSpacing: "-0.02em", color: "#0A2A22" }}
+          style={{
+            fontSize: "clamp(2rem, 4.4vw, 3.25rem)",
+            lineHeight: 1.08,
+            letterSpacing: "-0.02em",
+            color: "#0A2A22",
+          }}
         >
           Others sell videos. <span style={{ color: "#0E7C5A" }}>We build careers.</span>
         </h2>
         <div className="mt-9 grid gap-[18px] sm:grid-cols-2">
-          <div className="flex flex-col gap-[18px] rounded-[20px] p-[30px]" style={{ background: "#E6ECE8" }}>
+          <div
+            className="flex flex-col gap-[18px] rounded-[20px] p-[30px]"
+            style={{ background: "#E6ECE8" }}
+          >
             <div className="text-sm font-extrabold tracking-[0.14em]" style={{ color: "#4B5D56" }}>
               TYPICAL ONLINE COURSE
             </div>
             {COMPARISON.typical.map((line, index) => (
-              <div key={line} className="flex items-center gap-3 text-[17px]" style={{ color: index === 0 ? "#33453D" : "#4B5D56" }}>
+              <div
+                key={line}
+                className="flex items-center gap-3 text-[17px]"
+                style={{ color: index === 0 ? "#33453D" : "#4B5D56" }}
+              >
                 {index === 0 ? (
                   <Check className="size-6" style={{ color: "#6B7F77" }} aria-hidden="true" />
                 ) : (
@@ -479,7 +555,11 @@ function FrontendCourseLanding({
           </div>
           <div
             className="flex flex-col gap-[18px] rounded-[20px] p-[30px]"
-            style={{ background: "#fff", border: "2px solid #C6A04A", boxShadow: "0 20px 44px rgba(6,27,21,0.1)" }}
+            style={{
+              background: "#fff",
+              border: "2px solid #C6A04A",
+              boxShadow: "0 20px 44px rgba(6,27,21,0.1)",
+            }}
           >
             <div className="text-sm font-extrabold tracking-[0.14em]" style={{ color: "#0E7C5A" }}>
               STIVELY
@@ -497,8 +577,8 @@ function FrontendCourseLanding({
           </div>
         </div>
         <p className="mt-[22px] max-w-2xl text-base leading-relaxed" style={{ color: "#4B5D56" }}>
-          Taught by a software studio that ships real client work every day, not a course platform with hired
-          instructors.
+          Taught by a software studio that ships real client work every day, not a course platform
+          with hired instructors.
         </p>
       </div>
 
@@ -510,7 +590,12 @@ function FrontendCourseLanding({
           </div>
           <h2
             className="font-sans font-extrabold"
-            style={{ fontSize: "clamp(1.875rem, 4vw, 2.875rem)", lineHeight: 1.1, letterSpacing: "-0.02em", color: "#0A2A22" }}
+            style={{
+              fontSize: "clamp(1.875rem, 4vw, 2.875rem)",
+              lineHeight: 1.1,
+              letterSpacing: "-0.02em",
+              color: "#0A2A22",
+            }}
           >
             Built for people starting from zero
           </h2>
@@ -533,20 +618,31 @@ function FrontendCourseLanding({
         <div
           id="enroll"
           className="flex flex-col gap-[18px] rounded-3xl p-[34px]"
-          style={{ background: "#061B15", color: "#fff", border: "2px solid #C6A04A", boxShadow: "0 30px 60px rgba(6,27,21,0.3)" }}
+          style={{
+            background: "#061B15",
+            color: "#fff",
+            border: "2px solid #C6A04A",
+            boxShadow: "0 30px 60px rgba(6,27,21,0.3)",
+          }}
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm font-extrabold tracking-[0.14em]" style={{ color: "#23C08A" }}>
               FOUNDING PRICE
             </span>
             {percentOff != null && (
-              <span className="rounded-full px-3 py-1.5 text-[13px] font-extrabold" style={{ background: "#C6A04A", color: "#061B15" }}>
+              <span
+                className="rounded-full px-3 py-1.5 text-[13px] font-extrabold"
+                style={{ background: "#C6A04A", color: "#061B15" }}
+              >
                 {percentOff}% OFF
               </span>
             )}
           </div>
           <div className="flex items-baseline gap-3.5">
-            <span className="text-[56px] leading-none font-extrabold tracking-tight sm:text-[68px]" style={{ color: "#F3DEA4" }}>
+            <span
+              className="text-[56px] leading-none font-extrabold tracking-tight sm:text-[68px]"
+              style={{ color: "#F3DEA4" }}
+            >
               {payable != null ? formatPrice(payable, offering.currency) : "—"}
             </span>
             {hasDiscount && (
@@ -567,7 +663,11 @@ function FrontendCourseLanding({
               "5 certificates & letters",
             ].map((item) => (
               <div key={item} className="flex items-center gap-2.5">
-                <BadgeCheck className="size-[22px]" style={{ color: "#23C08A" }} aria-hidden="true" />
+                <BadgeCheck
+                  className="size-[22px]"
+                  style={{ color: "#23C08A" }}
+                  aria-hidden="true"
+                />
                 {item}
               </div>
             ))}
@@ -600,7 +700,10 @@ function FrontendCourseLanding({
               className="flex items-center justify-center gap-2 text-sm text-[#9fd9c4]"
             />
           )}
-          <div className="flex items-center justify-center gap-2 text-[13px]" style={{ color: "#9FB3AB" }}>
+          <div
+            className="flex items-center justify-center gap-2 text-[13px]"
+            style={{ color: "#9FB3AB" }}
+          >
             <Lock className="size-4" aria-hidden="true" />
             Secure payment powered by Razorpay
           </div>
@@ -614,12 +717,19 @@ function FrontendCourseLanding({
         </div>
         <h2
           className="mt-3 mb-7 font-sans font-extrabold"
-          style={{ fontSize: "clamp(1.875rem, 4vw, 2.875rem)", lineHeight: 1.1, letterSpacing: "-0.02em", color: "#0A2A22" }}
+          style={{
+            fontSize: "clamp(1.875rem, 4vw, 2.875rem)",
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+            color: "#0A2A22",
+          }}
         >
           Everything you&apos;re wondering
         </h2>
         <FrontendLandingFaq items={courseFaqs} />
       </div>
+
+      <FrontendStipendTerms />
 
       {/* ── FINAL CTA ────────────────────────────────────── */}
       <div
@@ -632,13 +742,18 @@ function FrontendCourseLanding({
         <div className="mx-auto flex max-w-[900px] flex-col items-center gap-5 px-5 pt-20 pb-16 text-center md:pb-24">
           <h2
             className="font-sans font-extrabold"
-            style={{ fontSize: "clamp(2.125rem, 5vw, 3.75rem)", lineHeight: 1.05, letterSpacing: "-0.03em" }}
+            style={{
+              fontSize: "clamp(2.125rem, 5vw, 3.75rem)",
+              lineHeight: 1.05,
+              letterSpacing: "-0.03em",
+            }}
           >
             Your first dev job <span style={{ color: "#23C08A" }}>starts today.</span>
           </h2>
           <p className="max-w-xl text-lg leading-relaxed" style={{ color: "#D5E9E0" }}>
             Learn it, build it, get paid for it.
-            {payable != null && ` Lock in ${formatPrice(payable, offering.currency)} before the founding price ends.`}
+            {payable != null &&
+              ` Lock in ${formatPrice(payable, offering.currency)} before the founding price ends.`}
           </p>
           <EnrollCta
             href={enrollHref}
@@ -664,7 +779,10 @@ function FrontendCourseLanding({
 
       {/* Persistent mobile purchase bar - same real component/behavior as CourseDetailView's. */}
       {payable != null && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t p-3 backdrop-blur lg:hidden" style={{ background: "rgba(6,27,21,0.95)", borderColor: "rgba(255,255,255,0.1)" }}>
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t p-3 backdrop-blur lg:hidden"
+          style={{ background: "rgba(6,27,21,0.95)", borderColor: "rgba(255,255,255,0.1)" }}
+        >
           {/* pl-16 keeps the price clear of the floating WhatsApp chat widget pinned to the same bottom-left corner - same fix course-detail-view.tsx's own mobile bar already uses. */}
           <div className="flex items-center justify-between gap-3 pl-16">
             <div className="flex flex-col">
@@ -672,7 +790,7 @@ function FrontendCourseLanding({
                 {formatPrice(payable, offering.currency)}
               </span>
               {hasDiscount && (
-                <span className="text-xs line-through tabular-nums" style={{ color: "#9FB3AB" }}>
+                <span className="text-xs tabular-nums line-through" style={{ color: "#9FB3AB" }}>
                   {formatPrice(anchor, offering.currency)}
                 </span>
               )}

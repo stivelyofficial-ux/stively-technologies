@@ -15,7 +15,13 @@ import { getOfferingPricing } from "../lib/pricing";
  * plays for Program but not hardcoded to Training.
  */
 /** hrefBase lets a portal-embedded catalog (e.g. /client/offerings) point every card at its own detail route instead of the public /offerings catalog - the card markup itself is identical either way. */
-function OfferingCard({ offering, hrefBase = "/offerings" }: { offering: Offering; hrefBase?: string }) {
+function OfferingCard({
+  offering,
+  hrefBase = "/offerings",
+}: {
+  offering: Offering;
+  hrefBase?: string;
+}) {
   const { payable, anchor } = getOfferingPricing(offering);
   // On the public catalog specifically, a DIGITAL_PRODUCT's real page lives
   // at /digital-store/[slug] - /offerings/[slug] just permanently redirects
@@ -31,7 +37,7 @@ function OfferingCard({ offering, hrefBase = "/offerings" }: { offering: Offerin
   return (
     <Link
       href={href}
-      className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="focus-visible:ring-ring focus-visible:ring-offset-background block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
     >
       <Card variant="interactive" className="h-full">
         <CardHeader>
@@ -50,12 +56,14 @@ function OfferingCard({ offering, hrefBase = "/offerings" }: { offering: Offerin
               {formatOfferingPrice(payable, offering.currency, offering.pricingType, formatPrice)}
             </span>
             {anchor != null && (
-              <span className="text-muted-foreground text-xs line-through tabular-nums">
+              <span className="text-muted-foreground text-xs tabular-nums line-through">
                 {formatPrice(anchor, offering.currency)}
               </span>
             )}
           </span>
-          {offering.duration && <span className="text-muted-foreground text-sm">{offering.duration}</span>}
+          {offering.duration && (
+            <span className="text-muted-foreground text-sm">{offering.duration}</span>
+          )}
         </CardFooter>
       </Card>
     </Link>

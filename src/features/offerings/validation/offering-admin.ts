@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { OfferingAudience, OfferingCategory, OfferingStatus, PricingType, Difficulty, Mode } from "@prisma/client";
+import {
+  OfferingAudience,
+  OfferingCategory,
+  OfferingStatus,
+  PricingType,
+  Difficulty,
+  Mode,
+} from "@prisma/client";
 
 import { offeringFaqsSchema } from "../lib/faq";
 import { curriculumSchema } from "../lib/curriculum";

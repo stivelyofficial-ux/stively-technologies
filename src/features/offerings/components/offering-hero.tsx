@@ -28,7 +28,9 @@ function OfferingHero({ offering }: { offering: Offering }) {
         <div className="flex flex-wrap gap-2">
           <Badge variant="ink">{CATEGORY_LABEL[offering.category]}</Badge>
           <Badge variant="ink">{MODE_LABEL[offering.mode]}</Badge>
-          {offering.difficulty && <Badge variant="ink">{DIFFICULTY_LABEL[offering.difficulty]}</Badge>}
+          {offering.difficulty && (
+            <Badge variant="ink">{DIFFICULTY_LABEL[offering.difficulty]}</Badge>
+          )}
           {offering.duration && <Badge variant="ink">{offering.duration}</Badge>}
           {offering.status === "COMING_SOON" && <Badge variant="ink">Coming soon</Badge>}
         </div>
@@ -43,9 +45,18 @@ function OfferingHero({ offering }: { offering: Offering }) {
 
         <div className="flex flex-wrap items-center gap-4 pt-2">
           <span className="text-ink-foreground font-display text-2xl font-semibold tabular-nums">
-            {formatOfferingPrice(offering.price, offering.currency, offering.pricingType, formatPrice)}
+            {formatOfferingPrice(
+              offering.price,
+              offering.currency,
+              offering.pricingType,
+              formatPrice
+            )}
           </span>
-          <OfferingCTA offering={offering} primaryVariant="inverse" secondaryVariant="outline-inverse" />
+          <OfferingCTA
+            offering={offering}
+            primaryVariant="inverse"
+            secondaryVariant="outline-inverse"
+          />
         </div>
       </Container>
     </Section>

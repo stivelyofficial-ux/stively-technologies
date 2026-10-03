@@ -27,7 +27,11 @@ function FrontendLandingFaq({ items }: { items: readonly { question: string; ans
             >
               {item.question}
               {isOpen ? (
-                <Minus className="size-5 shrink-0" style={{ color: "#0E7C5A" }} aria-hidden="true" />
+                <Minus
+                  className="size-5 shrink-0"
+                  style={{ color: "#0E7C5A" }}
+                  aria-hidden="true"
+                />
               ) : (
                 <Plus className="size-5 shrink-0" style={{ color: "#0E7C5A" }} aria-hidden="true" />
               )}

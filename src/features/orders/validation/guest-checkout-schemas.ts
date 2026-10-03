@@ -23,6 +23,19 @@ export const createGuestOrderSchema = z.object({
    * server-side rather than trusting a client-supplied tier name.
    */
   addPromptPack: z.boolean().default(false),
+  /**
+   * Indian mobile, asked on our own page (re-added 2026-10-03): Razorpay's
+   * popup asks for a number as its very first step when none is prefilled,
+   * and 7 of 10 buyers who got that far left there. Collected here - in our
+   * own words, one field - and handed to Razorpay as `prefill.contact` so
+   * the popup opens straight on the payment methods. Accepts +91 / spaces /
+   * dashes and normalises to the bare 10 digits.
+   */
+  phone: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/[\s-]/g, "").replace(/^(\+91|91|0)(?=\d{10}$)/, ""))
+    .refine((v) => /^[6-9]\d{9}$/.test(v), "Enter a valid 10-digit mobile number"),
 });
 export type CreateGuestOrderInput = z.infer<typeof createGuestOrderSchema>;
 

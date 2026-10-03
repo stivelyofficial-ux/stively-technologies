@@ -13,7 +13,15 @@ import { trackMetaViewContent } from "@/lib/meta-pixel";
  * SaleCountdown being a separate client island rather than making its
  * whole server-rendered parent a client component.
  */
-function ViewContentTracker({ contentName, value, currency }: { contentName: string; value?: number; currency?: string }) {
+function ViewContentTracker({
+  contentName,
+  value,
+  currency,
+}: {
+  contentName: string;
+  value?: number;
+  currency?: string;
+}) {
   React.useEffect(() => {
     trackMetaViewContent({ contentName, value, currency });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once per mount, not on every value/currency identity change

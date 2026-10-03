@@ -50,7 +50,11 @@ export function getOfferingCtaActions(offering: Offering): OfferingCtaAction[] {
       });
     }
     if (offering.audience === "BUSINESS" || offering.audience === "BOTH") {
-      actions.push({ kind: "guidance", label: "Request proposal", href: `/request-proposal/${offering.slug}` });
+      actions.push({
+        kind: "guidance",
+        label: "Request proposal",
+        href: `/request-proposal/${offering.slug}`,
+      });
     }
   }
 

@@ -2,7 +2,12 @@ import type { Offering } from "@prisma/client";
 
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { parseOfferingCurriculum } from "../lib/curriculum";
 
 /**

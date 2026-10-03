@@ -147,6 +147,7 @@ export async function createGuestOrder(input: unknown): Promise<CreateGuestOrder
       data: {
         offeringId: offering.id,
         guestEmail: data.email,
+        phone: data.phone,
         amount,
         currency: offering.currency,
         status: "PENDING",

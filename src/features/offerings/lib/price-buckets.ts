@@ -5,13 +5,7 @@
  * "roughly how much" is more useful here than exact figures (many
  * offerings have no fixed price at all - see PRICE_BUCKETS' "custom" entry).
  */
-export const PRICE_BUCKETS = [
-  "free",
-  "under-10k",
-  "10k-50k",
-  "50k-plus",
-  "custom",
-] as const;
+export const PRICE_BUCKETS = ["free", "under-10k", "10k-50k", "50k-plus", "custom"] as const;
 
 export type PriceBucket = (typeof PRICE_BUCKETS)[number];
 

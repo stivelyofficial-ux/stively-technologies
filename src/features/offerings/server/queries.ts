@@ -238,7 +238,9 @@ export interface CurriculumOutline {
  * categories - a website build has no curriculum), which the detail page
  * treats as "omit the section" rather than an error.
  */
-export async function getOfferingCurriculumOutline(offeringId: string): Promise<CurriculumOutline | null> {
+export async function getOfferingCurriculumOutline(
+  offeringId: string
+): Promise<CurriculumOutline | null> {
   try {
     const experience = await prisma.learningExperience.findUnique({
       where: { offeringId },
@@ -248,7 +250,10 @@ export async function getOfferingCurriculumOutline(offeringId: string): Promise<
           select: {
             id: true,
             title: true,
-            lessons: { orderBy: { order: "asc" }, select: { id: true, title: true, estimatedMinutes: true } },
+            lessons: {
+              orderBy: { order: "asc" },
+              select: { id: true, title: true, estimatedMinutes: true },
+            },
           },
         },
       },
@@ -258,7 +263,10 @@ export async function getOfferingCurriculumOutline(offeringId: string): Promise<
     const allMinutes: number[] = [];
 
     const modules: CurriculumOutlineModule[] = experience.modules.map((courseModule) => {
-      const minutes = courseModule.lessons.reduce<number>((sum, lesson) => sum + (lesson.estimatedMinutes ?? 0), 0);
+      const minutes = courseModule.lessons.reduce<number>(
+        (sum, lesson) => sum + (lesson.estimatedMinutes ?? 0),
+        0
+      );
       for (const lesson of courseModule.lessons) {
         if (lesson.estimatedMinutes != null) allMinutes.push(lesson.estimatedMinutes);
       }
@@ -279,7 +287,10 @@ export async function getOfferingCurriculumOutline(offeringId: string): Promise<
       modules,
       moduleCount: modules.length,
       lessonCount: modules.reduce((sum, courseModule) => sum + courseModule.lessonCount, 0),
-      averageLessonMinutes: allMinutes.length > 0 ? Math.round(allMinutes.reduce((a, b) => a + b, 0) / allMinutes.length) : null,
+      averageLessonMinutes:
+        allMinutes.length > 0
+          ? Math.round(allMinutes.reduce((a, b) => a + b, 0) / allMinutes.length)
+          : null,
     };
   } catch (error) {
     console.error("getOfferingCurriculumOutline failed:", error);
@@ -297,7 +308,11 @@ export async function getOfferingCurriculumOutline(offeringId: string): Promise<
 export async function getDigitalStoreOfferings(): Promise<Offering[]> {
   try {
     return await prisma.offering.findMany({
-      where: { category: "DIGITAL_PRODUCT", visible: true, status: { in: ["PUBLISHED", "COMING_SOON"] } },
+      where: {
+        category: "DIGITAL_PRODUCT",
+        visible: true,
+        status: { in: ["PUBLISHED", "COMING_SOON"] },
+      },
       orderBy: [{ status: "asc" }, { featured: "desc" }, { createdAt: "asc" }],
     });
   } catch (error) {
@@ -349,9 +364,7 @@ export async function getAllUsedCategorySlugs(): Promise<OfferingCategory[]> {
  * its real canonical URL is /digital-store/[slug]; sitemap.ts submits those
  * separately via getAllDigitalProductSlugs below.
  */
-export async function getAllOfferingSlugsWithDates(): Promise<
-  { slug: string; updatedAt: Date }[]
-> {
+export async function getAllOfferingSlugsWithDates(): Promise<{ slug: string; updatedAt: Date }[]> {
   try {
     return await prisma.offering.findMany({
       where: { status: "PUBLISHED", visible: true, category: { not: "DIGITAL_PRODUCT" } },
