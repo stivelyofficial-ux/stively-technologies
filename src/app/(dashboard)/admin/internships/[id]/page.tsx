@@ -14,6 +14,7 @@ import { AssignTemplateButtons } from "@/features/internships/components/admin/a
 import { PROJECT_TEMPLATES } from "@/features/internships/lib/project-templates";
 import { FinalSubmissionReview } from "@/features/internships/components/admin/final-submission-review";
 import { TaskManager } from "@/features/internships/components/admin/task-manager";
+import { DurationControl } from "@/features/internships/components/admin/duration-control";
 import { TrackStatusControls } from "@/features/internships/components/admin/track-status-controls";
 
 interface AdminInternshipDetailPageProps {
@@ -122,6 +123,9 @@ export default async function AdminInternshipDetailPage({
                 </div>
               ))}
             </dl>
+            {track.onboardedAt && (
+              <DurationControl trackId={track.id} current={track.durationMonths} />
+            )}
             <TrackStatusControls trackId={track.id} status={track.status} />
           </CardContent>
         </Card>

@@ -59,3 +59,8 @@ export const reviewFinalSchema = z.object({
   status: z.enum(["APPROVED", "CHANGES_REQUESTED"]),
   feedback: z.string().trim().max(5_000).optional(),
 });
+
+export const setDurationSchema = z.object({
+  trackId: z.string().min(1),
+  durationMonths: z.number().int().min(1).max(3),
+});

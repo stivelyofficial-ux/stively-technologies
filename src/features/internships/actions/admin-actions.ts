@@ -13,8 +13,11 @@ import {
   assignTemplateSchema,
   createTaskSchema,
   reviewFinalSchema,
+  setDurationSchema,
 } from "../validation";
 import { getProjectTemplate } from "../lib/project-templates";
+import { addMonths, isValidDuration } from "../lib/durations";
+import { sendDurationChangedEmail } from "../server/emails";
 
 async function resolveActorTeamMemberId(): Promise<string | undefined> {
   const session = await auth();
@@ -188,6 +191,56 @@ export async function reviewFinalSubmission(input: unknown): Promise<ActionResul
     return { success: true };
   } catch (error) {
     console.error("reviewFinalSubmission failed:", error);
+    return { success: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+/**
+ * Fixes a wrong duration choice (e.g. an intern picked 1 month instead of 3).
+ * Keeps the start date and recomputes the end date from it, so the ID card,
+ * "days left" and verification page all follow. Admin-only on purpose: the
+ * end date is the one real deadline and the stipend leverage, so interns
+ * can't move it themselves after choosing.
+ */
+export async function setInternshipDuration(input: unknown): Promise<ActionResult> {
+  const admin = await requireRole("ADMIN", "SUPER_ADMIN");
+  const parsed = setDurationSchema.safeParse(input);
+  if (!parsed.success || !isValidDuration(parsed.data.durationMonths)) {
+    return { success: false, error: "Choose 1, 2 or 3 months." };
+  }
+  const { trackId, durationMonths } = parsed.data;
+
+  try {
+    const track = await prisma.internshipTrack.findUnique({
+      where: { id: trackId },
+      include: { student: { select: { name: true, email: true } } },
+    });
+    if (!track || !track.onboardedAt) {
+      return { success: false, error: "This intern hasn't started their internship yet." };
+    }
+    if (track.durationMonths === durationMonths) {
+      return { success: true };
+    }
+    const endsAt = addMonths(track.startedAt, durationMonths);
+    await prisma.internshipTrack.update({
+      where: { id: trackId },
+      data: { durationMonths, endsAt },
+    });
+    console.info(
+      `setInternshipDuration: track ${trackId} ${track.durationMonths ?? "?"} -> ${durationMonths} months by admin ${admin.id}`
+    );
+    // The duration is already saved - the confirmation email is a courtesy and can't fail the action.
+    await sendDurationChangedEmail(track.student.email, {
+      name: track.student.name,
+      previousMonths: track.durationMonths,
+      newMonths: durationMonths,
+      startDate: track.startedAt,
+      endDate: endsAt,
+    });
+    revalidateTrack(trackId);
+    return { success: true };
+  } catch (error) {
+    console.error("setInternshipDuration failed:", error);
     return { success: false, error: "Something went wrong. Please try again." };
   }
 }
