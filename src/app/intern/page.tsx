@@ -6,6 +6,7 @@ import { getInternContext } from "@/features/internships/server/access";
 import { EmptyState } from "@/components/sections/empty-state";
 import { ProjectCard, ProjectPending } from "@/features/internships/components/intern/project-card";
 import { computeTaskStats, daysUntil, formatLongDate } from "@/features/internships/lib/stats";
+import { DocumentsSummary } from "@/features/internship-documents/components/documents-summary";
 import { InternShare } from "@/features/internships/components/intern/intern-share";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -118,6 +119,9 @@ export default async function InternOverviewPage() {
       </ul>
 
       <InternShare userId={user.id} track={track} />
+
+      {/* Staged rollout: the overview documents block is on for the test account only for now. */}
+      {user.email === "santoshkarande110@gmail.com" && <DocumentsSummary trackId={track.id} />}
 
       {track.project ? (
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">

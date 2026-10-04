@@ -453,7 +453,7 @@ function InternIdCardBack({ data }: { data: InternIdCardData }) {
       >
         This card identifies the holder as an intern of Stively Technologies. It is
         non-transferable. If found, please return to Stively Technologies or write to
-        hello@stively.com.
+        team@stively.com.
       </p>
 
       <div style={abs({ left: u(103), top: u(1700) })}>
