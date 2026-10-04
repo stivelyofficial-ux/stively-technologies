@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { MentorMessage } from "@prisma/client";
 import type { ActionResult } from "@/actions/leads";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -13,7 +14,12 @@ interface StudentDetailPanelProps {
   onSend: (content: string) => Promise<ActionResult>;
 }
 
-function StudentDetailPanel({ assignment, messages, currentUserId, onSend }: StudentDetailPanelProps) {
+function StudentDetailPanel({
+  assignment,
+  messages,
+  currentUserId,
+  onSend,
+}: StudentDetailPanelProps) {
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -21,29 +27,48 @@ function StudentDetailPanel({ assignment, messages, currentUserId, onSend }: Stu
           <CardTitle className="font-display">{assignment.student.name}</CardTitle>
           <CardDescription>{assignment.student.email}</CardDescription>
         </CardHeader>
-        {assignment.enrollment && (
-          <CardContent className="flex flex-col gap-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-foreground font-medium">{assignment.enrollment.offering.title}</span>
-              <span className="text-muted-foreground">{assignment.enrollment.progressPercentage}% complete</span>
-            </div>
-            <div
-              className="bg-muted h-2 w-full overflow-hidden rounded-full"
-              role="progressbar"
-              aria-valuenow={assignment.enrollment.progressPercentage}
-              aria-valuemin={0}
-              aria-valuemax={100}
+        <CardContent className="flex flex-col gap-4">
+          {assignment.student.internshipTracks[0]?.onboardedAt && (
+            <Link
+              href={`/mentor/interns/${assignment.student.internshipTracks[0].id}`}
+              className="text-primary text-sm font-semibold hover:underline"
             >
+              Started their internship - open intern view →
+            </Link>
+          )}
+          {assignment.student.offeringEnrollments.length === 0 && (
+            <p className="text-muted-foreground text-sm">No course enrollments yet.</p>
+          )}
+          {assignment.student.offeringEnrollments.map((enrollment) => (
+            <div key={enrollment.id} className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-foreground font-medium">{enrollment.offering.title}</span>
+                <span className="text-muted-foreground">
+                  {enrollment.status === "COMPLETED"
+                    ? "Completed"
+                    : `${enrollment.progressPercentage}% complete`}
+                </span>
+              </div>
               <div
-                className="bg-primary h-full rounded-full transition-all duration-500"
-                style={{ width: `${assignment.enrollment.progressPercentage}%` }}
-              />
+                className="bg-muted h-2 w-full overflow-hidden rounded-full"
+                role="progressbar"
+                aria-valuenow={enrollment.progressPercentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div
+                  className="bg-primary h-full rounded-full transition-all duration-500"
+                  style={{ width: `${enrollment.progressPercentage}%` }}
+                />
+              </div>
+              {enrollment.currentModule && (
+                <p className="text-muted-foreground text-xs">
+                  Currently on: {enrollment.currentModule}
+                </p>
+              )}
             </div>
-            {assignment.enrollment.currentModule && (
-              <p className="text-muted-foreground text-xs">Currently on: {assignment.enrollment.currentModule}</p>
-            )}
-          </CardContent>
-        )}
+          ))}
+        </CardContent>
       </Card>
 
       <div className="flex flex-col gap-2">

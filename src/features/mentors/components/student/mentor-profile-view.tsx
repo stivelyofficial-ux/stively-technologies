@@ -10,9 +10,11 @@ import { socialLinksSchema } from "../../validation/mentor-schemas";
 
 interface MentorProfileViewProps {
   mentor: Mentor & { user: User };
+  /** Mentors are internship supervisors: the WhatsApp line is only offered to students who have started their internship. */
+  showWhatsApp?: boolean;
 }
 
-function MentorProfileView({ mentor }: MentorProfileViewProps) {
+function MentorProfileView({ mentor, showWhatsApp = false }: MentorProfileViewProps) {
   const socialLinks = socialLinksSchema.safeParse(mentor.socialLinks ?? {});
   const links = socialLinks.success ? socialLinks.data : null;
 
@@ -29,7 +31,7 @@ function MentorProfileView({ mentor }: MentorProfileViewProps) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <WhatsAppButton number={mentor.whatsappNumber} mentorName={mentor.user.name} className="w-fit" />
+        <WhatsAppButton number={showWhatsApp ? mentor.whatsappNumber : null} mentorName={mentor.user.name} className="w-fit" />
 
         {mentor.bio && <p className="text-foreground text-sm text-pretty whitespace-pre-line">{mentor.bio}</p>}
 

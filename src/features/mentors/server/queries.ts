@@ -16,7 +16,23 @@ export async function getMentorById(mentorId: string): Promise<Mentor | null> {
 export async function getMyAssignedStudents(mentorId: string) {
   return prisma.mentorAssignment.findMany({
     where: { mentorId, status: "ACTIVE" },
-    include: { student: true, enrollment: { include: { offering: true } } },
+    include: {
+      // The supervisor sees where each student is: every course enrollment (progress, current module) and their internship, if started.
+      student: {
+        include: {
+          offeringEnrollments: {
+            include: { offering: { select: { title: true } } },
+            orderBy: { createdAt: "desc" },
+          },
+          internshipTracks: {
+            select: { id: true, onboardedAt: true, status: true },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+        },
+      },
+      enrollment: { include: { offering: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 }

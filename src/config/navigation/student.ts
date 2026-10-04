@@ -1,4 +1,4 @@
-import { LayoutDashboard, LayoutGrid, GraduationCap, Users, Briefcase, Compass, Bookmark, ClipboardList, Receipt, Newspaper, LifeBuoy, Gift } from "lucide-react";
+import { LayoutDashboard, LayoutGrid, GraduationCap, Briefcase, Compass, Bookmark, ClipboardList, Receipt, Newspaper, LifeBuoy, Gift } from "lucide-react";
 
 import type { NavigationConfig } from "./types";
 
@@ -16,7 +16,6 @@ export const studentNavigation: NavigationConfig = [
     items: [
       { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
       { label: "My Learning", href: "/student/learning", icon: GraduationCap },
-      { label: "My Mentors", href: "/student/mentors", icon: Users },
       { label: "Refer & Earn", href: "/referrals", icon: Gift },
     ],
   },

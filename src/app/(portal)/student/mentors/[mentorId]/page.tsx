@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { requireRole } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 import { Container } from "@/components/shared/container";
 import {
@@ -38,6 +39,12 @@ export default async function StudentMentorDetailPage({ params }: PageProps) {
   const assignment = assignments.find((a) => a.mentorId === mentorId);
   if (!assignment) notFound();
 
+  const isIntern =
+    (await prisma.internshipTrack.count({
+      where: { studentId: user.id, onboardedAt: { not: null } },
+    })) > 0;
+  if (!isIntern) redirect("/student/dashboard");
+
   const [conversation, allSessions] = await Promise.all([
     getOrCreateConversation(mentorId, user.id),
     getStudentSessions(user.id),
@@ -60,7 +67,7 @@ export default async function StudentMentorDetailPage({ params }: PageProps) {
     <>
       <SetPageTitle title={assignment.mentor.user.name ?? "Mentor"} />
       <Container className="flex flex-col gap-8 pt-7 pb-16 sm:pt-9">
-        <MentorProfileView mentor={assignment.mentor} />
+        <MentorProfileView mentor={assignment.mentor} showWhatsApp={isIntern} />
 
         <div className="flex flex-col gap-3">
           <h3 className="text-foreground text-lg font-semibold">Sessions</h3>

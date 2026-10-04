@@ -32,11 +32,18 @@ function AssignedStudentsList({ assignments }: { assignments: Assignment[] }) {
                 <CardDescription>{assignment.student.email}</CardDescription>
               </div>
             </CardHeader>
-            {assignment.enrollment && (
-              <CardFooter className="border-border/70 mt-auto border-t pt-4">
-                <Badge variant="outline">{assignment.enrollment.offering.title}</Badge>
-              </CardFooter>
-            )}
+            <CardFooter className="border-border/70 mt-auto flex flex-wrap gap-2 border-t pt-4">
+              {assignment.student.internshipTracks[0]?.onboardedAt ? (
+                <Badge variant="success">Intern</Badge>
+              ) : (
+                <Badge variant="secondary">In course</Badge>
+              )}
+              {assignment.student.offeringEnrollments.slice(0, 2).map((enrollment) => (
+                <Badge key={enrollment.id} variant="outline">
+                  {enrollment.offering.title} · {enrollment.progressPercentage}%
+                </Badge>
+              ))}
+            </CardFooter>
           </Card>
         </Link>
       ))}
