@@ -18,6 +18,7 @@ import {
 import { getProjectTemplate } from "../lib/project-templates";
 import { addMonths, isValidDuration } from "../lib/durations";
 import { sendDurationChangedEmail } from "../server/emails";
+import { issueCompletionDocuments } from "@/features/internship-documents/server/issuance";
 
 async function resolveActorTeamMemberId(): Promise<string | undefined> {
   const session = await auth();
@@ -187,6 +188,14 @@ export async function reviewFinalSubmission(input: unknown): Promise<ActionResul
         finalReviewedById: admin.id,
       },
     });
+    if (status === "APPROVED") {
+      // An approved final project completes the internship: close the track and issue the completion certificate, recommendation and experience letters.
+      await prisma.internshipTrack.update({
+        where: { id: trackId },
+        data: { status: "COMPLETED", completedAt: new Date() },
+      });
+      await issueCompletionDocuments(trackId);
+    }
     revalidateTrack(trackId);
     return { success: true };
   } catch (error) {
@@ -255,6 +264,8 @@ export async function updateInternshipTrackStatus(
       where: { id: trackId },
       data: { status, completedAt: status === "COMPLETED" ? new Date() : null },
     });
+    // Marking an internship completed by hand is the same milestone as an approved final project.
+    if (status === "COMPLETED") await issueCompletionDocuments(trackId);
     revalidateTrack(trackId);
     return { success: true };
   } catch (error) {

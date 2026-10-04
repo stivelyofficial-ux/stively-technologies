@@ -2595,10 +2595,55 @@ model InternshipTrack {
   termsAcceptedAt DateTime?
   termsVersion    String?
 
+  documents InternshipDocument[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([studentId])
+}
+
+enum InternshipDocumentKind {
+  OFFER_LETTER
+  INTERNSHIP_CERTIFICATE
+  LETTER_OF_RECOMMENDATION
+  EXPERIENCE_LETTER
+}
+
+/// The paperwork an intern earns along the way: an offer letter when the
+/// internship starts; the completion certificate, letter of recommendation
+/// and experience letter when the final project is approved. Distinct from
+/// `Certificate` (the TRAINING certificate earned by finishing the course).
+/// Like certificates, only the facts are stored - the PDF is rendered on
+/// demand from the Stively templates, and the snapshot here is what keeps an
+/// issued document from changing if the intern's profile does later.
+model InternshipDocument {
+  id String @id @default(cuid())
+
+  trackId String
+  track   InternshipTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  kind InternshipDocumentKind
+
+  /// Public reference printed on the document and in its QR, e.g. STV-FEI-OL-2026-00005. Derived from the track sequence, so issuing twice can never create a second number.
+  documentNumber String @unique
+
+  recipientName String
+  program       String
+  startDate     DateTime
+  endDate       DateTime?
+  /// e.g. "2 Months" - computed once at issuance from the real start/end dates.
+  durationLabel String
+
+  status        CertificateStatus @default(ISSUED)
+  issuedAt      DateTime          @default(now())
+  revokedAt     DateTime?
+  revokedReason String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([trackId, kind])
+  @@index([trackId])
 }
 
 /// One project per track - the real, assigned brief ("build a real-time

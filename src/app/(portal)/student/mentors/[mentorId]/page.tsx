@@ -13,7 +13,10 @@ import {
 import { sendMessageToMentorContent } from "@/features/mentors/actions/message-actions";
 import { MentorProfileView } from "@/features/mentors/components/student/mentor-profile-view";
 import { ConversationPanel } from "@/features/mentors/components/shared/conversation-panel";
-import { SessionList, type SessionListItem } from "@/features/mentors/components/shared/session-list";
+import {
+  SessionList,
+  type SessionListItem,
+} from "@/features/mentors/components/shared/session-list";
 
 interface PageProps {
   params: Promise<{ mentorId: string }>;
@@ -56,7 +59,7 @@ export default async function StudentMentorDetailPage({ params }: PageProps) {
   return (
     <>
       <SetPageTitle title={assignment.mentor.user.name ?? "Mentor"} />
-      <Container className="flex flex-col gap-8 py-8">
+      <Container className="flex flex-col gap-8 pt-7 pb-16 sm:pt-9">
         <MentorProfileView mentor={assignment.mentor} />
 
         <div className="flex flex-col gap-3">

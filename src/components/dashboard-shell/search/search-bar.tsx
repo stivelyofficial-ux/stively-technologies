@@ -32,11 +32,11 @@ function SearchBar() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Search"
-        className="border-border bg-muted/40 text-muted-foreground hover:border-foreground/20 hover:bg-muted flex h-9 w-full max-w-72 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors duration-150 ease-out"
+        className="border-border bg-card text-muted-foreground hover:border-primary/40 flex h-11 w-full max-w-[260px] items-center gap-2.5 rounded-full border px-3.5 text-sm transition-colors duration-150 ease-out"
       >
-        <Search className="size-4 shrink-0" aria-hidden="true" />
-        <span className="flex-1 truncate text-left">Search...</span>
-        <kbd className="border-border bg-background hidden shrink-0 rounded-md border px-1.5 py-0.5 text-xs sm:inline-block">
+        <Search className="size-[18px] shrink-0" aria-hidden="true" />
+        <span className="flex-1 truncate text-left">Search courses…</span>
+        <kbd className="border-border text-muted-foreground hidden shrink-0 rounded-md border px-1.5 py-px text-xs sm:inline-block">
           ⌘K
         </kbd>
       </button>

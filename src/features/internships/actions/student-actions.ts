@@ -14,6 +14,7 @@ import {
 } from "../validation";
 import { addMonths } from "../lib/durations";
 import { STIPEND_TERMS_VERSION } from "../lib/stipend-terms";
+import { issueStartDocuments } from "@/features/internship-documents/server/issuance";
 
 async function requireOwnedTrack(trackId: string, studentId: string) {
   return prisma.internshipTrack.findFirst({ where: { id: trackId, studentId } });
@@ -140,6 +141,8 @@ export async function startInternship(input: unknown): Promise<ActionResult> {
         termsVersion: STIPEND_TERMS_VERSION,
       },
     });
+    // The offer letter is issued the moment the internship starts (failures are logged, never block starting).
+    await issueStartDocuments(track.id);
     revalidatePath("/intern", "layout");
     return { success: true };
   } catch (error) {

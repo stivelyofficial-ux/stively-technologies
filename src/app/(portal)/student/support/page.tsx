@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/session";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 import { Container } from "@/components/shared/container";
+import { PageHeader } from "@/components/dashboard-shell/widgets/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SupportQueryForm } from "@/features/support/components/student/support-query-form";
@@ -27,15 +28,11 @@ export default async function StudentSupportPage() {
   return (
     <>
       <SetPageTitle title="Support" />
-      <Container className="flex flex-col gap-6 py-8">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-foreground font-display text-2xl font-semibold tracking-tight">
-            Need a hand with something?
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Send us a message and a real person will get back to you - usually within a day.
-          </p>
-        </div>
+      <Container className="flex flex-col gap-7 pt-7 pb-16 sm:pt-9">
+        <PageHeader
+          title="Need a hand with something?"
+          description="Send us a message and a real person will get back to you - usually within a day."
+        />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Card>
@@ -45,7 +42,9 @@ export default async function StudentSupportPage() {
               </span>
               <div className="flex flex-col gap-1">
                 <h2 className="text-foreground text-sm font-semibold">WhatsApp</h2>
-                <p className="text-muted-foreground text-sm">Fastest way to reach us - a real person replies.</p>
+                <p className="text-muted-foreground text-sm">
+                  Fastest way to reach us - a real person replies.
+                </p>
               </div>
               <Button asChild variant="outline" size="sm">
                 <Link
@@ -66,7 +65,9 @@ export default async function StudentSupportPage() {
               </span>
               <div className="flex flex-col gap-1">
                 <h2 className="text-foreground text-sm font-semibold">Send a message</h2>
-                <p className="text-muted-foreground text-sm">Prefer writing it out? We&apos;ll reply here or by email.</p>
+                <p className="text-muted-foreground text-sm">
+                  Prefer writing it out? We&apos;ll reply here or by email.
+                </p>
               </div>
               <SupportQueryForm />
             </CardContent>

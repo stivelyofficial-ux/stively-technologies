@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/intern/tasks", label: "Tasks", exact: false },
   { href: "/intern/reports", label: "Daily report", exact: false },
   { href: "/intern/submit", label: "Final submission", exact: false },
+  { href: "/intern/documents", label: "Documents", exact: false },
 ] as const;
 
 function InternNav() {

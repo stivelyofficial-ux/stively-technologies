@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/session";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 import { EmptyState } from "@/components/sections/empty-state";
 import { Container } from "@/components/shared/container";
+import { PageHeader } from "@/components/dashboard-shell/widgets/page-header";
 
 export const metadata: Metadata = { title: "Saved Programs" };
 
@@ -15,7 +16,8 @@ export default async function SavedProgramsPage() {
   return (
     <>
       <SetPageTitle title="Saved Programs" />
-      <Container className="py-8">
+      <Container className="flex flex-col gap-7 pt-7 pb-16 sm:pt-9">
+        <PageHeader title="Saved Programs" description="Programs you bookmark will show up here." />
         <EmptyState
           icon={Bookmark}
           title="No saved programs yet"

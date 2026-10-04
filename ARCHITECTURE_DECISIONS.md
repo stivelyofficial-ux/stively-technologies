@@ -670,6 +670,21 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-040: Internship documents (offer letter, completion certificate, recommendation, experience letter)
+
+**Date:** 2026-10-04
+**Problem:** Interns need the paperwork Stively promised (offer letter, internship certificate, LOR, experience letter), shareable on LinkedIn, in the look of the founder's own templates - and it must stay distinct from the TRAINING certificate earned by finishing the course.
+**Options considered:** (1) Reuse `Certificate` (tied to an enrollment - wrong lifecycle); (2) store pre-rendered PDFs (needs object storage - Cloudinary PDF delivery is already a known blocker); (3) new row-per-document model rendered on demand, like training certificates.
+**Chosen solution:** `InternshipDocument` (unique per track+kind, number derived from `InternshipTrack.sequence` e.g. STV-FEI-OL-2026-00005). Issued idempotently by `features/internship-documents/server/issuance.ts`: offer letter in `startInternship`; completion certificate + LOR + experience letter when `reviewFinalSubmission` approves (track also set COMPLETED) or an admin marks the track completed. PDFs rendered on demand (`/api/internship-documents/[number]/pdf`, owner/admin only, no-store). Letters reuse the template artwork (header, signature/seal, footer cropped from the PNGs) with live text; the landscape certificate is the template with its dynamic zones cleared and redrawn. Public `/verify/document/[number]` (+ OG image) shows minimal fields; intern portal gets a Documents tab with per-document share cards.
+**Reason:** Same proven pattern as training certificates (no storage layer; DB row is the record); the template look is preserved pixel-for-pixel where it is static.
+**Trade-offs:** Completion-certificate artwork is a raster background (large PDF, ~400 KB); changing its static text means re-exporting the artwork. Letter wording is gender-neutral and says "client-style project" / no fixed training length (the template said "2-week training" and used he/him).
+**Database impact:** Additive: enum `InternshipDocumentKind`, table `InternshipDocument` (migration 20261004190000).
+**API impact:** New PDF route and public verify route; no existing API changed.
+**Future considerations:** Email the offer letter on start; admin "revoke/re-issue"; backfill offer letters for interns who started before this shipped.
+**Related components:** `src/features/internship-documents/*`, `src/app/intern/documents`, `src/app/(marketing)/verify/document`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

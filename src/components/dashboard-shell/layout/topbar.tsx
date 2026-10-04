@@ -33,12 +33,14 @@ function Topbar({ user, notifications }: TopbarProps) {
   const navigation = getNavigationForRole(user.role);
 
   return (
-    <header className="border-border bg-background/80 sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b px-4 backdrop-blur-md md:px-6">
+    <header className="border-border bg-background/90 sticky top-0 z-30 flex h-[76px] shrink-0 items-center gap-3.5 border-b px-4 backdrop-blur-md md:px-7">
       <MobileSidebar navigation={navigation} />
 
-      <h1 className="text-foreground truncate text-base font-semibold md:text-lg">{title}</h1>
+      <h1 className="text-foreground min-w-0 flex-1 truncate text-lg font-semibold md:text-xl">
+        {title}
+      </h1>
 
-      <div className="ml-auto flex items-center gap-1.5 md:gap-2.5">
+      <div className="flex items-center gap-1.5 md:gap-2.5">
         <div className="hidden md:block">
           <SearchBar />
         </div>

@@ -15,7 +15,9 @@ interface StudentRequestDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: StudentRequestDetailPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: StudentRequestDetailPageProps): Promise<Metadata> {
   const { id } = await params;
   return { title: `Request ${id.slice(0, 8)}` };
 }
@@ -34,7 +36,7 @@ export default async function StudentRequestDetailPage({ params }: StudentReques
   return (
     <>
       <SetPageTitle title={formatRequestNumber(request.sequence)} />
-      <Container className="py-8">
+      <Container className="pt-7 pb-16 sm:pt-9">
         {request.status === "DRAFT" ? (
           <EmptyState
             icon={FileEdit}

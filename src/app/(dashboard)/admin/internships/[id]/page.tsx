@@ -15,6 +15,8 @@ import { PROJECT_TEMPLATES } from "@/features/internships/lib/project-templates"
 import { FinalSubmissionReview } from "@/features/internships/components/admin/final-submission-review";
 import { TaskManager } from "@/features/internships/components/admin/task-manager";
 import { DurationControl } from "@/features/internships/components/admin/duration-control";
+import { listTrackDocuments } from "@/features/internship-documents/server/issuance";
+import { KIND_META } from "@/features/internship-documents/lib/documents";
 import { TrackStatusControls } from "@/features/internships/components/admin/track-status-controls";
 
 interface AdminInternshipDetailPageProps {
@@ -39,6 +41,7 @@ export default async function AdminInternshipDetailPage({
   const track = await getInternshipTrackForAdmin(id);
   if (!track) notFound();
 
+  const documents = await listTrackDocuments(track.id);
   const stats = computeTaskStats(track.tasks);
   const daysLeft = daysUntil(track.endsAt);
   const lastReport = track.dailyReports[0]?.reportDate;
@@ -171,6 +174,40 @@ export default async function AdminInternshipDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Documents</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {documents.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              Nothing issued yet. The offer letter is issued when the intern starts; the completion
+              certificate, recommendation and experience letters when the final project is approved
+              (or the internship is marked completed).
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {documents.map((doc) => (
+                <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                  <span className="text-foreground font-medium">
+                    {KIND_META[doc.kind].label}{" "}
+                    <span className="text-muted-foreground font-mono text-xs">{doc.documentNumber}</span>
+                  </span>
+                  <a
+                    href={`/api/internship-documents/${doc.documentNumber}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    View PDF
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

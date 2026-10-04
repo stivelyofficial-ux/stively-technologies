@@ -25,7 +25,7 @@ export const studentNavigation: NavigationConfig = [
     items: [
       { label: "Offerings", href: "/offerings", icon: LayoutGrid, external: true },
       { label: "Training Programs", href: "/training", icon: GraduationCap, external: true },
-      { label: "Internships", href: "/intern", icon: Briefcase },
+      { label: "Intern Portal", href: "/intern", icon: Briefcase },
       { label: "Career Guidance", href: "/student/career-guidance", icon: Compass },
       { label: "Saved Programs", href: "/student/saved-programs", icon: Bookmark },
       { label: "My Requests", href: "/student/requests", icon: ClipboardList },

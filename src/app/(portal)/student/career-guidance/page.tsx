@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/session";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 import { EmptyState } from "@/components/sections/empty-state";
 import { Container } from "@/components/shared/container";
+import { PageHeader } from "@/components/dashboard-shell/widgets/page-header";
 
 export const metadata: Metadata = { title: "Career Guidance" };
 
@@ -15,7 +16,11 @@ export default async function CareerGuidancePage() {
   return (
     <>
       <SetPageTitle title="Career Guidance" />
-      <Container className="py-8">
+      <Container className="flex flex-col gap-7 pt-7 pb-16 sm:pt-9">
+        <PageHeader
+          title="Career Guidance"
+          description="Plan your next step with someone who has done it."
+        />
         <EmptyState
           icon={Compass}
           title="Career guidance, one conversation away"

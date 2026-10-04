@@ -29,7 +29,7 @@ export default async function StudentOrderDetailPage({ params }: StudentOrderDet
   return (
     <>
       <SetPageTitle title={formatOrderNumber(order.sequence)} />
-      <Container className="py-8">
+      <Container className="pt-7 pb-16 sm:pt-9">
         <OrderDetailView order={order} />
       </Container>
     </>

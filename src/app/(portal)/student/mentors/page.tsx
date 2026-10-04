@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { requireRole } from "@/lib/session";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 import { Container } from "@/components/shared/container";
+import { PageHeader } from "@/components/dashboard-shell/widgets/page-header";
 import { getStudentMentors } from "@/features/mentors/server/queries";
 import { MyMentorsList } from "@/features/mentors/components/student/my-mentors-list";
 
@@ -15,8 +16,11 @@ export default async function StudentMentorsPage() {
   return (
     <>
       <SetPageTitle title="My Mentors" />
-      <Container className="flex flex-col gap-6 py-8">
-        <h2 className="font-display text-2xl font-semibold tracking-tight">My Mentors</h2>
+      <Container className="flex flex-col gap-7 pt-7 pb-16 sm:pt-9">
+        <PageHeader
+          title="My Mentors"
+          description="The mentors guiding you, and a place to message them."
+        />
         <MyMentorsList assignments={assignments} />
       </Container>
     </>

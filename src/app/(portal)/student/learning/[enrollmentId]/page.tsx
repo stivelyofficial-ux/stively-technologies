@@ -13,6 +13,12 @@ import { EnrollmentTimeline } from "@/features/enrollments/components/enrollment
 import { ComingSoonSection } from "@/features/enrollments/components/coming-soon-section";
 import { SupportCard } from "@/features/enrollments/components/support-card";
 import { CertificateCard } from "@/features/certificates/components/student/certificate-card";
+import { getCertificateVerificationUrl } from "@/features/certificates/lib/verification";
+import { ShareAchievement } from "@/features/sharing/components/share-achievement";
+import { certificateCaption, linkedinCertificateUrl } from "@/features/sharing/lib/share-links";
+import { getOrCreateReferralCode } from "@/features/referrals/server/queries";
+import { courseReferralLink, SHAREABLE_REFERRAL_SLUGS } from "@/features/referrals/lib/shareable";
+import { siteConfig } from "@/config/site";
 import { SaleCountdown } from "@/features/offerings/components/sale-countdown";
 import { ProgramProgressHero } from "@/features/learning/components/student/program-progress-hero";
 import { CurriculumNav } from "@/features/learning/components/student/curriculum-nav";
@@ -53,7 +59,10 @@ export async function generateMetadata({ params }: EnrollmentLearningPageProps):
  * back to Phase 8's exact MyLearningView, so nothing regresses for
  * offerings this phase didn't touch.
  */
-export default async function EnrollmentLearningPage({ params, searchParams }: EnrollmentLearningPageProps) {
+export default async function EnrollmentLearningPage({
+  params,
+  searchParams,
+}: EnrollmentLearningPageProps) {
   const user = await requireRole("STUDENT");
   const { enrollmentId } = await params;
   const { q } = await searchParams;
@@ -68,7 +77,7 @@ export default async function EnrollmentLearningPage({ params, searchParams }: E
     return (
       <>
         <SetPageTitle title={enrollment.offering.title} />
-        <Container className="py-8">
+        <Container className="pt-7 pb-16 sm:pt-9">
           <EmptyState
             icon={ClipboardList}
             title="Not available yet"
@@ -85,7 +94,7 @@ export default async function EnrollmentLearningPage({ params, searchParams }: E
     return (
       <>
         <SetPageTitle title={enrollment.offering.title} />
-        <Container className="py-8">
+        <Container className="pt-7 pb-16 sm:pt-9">
           <MyLearningView enrollment={enrollment} history={enrollment.history} />
         </Container>
       </>
@@ -93,14 +102,45 @@ export default async function EnrollmentLearningPage({ params, searchParams }: E
   }
 
   const searchResults = q ? await searchLessons(enrollmentId, user.id, q) : null;
-  const certificate = policy.canViewCertificates ? await prisma.certificate.findUnique({ where: { enrollmentId } }) : null;
+  const certificate = policy.canViewCertificates
+    ? await prisma.certificate.findUnique({ where: { enrollmentId } })
+    : null;
+  // The "share your achievement" block - only for an issued certificate. The post carries the learner's own
+  // referral link (when this course takes referrals), so every friend who enrols from it credits them.
+  let shareSection: React.ReactNode = null;
+  if (certificate && certificate.status === "ISSUED") {
+    const verifyUrl = getCertificateVerificationUrl(certificate.certificateNumber);
+    const slug = enrollment.offering.slug;
+    const referralCode = (SHAREABLE_REFERRAL_SLUGS as readonly string[]).includes(slug)
+      ? await getOrCreateReferralCode(user.id)
+      : null;
+    const courseUrl = referralCode
+      ? courseReferralLink(siteConfig.productionUrl, slug, referralCode)
+      : `${siteConfig.productionUrl}/offerings/${slug}`;
+    shareSection = (
+      <ShareAchievement
+        title="Share your certificate"
+        benefit="Recruiters can click your link and see a verified Stively certificate with your name on it - it is proof, not just a claim."
+        url={verifyUrl}
+        caption={certificateCaption({ courseName: certificate.courseName, verifyUrl, courseUrl })}
+        shortText={`I just earned a verified certificate in ${certificate.courseName} from Stively Technologies.`}
+        linkedinProfileUrl={linkedinCertificateUrl({
+          name: certificate.courseName,
+          organizationName: "Stively Technologies",
+          issuedAt: certificate.issuedAt ?? certificate.createdAt,
+          certUrl: verifyUrl,
+          certId: certificate.certificateNumber,
+        })}
+      />
+    );
+  }
   const preEnrollmentDeadline = enrollment.offering.saleEndsAt;
   const isPreEnrollmentActive = isDeadlineActive(preEnrollmentDeadline);
 
   return (
     <>
       <SetPageTitle title={enrollment.offering.title} />
-      <Container className="flex flex-col gap-8 py-8">
+      <Container className="flex flex-col gap-8 pt-7 pb-16 sm:pt-9">
         {/* Pre-enrollment courses only (Offering.saleEndsAt set and still
           future) - the price is real (discountPrice while this countdown
           runs, offering.price after), and so is the access: every lesson
@@ -110,7 +150,9 @@ export default async function EnrollmentLearningPage({ params, searchParams }: E
         {isPreEnrollmentActive && preEnrollmentDeadline && (
           <div className="border-primary/20 bg-primary/5 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
             <div className="flex flex-col gap-0.5">
-              <p className="text-foreground text-sm font-medium">You&apos;re pre-enrolled - nice early move.</p>
+              <p className="text-foreground text-sm font-medium">
+                You&apos;re pre-enrolled - nice early move.
+              </p>
               <p className="text-muted-foreground text-sm">
                 Every lesson below is already yours to start. The regular price kicks in once this
                 countdown ends.
@@ -131,10 +173,15 @@ export default async function EnrollmentLearningPage({ params, searchParams }: E
         {searchResults ? (
           <div className="flex flex-col gap-3">
             <h2 className="text-foreground text-sm font-medium">
-              {searchResults.length} result{searchResults.length === 1 ? "" : "s"} for &quot;{q}&quot;
+              {searchResults.length} result{searchResults.length === 1 ? "" : "s"} for &quot;{q}
+              &quot;
             </h2>
             {searchResults.length === 0 ? (
-              <EmptyState icon={SearchX} title="No lessons match" description="Try a different search term." />
+              <EmptyState
+                icon={SearchX}
+                title="No lessons match"
+                description="Try a different search term."
+              />
             ) : (
               <ul className="flex flex-col gap-2">
                 {searchResults.map((lesson) => (
@@ -167,7 +214,11 @@ export default async function EnrollmentLearningPage({ params, searchParams }: E
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {policy.canViewCertificates ? (
-            <CertificateCard enrollmentId={enrollmentId} certificate={certificate} />
+            <CertificateCard
+              enrollmentId={enrollmentId}
+              certificate={certificate}
+              shareSection={shareSection}
+            />
           ) : (
             <ComingSoonSection {...CERTIFICATES_COMING_SOON} />
           )}

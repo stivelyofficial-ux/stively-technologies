@@ -9,6 +9,7 @@ import { EnrollmentStatusBadge } from "@/features/enrollments/components/enrollm
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Container } from "@/components/shared/container";
+import { PageHeader } from "@/components/dashboard-shell/widgets/page-header";
 
 export const metadata: Metadata = { title: "My Learning" };
 
@@ -27,7 +28,7 @@ export default async function StudentLearningPage() {
     return (
       <>
         <SetPageTitle title="My Learning" />
-        <Container className="py-8">
+        <Container className="pt-7 pb-16 sm:pt-9">
           <NoAccessView />
         </Container>
       </>
@@ -41,19 +42,21 @@ export default async function StudentLearningPage() {
   return (
     <>
       <SetPageTitle title="My Learning" />
-      <Container className="flex flex-col gap-6 py-8">
-        <h2 className="font-display text-2xl font-semibold tracking-tight">My Learning</h2>
+      <Container className="flex flex-col gap-7 pt-7 pb-16 sm:pt-9">
+        <PageHeader title="My Learning" description="Pick up any program you are enrolled in." />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {summary.activeEnrollments.map((enrollment) => (
             <Link key={enrollment.id} href={`/student/learning/${enrollment.id}`}>
-              <Card variant="interactive" className="h-full">
+              <Card className="hover:border-primary/50 h-full transition-colors">
                 <CardHeader>
                   <EnrollmentStatusBadge status={enrollment.status} />
                   <CardTitle className="font-display">{enrollment.offering.title}</CardTitle>
                   <CardDescription>{enrollment.offering.shortDescription}</CardDescription>
                 </CardHeader>
                 <CardFooter className="border-border/70 mt-auto border-t pt-4">
-                  <span className="text-foreground text-sm font-medium">{enrollment.progressPercentage}% complete</span>
+                  <span className="text-foreground text-sm font-medium">
+                    {enrollment.progressPercentage}% complete
+                  </span>
                 </CardFooter>
               </Card>
             </Link>

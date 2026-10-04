@@ -21,7 +21,13 @@ export interface AiTutorChatProps {
 }
 
 /** The interactive half of the AI Tutor block - BlockAiConversation loads the initial state server-side, this just handles sending new messages and appending the exchange once a real reply comes back. */
-function AiTutorChat({ enrollmentId, lessonId, initialMessages, initialRemainingToday, dailyLimit }: AiTutorChatProps) {
+function AiTutorChat({
+  enrollmentId,
+  lessonId,
+  initialMessages,
+  initialRemainingToday,
+  dailyLimit,
+}: AiTutorChatProps) {
   const [messages, setMessages] = React.useState<ChatMessage[]>(initialMessages);
   const [question, setQuestion] = React.useState("");
   const [remaining, setRemaining] = React.useState(initialRemainingToday);
@@ -55,28 +61,49 @@ function AiTutorChat({ enrollmentId, lessonId, initialMessages, initialRemaining
       return;
     }
 
-    setMessages((prev) => [...prev, { id: `${optimisticId}-reply`, role: "ASSISTANT", content: result.reply ?? "" }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: `${optimisticId}-reply`, role: "ASSISTANT", content: result.reply ?? "" },
+    ]);
     if (typeof result.remainingToday === "number") setRemaining(result.remainingToday);
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <div ref={listRef} className="flex max-h-96 flex-col gap-3 overflow-y-auto pr-1">
+      <div
+        ref={listRef}
+        className="flex max-h-[min(24rem,45dvh)] flex-col gap-3 overflow-y-auto pr-1 2xl:max-h-[calc(100dvh-27rem)]"
+      >
         {messages.length === 0 && (
-          <p className="text-muted-foreground text-sm">No questions yet - ask anything about this lesson to get started.</p>
+          <p className="text-muted-foreground text-sm">
+            No questions yet - ask anything about this lesson to get started.
+          </p>
         )}
         {messages.map((m) => (
           <div
             key={m.id}
             className={
-              "max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-line " +
-              (m.role === "USER" ? "bg-primary text-primary-foreground self-end" : "bg-muted text-foreground self-start")
+              "max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line " +
+              (m.role === "USER"
+                ? "bg-primary text-primary-foreground self-end rounded-br-md"
+                : "bg-muted text-foreground self-start rounded-bl-md")
             }
           >
             {m.content}
           </div>
         ))}
-        {isPending && <div className="bg-muted text-muted-foreground self-start rounded-lg px-3 py-2 text-sm">Thinking…</div>}
+        {isPending && (
+          <div
+            className="bg-muted text-muted-foreground flex items-center gap-2 self-start rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm"
+            role="status"
+          >
+            <span
+              className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+              aria-hidden="true"
+            />
+            Thinking…
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
@@ -91,9 +118,16 @@ function AiTutorChat({ enrollmentId, lessonId, initialMessages, initialRemaining
         {error && <p className="text-destructive text-sm">{error}</p>}
         <div className="flex items-center justify-between gap-3">
           <span className="text-muted-foreground text-xs">
-            {remaining > 0 ? `${remaining} of ${dailyLimit} questions left today` : "Daily limit reached - try again tomorrow"}
+            {remaining > 0
+              ? `${remaining} of ${dailyLimit} questions left today`
+              : "Daily limit reached - try again tomorrow"}
           </span>
-          <Button type="submit" size="sm" loading={isPending} disabled={!question.trim() || remaining <= 0}>
+          <Button
+            type="submit"
+            size="sm"
+            loading={isPending}
+            disabled={!question.trim() || remaining <= 0}
+          >
             Ask
           </Button>
         </div>

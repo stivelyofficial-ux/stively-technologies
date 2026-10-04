@@ -5,6 +5,7 @@ import type { Certificate } from "@prisma/client";
 import { resend, EMAIL_FROM } from "@/lib/resend";
 import { siteConfig } from "@/config/site";
 import { getCertificateVerificationUrl } from "../lib/verification";
+import { linkedinCertificateUrl } from "@/features/sharing/lib/share-links";
 
 /** Same escaping discipline as guest-fulfillment.ts's own copy - names come from what the student typed at signup. */
 function escapeHtml(value: string): string {
@@ -30,6 +31,7 @@ function buildCertificateIssuedEmail(params: {
   certificateNumber: string;
   verificationUrl: string;
   downloadUrl: string;
+  linkedinUrl: string;
 }): { subject: string; html: string } {
   const firstName = escapeHtml(params.firstName);
   const courseName = escapeHtml(params.courseName);
@@ -101,6 +103,15 @@ function buildCertificateIssuedEmail(params: {
 
           <tr>
             <td style="padding:22px 28px 0;">
+              <p style="margin:0 0 10px;font-size:15px;color:#374151;line-height:1.65;">
+                <strong style="color:#0f172a;">Put it on your LinkedIn.</strong> Recruiters can click through and verify it is genuine.
+              </p>
+              <a href="${params.linkedinUrl}" style="display:inline-block;background:#0A66C2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 18px;border-radius:999px;">Add to LinkedIn profile</a>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:22px 28px 0;">
               <p style="margin:0;font-size:15px;color:#374151;line-height:1.65;">
                 <strong style="color:#0f172a;">Need help?</strong><br>
                 Contact us at <a href="mailto:${SUPPORT_EMAIL}" style="color:#4f46e5;">${SUPPORT_EMAIL}</a>
@@ -141,6 +152,13 @@ export async function sendCertificateIssuedEmail(certificate: Certificate): Prom
     certificateNumber: certificate.certificateNumber,
     verificationUrl,
     downloadUrl,
+    linkedinUrl: linkedinCertificateUrl({
+      name: certificate.courseName,
+      organizationName: "Stively Technologies",
+      issuedAt: certificate.issuedAt ?? certificate.createdAt,
+      certUrl: verificationUrl,
+      certId: certificate.certificateNumber,
+    }),
   });
 
   await resend.emails.send({ from: EMAIL_FROM, to: certificate.recipientEmail, subject, html });

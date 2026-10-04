@@ -37,6 +37,7 @@ function ItemTabLink({
   done,
   doneIcon,
   className,
+  showIndex = true,
 }: {
   href: string;
   /** Pre-rendered by the caller (a Server Component) - see PendingIcon's comment on why this can't be a bare component reference. */
@@ -47,11 +48,13 @@ function ItemTabLink({
   done: boolean;
   doneIcon: React.ReactNode;
   className: string;
+  /** The numbered prefix ("1.") suits a tab strip; a segmented control reads better without it. */
+  showIndex?: boolean;
 }) {
   return (
     <Link href={href} aria-current={isActive ? "page" : undefined} className={className}>
       {done ? doneIcon : <PendingIcon icon={icon} />}
-      <span className="text-muted-foreground/70 tabular-nums">{index + 1}.</span>
+      {showIndex && <span className="text-muted-foreground/70 tabular-nums">{index + 1}.</span>}
       {title}
     </Link>
   );

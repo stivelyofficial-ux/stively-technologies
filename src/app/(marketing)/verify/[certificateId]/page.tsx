@@ -13,7 +13,20 @@ interface VerifyPageProps {
 
 export async function generateMetadata({ params }: VerifyPageProps): Promise<Metadata> {
   const { certificateId } = await params;
-  return { title: `Verify Certificate ${certificateId}` };
+  const certificate = await getPublicCertificateByNumber(certificateId);
+  const valid = certificate?.status === "ISSUED";
+  const title = valid
+    ? `${certificate.recipientName} - ${certificate.courseName}`
+    : `Verify Certificate ${certificateId}`;
+  const description = valid
+    ? `Verified Stively certificate of completion (ID ${certificate.certificateNumber}).`
+    : "Check a Stively certificate of completion.";
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 function formatDate(date: Date) {

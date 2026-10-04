@@ -49,7 +49,7 @@ function DashboardShell({
           <Topbar user={user} notifications={notifications} />
 
           <div className="flex min-h-0 flex-1">
-            <main id="main-content" className="min-w-0 flex-1 overflow-y-auto">
+            <main id="main-content" data-portal-main className="min-w-0 flex-1 overflow-y-auto">
               {children}
             </main>
             {rightDrawer && (

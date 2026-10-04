@@ -31,17 +31,17 @@ function NavItem({ item, onNavigate }: NavItemProps) {
       onClick={onNavigate}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium outline-none",
+        "group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[15px] outline-none",
         "transition-colors duration-150 ease-out",
-        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "focus-visible:ring-ring focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2",
         isActive
-          ? "bg-accent text-foreground"
-          : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+          ? "bg-primary/10 text-primary font-semibold"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground font-medium"
       )}
     >
       <item.icon
         className={cn(
-          "size-4 shrink-0 transition-colors duration-150",
+          "size-5 shrink-0 transition-colors duration-150",
           isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
         )}
         aria-hidden="true"

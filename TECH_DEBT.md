@@ -127,3 +127,26 @@ Every shortcut, gap, or deferred decision goes here the moment it's identified â
 ---
 
 *To add an item: one line of what it is, why it exists (usually "no time" or "smaller scope than the ideal solution"), and an honest priority + effort estimate â€” not an aspirational one.*
+
+
+
+Subject: Request to change your internship duration
+
+Hi Vennapusa Siva Lahya,
+
+Thank you for getting in touch, and no problem at all. Choosing the wrong duration by mistake is easy to do, and we can correct it for you.
+
+Because today is a non-working day, your request will be processed on Monday. Please don't worry. It will be resolved by then, and nothing about your internship, project or progress is affected in the meantime. You can carry on working as usual.
+
+Once the update is done, we'll send you a short email to confirm your new 3 months duration and your new end date. Your portal and your Intern ID card will show the updated dates too.
+
+If you have any questions in the meantime, just reply to this email.
+
+Warm regards,
+Stively Technologies
+team@stively.com | www.stively.com
+
+
+
+On Oct 4 2026, at 8:57 am, Vennapusa Siva Lahya <lahyavennapusa0104@gmail.com> wrote:
+Good morning,today I am qualified for internship portal and there asked for duration of internship it is by default 1 month and I read terms and conditions so immediately click continue I forget to change internship duration for 3 months.please change my internship duration to 3 months

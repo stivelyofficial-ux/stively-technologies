@@ -13,7 +13,18 @@ interface VerifyInternPageProps {
 
 export async function generateMetadata({ params }: VerifyInternPageProps): Promise<Metadata> {
   const { internId } = await params;
-  return { title: `Verify Intern ${internId}`, robots: { index: false, follow: false } };
+  const intern = await getPublicInternByInternId(decodeURIComponent(internId));
+  const title = intern ? `${intern.name} - Stively Intern` : `Verify Intern ${internId}`;
+  const description = intern
+    ? `${intern.name} is a verified ${intern.program} intern at Stively Technologies.`
+    : "Check a Stively intern ID.";
+  return {
+    title,
+    description,
+    robots: { index: false, follow: false },
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 function formatDate(date: Date) {

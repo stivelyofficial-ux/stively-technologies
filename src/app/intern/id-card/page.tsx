@@ -9,6 +9,7 @@ import {
   InternIdCardFront,
 } from "@/features/internships/components/intern/id-card";
 import { PrintButton } from "@/features/internships/components/intern/print-button";
+import { InternShare } from "@/features/internships/components/intern/intern-share";
 
 export const metadata: Metadata = { title: "My ID card" };
 
@@ -47,6 +48,8 @@ export default async function InternIdCardPage() {
         <InternIdCardFront data={data} />
         <InternIdCardBack data={data} />
       </div>
+
+      <InternShare userId={user.id} track={track} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { getInternContext } from "@/features/internships/server/access";
 import { EmptyState } from "@/components/sections/empty-state";
 import { ProjectCard, ProjectPending } from "@/features/internships/components/intern/project-card";
 import { computeTaskStats, daysUntil, formatLongDate } from "@/features/internships/lib/stats";
+import { InternShare } from "@/features/internships/components/intern/intern-share";
 
 export const metadata: Metadata = { title: "Overview" };
 
@@ -115,6 +116,8 @@ export default async function InternOverviewPage() {
           </li>
         ))}
       </ul>
+
+      <InternShare userId={user.id} track={track} />
 
       {track.project ? (
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">

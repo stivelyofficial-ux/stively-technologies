@@ -7,7 +7,7 @@ import { RequestFiltersToolbar } from "@/features/offering-requests/components/r
 import { RequestList } from "@/features/offering-requests/components/request-list";
 import { RequestPagination } from "@/features/offering-requests/components/request-pagination";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
-import { SectionHeader } from "@/components/dashboard-shell/widgets/section-header";
+import { PageHeader } from "@/components/dashboard-shell/widgets/page-header";
 import { Container } from "@/components/shared/container";
 
 export const metadata: Metadata = { title: "My Requests" };
@@ -21,14 +21,18 @@ export default async function StudentRequestsPage({ searchParams }: StudentReque
   const params = await searchParams;
   const filters = parseRequestFilters(params);
 
-  const { requests, totalCount, totalPages, page } = await getMyRequests(user.id, "STUDENT", filters);
+  const { requests, totalCount, totalPages, page } = await getMyRequests(
+    user.id,
+    "STUDENT",
+    filters
+  );
   const hasActiveFilters = !!(filters.q || filters.status || filters.since);
 
   return (
     <>
       <SetPageTitle title="My Requests" />
-      <Container className="flex flex-col gap-8 py-8">
-        <SectionHeader
+      <Container className="flex flex-col gap-7 pt-7 pb-16 sm:pt-9">
+        <PageHeader
           title="My Requests"
           description="Every enrollment application you've started, submitted, or completed."
         />
@@ -41,14 +45,21 @@ export default async function StudentRequestsPage({ searchParams }: StudentReque
 
         <RequestList
           requests={requests}
-          hrefFor={(r) => (r.status === "DRAFT" ? `/enroll/${r.offering.slug}` : `/student/requests/${r.id}`)}
+          hrefFor={(r) =>
+            r.status === "DRAFT" ? `/enroll/${r.offering.slug}` : `/student/requests/${r.id}`
+          }
           hasActiveFilters={hasActiveFilters}
           clearFiltersHref="/student/requests"
           emptyStateHref="/offerings"
           emptyStateLabel="Browse offerings"
         />
 
-        <RequestPagination page={page} totalPages={totalPages} searchParams={params} basePath="/student/requests" />
+        <RequestPagination
+          page={page}
+          totalPages={totalPages}
+          searchParams={params}
+          basePath="/student/requests"
+        />
       </Container>
     </>
   );

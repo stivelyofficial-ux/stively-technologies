@@ -382,3 +382,17 @@ a[data-navigating="true"] {
     transform: translateX(-50%);
   }
 }
+
+/* Portal pages (every dashboard role) share the new dashboard look without
+   touching marketing: cards are rounder and flat, and page containers match
+   the 1240px dashboard grid. Scoped by [data-portal-main] (set on the
+   dashboard shell's <main>), unlayered so it wins over the utility classes
+   the individual cards/containers carry. */
+[data-portal-main] [data-slot="card"] {
+  border-radius: 1rem;
+  box-shadow: none;
+}
+[data-portal-main] [data-slot="container"] {
+  max-width: 1240px;
+  padding-inline: clamp(1rem, 3vw, 1.75rem);
+}

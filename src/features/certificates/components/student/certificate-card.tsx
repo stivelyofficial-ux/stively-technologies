@@ -19,20 +19,37 @@ function formatDate(date: Date) {
  * generate, with the real template preview so there's no surprise),
  * generated (view/download), revoked (transparent, no silent hiding).
  */
-function CertificateCard({ enrollmentId, certificate }: { enrollmentId: string; certificate: Certificate | null }) {
+function CertificateCard({
+  enrollmentId,
+  certificate,
+  shareSection,
+}: {
+  enrollmentId: string;
+  certificate: Certificate | null;
+  /** The "share your achievement" block, shown once the certificate is issued - built by the page (it needs the learner's referral link). */
+  shareSection?: React.ReactNode;
+}) {
   if (!certificate) {
     return (
       <Card id="certificate" className="sm:col-span-2 lg:col-span-3">
         <CardContent className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:text-left">
           <div className="border-border/70 relative aspect-[1920/1358] w-full max-w-xs shrink-0 overflow-hidden rounded-lg border shadow-sm">
-            <Image src="/certificates/gen-ai-certificate-preview.png" alt="Certificate of completion preview" fill className="object-cover" />
+            <Image
+              src="/certificates/gen-ai-certificate-preview.png"
+              alt="Certificate of completion preview"
+              fill
+              className="object-cover"
+            />
           </div>
           <div className="flex flex-col items-center gap-3 sm:items-start">
             <Badge variant="success">Ready to generate</Badge>
             <div className="flex flex-col gap-1">
-              <h3 className="text-foreground font-display text-lg font-semibold">Congratulations - you&apos;ve completed this course!</h3>
+              <h3 className="text-foreground font-display text-lg font-semibold">
+                Congratulations - you&apos;ve completed this course!
+              </h3>
               <p className="text-muted-foreground text-sm">
-                Your certificate of completion is ready. It&apos;ll be personalized with your name and a unique, verifiable ID.
+                Your certificate of completion is ready. It&apos;ll be personalized with your name
+                and a unique, verifiable ID.
               </p>
             </div>
             <GenerateCertificateButton enrollmentId={enrollmentId} />
@@ -53,7 +70,9 @@ function CertificateCard({ enrollmentId, certificate }: { enrollmentId: string; 
             <Badge variant="destructive">Revoked</Badge>
           </div>
           <div className="flex flex-col gap-1">
-            <h3 className="text-foreground text-sm font-semibold">Certificate {certificate.certificateNumber}</h3>
+            <h3 className="text-foreground text-sm font-semibold">
+              Certificate {certificate.certificateNumber}
+            </h3>
             <p className="text-muted-foreground text-sm">
               This certificate is no longer valid. Contact support if you believe this is a mistake.
             </p>
@@ -73,26 +92,39 @@ function CertificateCard({ enrollmentId, certificate }: { enrollmentId: string; 
           <Badge variant="success">Issued</Badge>
         </div>
         <div className="flex flex-col gap-1">
-          <h3 className="text-foreground font-display text-lg font-semibold">Certificate of Completion</h3>
+          <h3 className="text-foreground font-display text-lg font-semibold">
+            Certificate of Completion
+          </h3>
           <p className="text-muted-foreground text-sm">
-            Certificate ID: <span className="text-foreground font-medium">{certificate.certificateNumber}</span>
+            Certificate ID:{" "}
+            <span className="text-foreground font-medium">{certificate.certificateNumber}</span>
           </p>
-          <p className="text-muted-foreground text-sm">Issued on {formatDate(certificate.issuedAt ?? certificate.createdAt)}</p>
+          <p className="text-muted-foreground text-sm">
+            Issued on {formatDate(certificate.issuedAt ?? certificate.createdAt)}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
-            <Link href={`/api/certificates/${certificate.certificateNumber}/pdf`} target="_blank" rel="noopener noreferrer">
+            <Link
+              href={`/api/certificates/${certificate.certificateNumber}/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <ExternalLink aria-hidden="true" />
               View Certificate
             </Link>
           </Button>
           <Button asChild>
-            <a href={`/api/certificates/${certificate.certificateNumber}/pdf?mode=download`} download>
+            <a
+              href={`/api/certificates/${certificate.certificateNumber}/pdf?mode=download`}
+              download
+            >
               <Download aria-hidden="true" />
               Download PDF
             </a>
           </Button>
         </div>
+        {shareSection && <div className="w-full">{shareSection}</div>}
         <div className="border-border/70 flex w-full flex-col items-start gap-2 border-t pt-4">
           <p className="text-muted-foreground text-sm">
             You&apos;re done here - your internship track is ready, with a real project waiting.

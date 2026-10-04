@@ -1,202 +1,166 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GraduationCap, Briefcase, Compass, PhoneCall, Bookmark, Newspaper, LifeBuoy } from "lucide-react";
+import { Award, Briefcase, Crown, GraduationCap, Gift } from "lucide-react";
 
 import { requireRole } from "@/lib/session";
-import { getOfferingsForAudience } from "@/features/offerings/server/queries";
-import { OfferingGrid } from "@/features/offerings/components/offering-grid";
-import { getMyRequests } from "@/features/offering-requests/server/queries";
-import { RequestList } from "@/features/offering-requests/components/request-list";
-import { getStudentAccessSummary } from "@/features/enrollments/server/access-policy";
-import { hasInternshipTrack } from "@/features/internships/server/queries";
-import { ProgressCard } from "@/features/enrollments/components/progress-card";
-import { EnrollmentStatusBadge } from "@/features/enrollments/components/enrollment-status-badge";
-import { PrimeMembershipBanner } from "@/features/enrollments/components/prime-membership-banner";
 import { prisma } from "@/lib/prisma";
+import { formatPrice } from "@/lib/utils";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
-import { SectionHeader } from "@/components/dashboard-shell/widgets/section-header";
-import { QuickActionCard } from "@/components/dashboard-shell/widgets/quick-action-card";
-import { AnnouncementCard } from "@/components/dashboard-shell/widgets/announcement-card";
-import { EmptyState } from "@/components/sections/empty-state";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Container } from "@/components/shared/container";
+import { getOfferingsForAudience } from "@/features/offerings/server/queries";
+import { getOfferingPricing } from "@/features/offerings/lib/pricing";
+import { getReferralStatsForUser } from "@/features/referrals/server/queries";
+import { getLatestBlogPosts } from "@/features/blog/server/blog-feed";
+import { getStudentDashboardData } from "@/features/dashboard/server/student-dashboard";
+import {
+  Hero,
+  StatTiles,
+  MyLearning,
+  QuickActions,
+  LatestBlogPosts,
+  HelpCard,
+} from "@/features/dashboard/components/student-dashboard-sections";
+import {
+  RecommendedOfferings,
+  type RecommendedOffering,
+} from "@/features/dashboard/components/recommended-offerings";
 
 export const metadata: Metadata = { title: "Student Dashboard" };
 
-const BASE_QUICK_ACTIONS = [
-  {
-    label: "Browse Offerings",
-    description: "Training, internships, and more",
-    icon: GraduationCap,
-    href: "/offerings",
-  },
-  {
-    label: "Career Guidance",
-    description: "Talk to a career advisor",
-    icon: Compass,
-    href: "/student/career-guidance",
-  },
-  {
-    label: "Request Callback",
-    description: "Have our team reach out to you",
-    icon: PhoneCall,
-    href: "/contact",
-  },
-] as const;
+const TYPE_LABEL: Record<string, string> = {
+  TRAINING: "Training",
+  DIGITAL_PRODUCT: "Digital",
+  INTERNSHIP: "Internship",
+  CAREER_GUIDANCE: "Career",
+};
 
-/** Real copy for a student who's actually unlocked a track (project, tasks, daily reports) vs. the generic "go find one" framing for everyone else - the internships page itself handles both cases, but the dashboard entry point shouldn't promise "browse placements" to someone who already has a real dashboard waiting. */
-function internshipQuickAction(hasTrack: boolean) {
-  return hasTrack
-    ? { label: "Intern Dashboard", description: "Your project, tasks & daily reports", icon: Briefcase, href: "/intern" }
-    : { label: "Internships", description: "Unlocks once you finish a course", icon: Briefcase, href: "/intern" };
+function greeting(): string {
+  // Server time zone is UTC; the dashboard is for India-based students, so greet by IST.
+  const hour = (new Date().getUTCHours() + 5 + (new Date().getUTCMinutes() >= 30 ? 1 : 0)) % 24;
+  return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 }
 
-// Platform-level messaging, not a claim about outcomes or a testimonial -
-// same "don't fabricate trust content" discipline the marketing site
-// follows (see AGENTS.md), just applied here to dashboard copy instead.
-const ANNOUNCEMENTS = [
-  {
-    title: "Welcome to your Stively dashboard",
-    description: "This is where you'll track programs, internships, and updates going forward.",
-    timeLabel: "Just now",
-  },
-] as const;
-
 /**
- * Deliberately promotional for a student with no enrollment (see the
- * brief's explicit "without enrollment" business rule) - unchanged from
- * before Phase 8 in that case. A student WITH an active enrollment
- * (getStudentAccessSummary - src/features/enrollments/server/access-policy.ts)
- * gets one new section above Quick Actions instead: their current program
- * and real progress, nothing fabricated. "Saved Programs" and "Recent
- * Blogs" still render honest empty states, since neither backend exists yet.
+ * The student's home. Everything here is real data (enrollments, internship
+ * track, referral earnings, published offerings, the live blog) - nothing is
+ * fabricated, so a brand-new student sees honest, useful empty states rather
+ * than placeholders. All the queries run in parallel and are narrowly
+ * selected; the blog feed is cached for an hour and can never block the
+ * page (it returns [] on any failure).
  */
 export default async function StudentDashboardPage() {
   const user = await requireRole("STUDENT");
   const firstName = user.name?.split(" ")[0];
-  const offerings = await getOfferingsForAudience("STUDENT");
-  const { requests } = await getMyRequests(user.id, "STUDENT", {});
-  const accessSummary = await getStudentAccessSummary(user.id);
-  const { isPrimeMember } = await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { isPrimeMember: true } });
-  const hasTrack = await hasInternshipTrack(user.id);
-  const quickActions = [BASE_QUICK_ACTIONS[0], internshipQuickAction(hasTrack), ...BASE_QUICK_ACTIONS.slice(1)];
+
+  const [dashboard, offerings, referral, profile, blogPosts] = await Promise.all([
+    getStudentDashboardData(user.id),
+    getOfferingsForAudience("STUDENT", 8),
+    getReferralStatsForUser(user.id),
+    prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { isPrimeMember: true } }),
+    getLatestBlogPosts(3),
+  ]);
+
+  const { courses, internship, completedCount, certificateCount } = dashboard;
+  const ownedTitles = new Set(courses.map((c) => c.title));
+  const continueCourse = courses.find((c) => c.status === "ACTIVE") ?? null;
+
+  const internshipLabel = !internship
+    ? "Not unlocked"
+    : internship.status === "COMPLETED"
+      ? "Completed"
+      : !internship.onboarded
+        ? "Ready to start"
+        : internship.status === "PAUSED"
+          ? "Paused"
+          : "Active";
+
+  const recommended: RecommendedOffering[] = offerings
+    .filter((o) => !ownedTitles.has(o.title))
+    .slice(0, 8)
+    .map((o) => {
+      const pricing = getOfferingPricing(o);
+      const isDigital = o.category === "DIGITAL_PRODUCT";
+      return {
+        id: o.id,
+        href: isDigital ? `/digital-store/${o.slug}` : `/offerings/${o.slug}`,
+        type: TYPE_LABEL[o.category] ?? "Program",
+        title: o.title,
+        description: o.shortDescription,
+        price: pricing.payable != null ? formatPrice(pricing.payable, o.currency) : "Custom",
+        was:
+          pricing.payable != null && pricing.anchor != null && pricing.anchor > pricing.payable
+            ? formatPrice(pricing.anchor, o.currency)
+            : null,
+        meta: isDigital ? "Instant" : (o.duration ?? ""),
+      };
+    });
 
   return (
     <>
       <SetPageTitle title="Student Dashboard" />
-      <Container className="flex flex-col gap-10 py-8">
+      <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-8 px-4 pt-6 pb-16 sm:px-7 sm:pt-9 sm:pb-20 md:gap-10">
         <div className="flex flex-col gap-1.5">
-          <h2 className="font-display text-2xl font-semibold tracking-tight">
-            Welcome{firstName ? `, ${firstName}` : ""}
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            Here&apos;s where to start exploring what Stively offers students.
+          <h1 className="text-foreground text-[28px] font-bold tracking-tight sm:text-[32px]">
+            {greeting()}
+            {firstName ? `, ${firstName}` : ""}
+          </h1>
+          <p className="text-muted-foreground text-base">
+            {completedCount > 0
+              ? `You've finished ${completedCount} program${completedCount > 1 ? "s" : ""}.${internship ? " Your internship is the next step." : ""}`
+              : continueCourse
+                ? "Pick up where you left off."
+                : "Here's where to start with Stively."}
           </p>
         </div>
 
-        {accessSummary.hasAnyAccess && !isPrimeMember && <PrimeMembershipBanner />}
+        <Hero courses={courses} internship={internship} continueCourse={continueCourse} />
 
-        {accessSummary.hasAnyAccess && accessSummary.primaryEnrollment && (
-          <Card>
-            <CardHeader className="flex-row flex-wrap items-start justify-between gap-4">
-              <div className="flex flex-col gap-1.5">
-                <EnrollmentStatusBadge status={accessSummary.primaryEnrollment.status} />
-                <CardTitle className="font-display">{accessSummary.primaryEnrollment.offering.title}</CardTitle>
-                <CardDescription>Continue where you left off.</CardDescription>
-              </div>
-              <Button asChild>
-                <Link href="/student/learning">Continue learning</Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="border-t border-border/70 pt-4">
-              <ProgressCard progressPercentage={accessSummary.primaryEnrollment.progressPercentage} />
-            </CardContent>
-          </Card>
+        <StatTiles
+          tiles={[
+            { icon: GraduationCap, value: String(completedCount), label: "Programs completed" },
+            { icon: Award, value: String(certificateCount), label: "Certificates earned" },
+            { icon: Briefcase, value: internshipLabel, label: "Internship status" },
+            {
+              icon: Gift,
+              value: formatPrice(referral.paidAmount + referral.pendingAmount),
+              label: "Referral earnings",
+            },
+          ]}
+        />
+
+        <MyLearning courses={courses} />
+
+        <QuickActions hasInternship={internship != null} />
+
+        {!profile.isPrimeMember && courses.length > 0 && (
+          <div className="bg-primary/10 flex flex-wrap items-center gap-4 rounded-[18px] px-6 py-[22px]">
+            <span className="bg-primary text-primary-foreground flex size-12 shrink-0 items-center justify-center rounded-[14px]">
+              <Crown className="size-[26px]" aria-hidden="true" />
+            </span>
+            <div className="flex min-w-[220px] flex-1 flex-col gap-1">
+              <p className="text-foreground text-[17px] font-bold">
+                Get 50% off every course, forever
+              </p>
+              <p className="text-muted-foreground text-sm">
+                A one-time ₹399 unlocks Stively Prime - half price on everything you take from here
+                on.
+              </p>
+            </div>
+            <Link
+              href="/checkout/prime-membership"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors"
+            >
+              Become a Prime member
+            </Link>
+          </div>
         )}
 
-        <section className="flex flex-col gap-4">
-          <SectionHeader title="Quick actions" />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <QuickActionCard key={action.label} {...action} />
-            ))}
-          </div>
+        <RecommendedOfferings offerings={recommended} />
+
+        <section className="grid items-start gap-5 lg:grid-cols-3">
+          <LatestBlogPosts posts={blogPosts} />
+          <HelpCard />
         </section>
-
-        <section className="flex flex-col gap-4">
-          <SectionHeader
-            title="Explore offerings"
-            description="Training, internships, and more - picked for students."
-            action={
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/offerings">Browse all</Link>
-              </Button>
-            }
-          />
-          <OfferingGrid offerings={offerings} />
-        </section>
-
-        <section className="flex flex-col gap-4">
-          <SectionHeader
-            title="My requests"
-            description="Applications you've started or submitted."
-            action={
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/student/requests">View all</Link>
-              </Button>
-            }
-          />
-          <RequestList
-            requests={requests.slice(0, 3)}
-            hrefFor={(r) => (r.status === "DRAFT" ? `/enroll/${r.offering.slug}` : `/student/requests/${r.id}`)}
-            emptyStateHref="/offerings"
-            emptyStateLabel="Browse offerings"
-          />
-        </section>
-
-        <section className="flex flex-col gap-4">
-          <SectionHeader title="Saved programs" description="Programs you bookmark will show up here." />
-          <EmptyState
-            icon={Bookmark}
-            title="No saved programs yet"
-            description="You haven't saved any training programs yet."
-            actionLabel="Browse Training"
-            actionHref="/training"
-          />
-        </section>
-
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <section className="flex flex-col gap-4">
-            <SectionHeader title="Recent blogs" />
-            <EmptyState
-              icon={Newspaper}
-              title="No blog posts yet"
-              description="We'll share articles and guides here once they're published."
-            />
-          </section>
-
-          <section className="flex flex-col gap-4">
-            <SectionHeader title="Announcements" />
-            <div className="flex flex-col gap-3">
-              {ANNOUNCEMENTS.map((announcement) => (
-                <AnnouncementCard key={announcement.title} {...announcement} />
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <section className="flex flex-col gap-4">
-          <SectionHeader title="Support" />
-          <QuickActionCard
-            label="Need help with something?"
-            description="Reach out and a real person will get back to you."
-            icon={LifeBuoy}
-            href="/student/support"
-            className="max-w-sm"
-          />
-        </section>
-      </Container>
+      </div>
     </>
   );
 }
