@@ -18,6 +18,9 @@ import {
 import { getProjectTemplate } from "../lib/project-templates";
 import { addMonths, isValidDuration } from "../lib/durations";
 import { sendDurationChangedEmail } from "../server/emails";
+import { getMentorByUserId } from "@/features/mentors/server/queries";
+import { mentorCanAccessTrack } from "../server/mentor-access";
+import { createNotification, notifyAllAdmins } from "@/features/notifications/server/creation";
 import { issueCompletionDocuments } from "@/features/internship-documents/server/issuance";
 
 async function resolveActorTeamMemberId(): Promise<string | undefined> {
@@ -27,11 +30,57 @@ async function resolveActorTeamMemberId(): Promise<string | undefined> {
   return teamMember?.id;
 }
 
+/** Tells the intern the outcome (and, for a mentor's decision, the admins - an approval makes a stipend payable). Never fails the review itself. */
+async function notifyReviewDecision(
+  trackId: string,
+  status: "APPROVED" | "CHANGES_REQUESTED" | "NOT_ELIGIBLE",
+  feedback: string | undefined,
+  byMentor: boolean
+) {
+  try {
+    const track = await prisma.internshipTrack.findUnique({
+      where: { id: trackId },
+      select: { studentId: true, student: { select: { name: true } } },
+    });
+    if (!track) return;
+    const copy = {
+      APPROVED: {
+        title: "Your final project was approved 🎉",
+        body: "You are stipend eligible. Your certificate and letters are now in your Documents.",
+        link: "/intern/documents",
+      },
+      CHANGES_REQUESTED: {
+        title: "Your reviewer asked for changes",
+        body: feedback,
+        link: "/intern/submit",
+      },
+      NOT_ELIGIBLE: {
+        title: "Your final submission was marked not eligible for the stipend",
+        body: feedback,
+        link: "/intern/submit",
+      },
+    }[status];
+    await createNotification({ userId: track.studentId, type: "FEEDBACK_RECEIVED", ...copy });
+    if (byMentor && status !== "CHANGES_REQUESTED") {
+      await notifyAllAdmins({
+        type: "FEEDBACK_RECEIVED",
+        title: `${status === "APPROVED" ? "Stipend eligible" : "Not eligible"}: ${track.student.name ?? "an intern"}`,
+        body: "A mentor reviewed the final submission.",
+        link: `/admin/internships/${trackId}`,
+      });
+    }
+  } catch (error) {
+    console.error("notifyReviewDecision failed:", error);
+  }
+}
+
 function revalidateTrack(trackId: string) {
   revalidatePath(`/admin/internships/${trackId}`);
   revalidatePath("/admin/internships");
   revalidatePath("/student/internships");
   revalidatePath("/intern", "layout");
+  revalidatePath("/mentor/interns");
+  revalidatePath(`/mentor/interns/${trackId}`);
 }
 
 /** One project per track (schema's @@unique on trackId) - assigning again overwrites the brief rather than creating a second one, since a track only ever has one live project at a time. */
@@ -163,15 +212,29 @@ export async function deleteInternshipTask(taskId: string): Promise<ActionResult
   }
 }
 
-/** Mentor/admin decision on the intern's one final submission - approving it is what makes the stipend payable. */
+/**
+ * Mentor/admin decision on the intern's one final submission: approve (stipend
+ * eligible, completes the internship and issues the certificates), request
+ * changes, or mark not eligible. A mentor can only decide for interns
+ * assigned to them; admins can decide for anyone.
+ */
 export async function reviewFinalSubmission(input: unknown): Promise<ActionResult> {
-  const admin = await requireRole("ADMIN", "SUPER_ADMIN");
+  const admin = await requireRole("ADMIN", "SUPER_ADMIN", "MENTOR");
   const parsed = reviewFinalSchema.safeParse(input);
   if (!parsed.success)
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   const { trackId, status, feedback } = parsed.data;
   if (status === "CHANGES_REQUESTED" && !feedback) {
     return { success: false, error: "Tell the intern what to change." };
+  }
+  if (status === "NOT_ELIGIBLE" && !feedback) {
+    return { success: false, error: "Tell the intern why the submission is not eligible." };
+  }
+  if (admin.role === "MENTOR") {
+    const mentor = await getMentorByUserId(admin.id);
+    if (!mentor || !(await mentorCanAccessTrack(mentor.id, trackId))) {
+      return { success: false, error: "This intern is not assigned to you." };
+    }
   }
 
   try {
@@ -196,6 +259,7 @@ export async function reviewFinalSubmission(input: unknown): Promise<ActionResul
       });
       await issueCompletionDocuments(trackId);
     }
+    await notifyReviewDecision(trackId, status, feedback, admin.role === "MENTOR");
     revalidateTrack(trackId);
     return { success: true };
   } catch (error) {

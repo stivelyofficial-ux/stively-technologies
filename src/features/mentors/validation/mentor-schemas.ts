@@ -32,6 +32,17 @@ export const mentorProfileFormSchema = z.object({
   experienceYears: z.coerce.number().int().min(0).optional(),
   profilePhotoUrl: z.string().trim().url().optional().or(z.literal("")),
   affiliatedTeamMemberId: z.string().trim().optional(),
+  /** 10-digit Indian mobile; spaces, +91 and a leading 0 are stripped before checking. */
+  whatsappNumber: z
+    .string()
+    .transform((v) => v.replace(/[\s-]/g, "").replace(/^(\+?91|0)(?=\d{10}$)/, ""))
+    .pipe(
+      z.union([
+        z.literal(""),
+        z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit WhatsApp number"),
+      ])
+    )
+    .optional(),
 });
 export type MentorProfileFormInput = z.infer<typeof mentorProfileFormSchema>;
 

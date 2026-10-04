@@ -56,7 +56,7 @@ export const setTaskProgressSchema = z.object({
 
 export const reviewFinalSchema = z.object({
   trackId: z.string().min(1),
-  status: z.enum(["APPROVED", "CHANGES_REQUESTED"]),
+  status: z.enum(["APPROVED", "CHANGES_REQUESTED", "NOT_ELIGIBLE"]),
   feedback: z.string().trim().max(5_000).optional(),
 });
 

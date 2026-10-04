@@ -14,6 +14,7 @@ import {
 } from "../validation";
 import { addMonths } from "../lib/durations";
 import { STIPEND_TERMS_VERSION } from "../lib/stipend-terms";
+import { createNotification, notifyAllAdmins } from "@/features/notifications/server/creation";
 import { issueStartDocuments } from "@/features/internship-documents/server/issuance";
 
 async function requireOwnedTrack(trackId: string, studentId: string) {
@@ -55,6 +56,32 @@ export async function submitDailyReport(input: unknown): Promise<ActionResult> {
   }
 }
 
+/** Tells the intern's mentor(s) - and the admins - that a final project is waiting for review. Never fails the submission. */
+async function notifySubmission(trackId: string, studentId: string, studentName: string) {
+  try {
+    const mentors = await prisma.mentorAssignment.findMany({
+      where: { studentId, status: "ACTIVE", mentor: { isActive: true } },
+      select: { mentor: { select: { userId: true } } },
+    });
+    for (const { mentor } of mentors) {
+      await createNotification({
+        userId: mentor.userId,
+        type: "FEEDBACK_RECEIVED",
+        title: `${studentName} submitted their final project`,
+        body: "Review it and approve, request changes, or mark not eligible.",
+        link: `/mentor/interns/${trackId}`,
+      });
+    }
+    await notifyAllAdmins({
+      type: "FEEDBACK_RECEIVED",
+      title: `${studentName} submitted their final project`,
+      link: `/admin/internships/${trackId}`,
+    });
+  } catch (error) {
+    console.error("notifySubmission failed:", error);
+  }
+}
+
 /**
  * The ONE final submission for the stipend. Interns don't submit task by
  * task - tasks are a read-only roadmap. Allowed when nothing has been
@@ -81,6 +108,11 @@ export async function submitFinalProject(input: unknown): Promise<ActionResult> 
     return { success: false, error: "Your final submission is already under review." };
   if (status === "APPROVED")
     return { success: false, error: "Your final submission has already been approved." };
+  if (status === "NOT_ELIGIBLE")
+    return {
+      success: false,
+      error: "Your final submission has been reviewed and can't be resubmitted.",
+    };
 
   try {
     await prisma.internshipProject.update({
@@ -94,9 +126,11 @@ export async function submitFinalProject(input: unknown): Promise<ActionResult> 
         finalFeedback: null,
       },
     });
+    await notifySubmission(track.id, session.user.id, session.user.name ?? "An intern");
     revalidatePath("/intern", "layout");
     revalidatePath(`/admin/internships/${track.id}`);
     revalidatePath("/admin/internships");
+    revalidatePath("/mentor/interns");
     return { success: true };
   } catch (error) {
     console.error("submitFinalProject failed:", error);

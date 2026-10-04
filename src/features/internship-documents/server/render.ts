@@ -23,6 +23,7 @@ export async function renderInternshipDocumentPdf(doc: InternshipDocument): Prom
     startDate: doc.startDate,
     endDate: doc.endDate,
     durationLabel: doc.durationLabel,
+    reportingTo: doc.reportingTo,
   };
 
   switch (doc.kind) {

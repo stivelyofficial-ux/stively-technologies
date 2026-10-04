@@ -26,6 +26,7 @@ const SUBMISSION_BADGE = {
   SUBMITTED: { label: "Awaiting review", variant: "default" },
   CHANGES_REQUESTED: { label: "Changes requested", variant: "warning" },
   APPROVED: { label: "Approved", variant: "success" },
+  NOT_ELIGIBLE: { label: "Not eligible", variant: "destructive" },
 } as const;
 
 export default async function AdminInternshipsPage({

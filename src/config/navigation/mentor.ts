@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, CalendarDays, ClipboardCheck, Megaphone, MessageCircle, User, Gift } from "lucide-react";
+import { LayoutDashboard, Users, GraduationCap, CalendarDays, ClipboardCheck, Megaphone, MessageCircle, User, Gift } from "lucide-react";
 
 import type { NavigationConfig } from "./types";
 
@@ -14,6 +14,7 @@ export const mentorNavigation: NavigationConfig = [
     title: "Mentoring",
     items: [
       { label: "My Students", href: "/mentor/students", icon: Users },
+      { label: "My Interns", href: "/mentor/interns", icon: GraduationCap },
       { label: "Sessions", href: "/mentor/sessions", icon: CalendarDays },
       { label: "Reviews", href: "/mentor/reviews", icon: ClipboardCheck },
       { label: "Announcements", href: "/mentor/announcements", icon: Megaphone },

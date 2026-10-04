@@ -15,6 +15,7 @@ const STATUS_VARIANT = {
   SUBMITTED: "default",
   APPROVED: "success",
   CHANGES_REQUESTED: "warning",
+  NOT_ELIGIBLE: "destructive",
 } as const;
 
 /** Where the admin/mentor decides the intern's one final submission - approving makes the stipend payable (stipend terms, sections 4 and 6). */
@@ -27,11 +28,13 @@ function FinalSubmissionReview({
 }) {
   const router = useRouter();
   const [feedback, setFeedback] = React.useState("");
-  const [pending, setPending] = React.useState<"APPROVED" | "CHANGES_REQUESTED" | undefined>();
+  const [pending, setPending] = React.useState<
+    "APPROVED" | "CHANGES_REQUESTED" | "NOT_ELIGIBLE" | undefined
+  >();
   const [error, setError] = React.useState<string | undefined>();
   const status = project.finalStatus;
 
-  async function decide(decision: "APPROVED" | "CHANGES_REQUESTED") {
+  async function decide(decision: "APPROVED" | "CHANGES_REQUESTED" | "NOT_ELIGIBLE") {
     setPending(decision);
     setError(undefined);
     const result = await reviewFinalSubmission({ trackId, status: decision, feedback });
@@ -60,7 +63,9 @@ function FinalSubmissionReview({
             ? "Awaiting review"
             : status === "APPROVED"
               ? "Approved"
-              : "Changes requested"}
+              : status === "NOT_ELIGIBLE"
+                ? "Not eligible"
+                : "Changes requested"}
         </Badge>
         {project.finalSubmittedAt && (
           <span className="text-muted-foreground text-xs">
@@ -110,7 +115,7 @@ function FinalSubmissionReview({
           <Textarea
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-            placeholder="Feedback (required if you request changes; shown to the intern)"
+            placeholder="Feedback (required for changes or not eligible; shown to the intern)"
             className="min-h-[80px]"
           />
           {error && (
@@ -135,6 +140,16 @@ function FinalSubmissionReview({
               onClick={() => decide("CHANGES_REQUESTED")}
             >
               Request changes
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-destructive"
+              loading={pending === "NOT_ELIGIBLE"}
+              disabled={pending != null}
+              onClick={() => decide("NOT_ELIGIBLE")}
+            >
+              Mark not eligible
             </Button>
           </div>
         </div>

@@ -685,6 +685,21 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-041: Mentors review internships (assignment-scoped), with a direct WhatsApp line
+
+**Date:** 2026-10-04
+**Problem:** The stipend terms promise mentor review of every final submission, but only admins could review, mentors couldn't see their interns, and interns/students had no way to reach their mentor except the founder.
+**Options considered:** A separate "internship mentor" relation on InternshipTrack vs reusing MentorAssignment; mentor recommends + admin confirms vs mentor decides.
+**Chosen solution:** Reuse `MentorAssignment` as the single source of truth: a mentor sees/reviews exactly the interns whose student has an ACTIVE assignment to them (`internships/server/mentor-access.ts`). `reviewFinalSubmission` now accepts MENTOR (guarded by that assignment) and gains a third outcome `NOT_ELIGIBLE` (feedback required, no resubmission, no completion documents). Founder decision: the mentor's decision is final. `/mentor/interns` (+ detail) reuses the admin review component read-only. Notifications: mentor + admins on submission; intern on any decision; admins on a mentor's approve/not-eligible. `Mentor.whatsappNumber` powers "Message on WhatsApp" buttons (mentor profile, intern overview mentor card). Offer letter's "Reporting to" is snapshotted from the mentor at issuance (`InternshipDocument.reportingTo`).
+**Reason:** No new relationship to keep in sync; admins keep full override.
+**Trade-offs:** A mentor can approve a stipend alone (admins are notified and can still act). WhatsApp number is plain text visible to assigned students/interns.
+**Database impact:** Additive: `Mentor.whatsappNumber`, `InternshipDocument.reportingTo`, enum value `InternshipTaskStatus.NOT_ELIGIBLE` (migration 20261004230000).
+**API impact:** `reviewFinalSubmission` role check widened to MENTOR (assignment-scoped); no new routes besides the mentor pages.
+**Future considerations:** Per-mentor load balancing; a mentor-visible audit trail of decisions; notifying the intern by email.
+**Related components:** `src/app/(portal)/mentor/interns`, `src/features/internships/server/mentor-access.ts`, `src/features/mentors/components/shared/whatsapp-button.tsx`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

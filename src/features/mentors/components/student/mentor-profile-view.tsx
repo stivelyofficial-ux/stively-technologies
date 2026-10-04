@@ -2,6 +2,7 @@ import { Briefcase, Globe, ExternalLink } from "lucide-react";
 
 import type { Mentor, User } from "@prisma/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { WhatsAppButton } from "../shared/whatsapp-button";
 import { MentorAvatar } from "../shared/mentor-avatar";
 import { ExpertiseTags } from "../shared/expertise-tags";
 import { MENTOR_TYPE_LABEL } from "../../lib/mentor-types";
@@ -28,6 +29,8 @@ function MentorProfileView({ mentor }: MentorProfileViewProps) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
+        <WhatsAppButton number={mentor.whatsappNumber} mentorName={mentor.user.name} className="w-fit" />
+
         {mentor.bio && <p className="text-foreground text-sm text-pretty whitespace-pre-line">{mentor.bio}</p>}
 
         {mentor.expertiseAreas.length > 0 && (

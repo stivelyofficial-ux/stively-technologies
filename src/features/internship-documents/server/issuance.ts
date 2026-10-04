@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { getPrimaryMentorForStudent } from "@/features/internships/server/mentor-access";
 import {
   durationLabel,
   formatDocumentNumber,
@@ -29,6 +30,7 @@ async function issueKinds(trackId: string, kinds: InternshipDocumentKind[], comp
       endsAt: true,
       durationMonths: true,
       onboardedAt: true,
+      studentId: true,
       student: { select: { name: true } },
     },
   });
@@ -37,6 +39,8 @@ async function issueKinds(trackId: string, kinds: InternshipDocumentKind[], comp
   // Completion documents are dated today; the offer letter is dated when the internship actually started (matters when backfilling interns who began before this system existed).
   const now = completion ? new Date() : (track.onboardedAt ?? new Date());
   const recipientName = track.student.name?.trim() || "Stively Intern";
+  const mentor = await getPrimaryMentorForStudent(track.studentId);
+  const reportingTo = mentor?.user.name ? `${mentor.user.name}, Stively` : null;
   const plannedEnd = track.endsAt;
   // Completion documents state the period actually worked: if the intern finished early, the end date is today, not the original deadline.
   const endDate = completion
@@ -71,6 +75,7 @@ async function issueKinds(trackId: string, kinds: InternshipDocumentKind[], comp
           startDate: track.startedAt,
           endDate,
           durationLabel: label,
+          reportingTo,
           issuedAt: now,
         },
       });

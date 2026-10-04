@@ -2474,6 +2474,8 @@ model Mentor {
 
   experienceYears Int?
   profilePhotoUrl String?
+  /// 10-digit Indian mobile (no +91). Powers the "Message on WhatsApp" buttons so students and interns reach the mentor directly instead of the founder.
+  whatsappNumber  String?
   /// { linkedin?, twitter?, website?, github? } - Zod-validated in
   /// src/features/mentors/validation.
   socialLinks     Json?
@@ -2634,6 +2636,8 @@ model InternshipDocument {
   endDate       DateTime?
   /// e.g. "2 Months" - computed once at issuance from the real start/end dates.
   durationLabel String
+  /// Offer letter's "Reporting to": the intern's mentor at issuance (null -> "Project Lead, Stively").
+  reportingTo String?
 
   status        CertificateStatus @default(ISSUED)
   issuedAt      DateTime          @default(now())
@@ -2694,6 +2698,8 @@ enum InternshipTaskStatus {
   SUBMITTED
   APPROVED
   CHANGES_REQUESTED
+  /// Final submission only: the mentor judged the work not eligible for the stipend (e.g. copied or AI-written code per the stipend terms).
+  NOT_ELIGIBLE
 }
 
 /// The project checklist ("6 assigned") - admin-authored, ordered,

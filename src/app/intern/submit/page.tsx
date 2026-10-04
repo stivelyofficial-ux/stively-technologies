@@ -49,9 +49,17 @@ export default async function InternSubmitPage() {
       state: "done" as const,
     },
     {
-      title: "Review by project lead",
-      sub: status === "APPROVED" ? "Reviewed and approved" : "Usually within 2 working days",
-      state: status === "APPROVED" ? ("done" as const) : ("current" as const),
+      title: "Review by your mentor",
+      sub:
+        status === "APPROVED"
+          ? "Reviewed and approved"
+          : status === "NOT_ELIGIBLE"
+            ? "Reviewed - not eligible for the stipend"
+            : "Usually within 2 working days",
+      state:
+        status === "APPROVED" || status === "NOT_ELIGIBLE"
+          ? ("done" as const)
+          : ("current" as const),
     },
     {
       title: "Approved · ₹3,000 stipend released",
@@ -101,7 +109,11 @@ export default async function InternSubmitPage() {
               </span>
               <div className="flex flex-col gap-0.5">
                 <h2 className="text-xl font-bold">
-                  {status === "APPROVED" ? "Project approved" : "Project submitted"}
+                  {status === "APPROVED"
+                    ? "Project approved"
+                    : status === "NOT_ELIGIBLE"
+                      ? "Not eligible for the stipend"
+                      : "Project submitted"}
                 </h2>
                 {project.finalSubmittedAt && (
                   <span className="text-muted-foreground text-sm">
@@ -166,6 +178,15 @@ export default async function InternSubmitPage() {
                 </li>
               ))}
             </ol>
+            {status === "NOT_ELIGIBLE" && project.finalFeedback && (
+              <div className="bg-destructive/10 flex gap-2.5 rounded-xl p-4 text-sm">
+                <AlertCircle className="size-5 shrink-0" aria-hidden="true" />
+                <p className="text-pretty whitespace-pre-line">
+                  <span className="font-semibold">Reviewer&apos;s note: </span>
+                  {project.finalFeedback}
+                </p>
+              </div>
+            )}
             {status === "APPROVED" && project.finalFeedback && (
               <p className="text-muted-foreground text-sm text-pretty whitespace-pre-line">
                 {project.finalFeedback}

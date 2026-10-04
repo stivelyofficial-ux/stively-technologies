@@ -28,6 +28,7 @@ export async function updateOwnProfile(input: unknown): Promise<ActionResult> {
         languages: data.languages,
         experienceYears: data.experienceYears,
         profilePhotoUrl: data.profilePhotoUrl || null,
+        whatsappNumber: data.whatsappNumber || null,
       },
     });
     revalidatePath("/mentor/profile");

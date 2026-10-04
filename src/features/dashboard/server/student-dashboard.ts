@@ -16,7 +16,7 @@ export interface DashboardInternship {
   status: "ACTIVE" | "COMPLETED" | "PAUSED";
   onboarded: boolean;
   hasProject: boolean;
-  finalStatus: "SUBMITTED" | "APPROVED" | "CHANGES_REQUESTED" | "PENDING" | null;
+  finalStatus: "SUBMITTED" | "APPROVED" | "CHANGES_REQUESTED" | "NOT_ELIGIBLE" | "PENDING" | null;
   projectTitle: string | null;
 }
 

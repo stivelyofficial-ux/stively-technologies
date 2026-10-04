@@ -35,6 +35,7 @@ export async function createMentor(input: unknown): Promise<ActionResult & { id?
         languages: data.languages,
         experienceYears: data.experienceYears,
         profilePhotoUrl: data.profilePhotoUrl || undefined,
+        whatsappNumber: data.whatsappNumber || undefined,
         affiliatedTeamMember: data.affiliatedTeamMemberId
           ? { connect: { id: data.affiliatedTeamMemberId } }
           : undefined,
@@ -75,6 +76,7 @@ export async function updateMentorProfile(mentorId: string, input: unknown): Pro
         languages: data.languages,
         experienceYears: data.experienceYears,
         profilePhotoUrl: data.profilePhotoUrl || null,
+        whatsappNumber: data.whatsappNumber || null,
         affiliatedTeamMemberId: data.affiliatedTeamMemberId || null,
       },
     });

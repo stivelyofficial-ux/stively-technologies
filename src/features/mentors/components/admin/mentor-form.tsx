@@ -32,6 +32,7 @@ function MentorForm({ teamMembers }: { teamMembers: TeamMember[] }) {
   const [experienceYears, setExperienceYears] = React.useState("");
   const [profilePhotoUrl, setProfilePhotoUrl] = React.useState("");
   const [affiliatedTeamMemberId, setAffiliatedTeamMemberId] = React.useState<string | undefined>();
+  const [whatsappNumber, setWhatsappNumber] = React.useState("");
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
 
@@ -49,6 +50,7 @@ function MentorForm({ teamMembers }: { teamMembers: TeamMember[] }) {
       languages: splitTags(languages),
       experienceYears: experienceYears || undefined,
       profilePhotoUrl: profilePhotoUrl || undefined,
+      whatsappNumber,
       affiliatedTeamMemberId,
     });
     setIsPending(false);
@@ -90,6 +92,9 @@ function MentorForm({ teamMembers }: { teamMembers: TeamMember[] }) {
         </FormField>
         <FormField id="mentor-experience" label="Years of experience" optional>
           <Input id="mentor-experience" type="number" min={0} value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
+        </FormField>
+        <FormField id="mentor-whatsapp" label="WhatsApp number" optional helpText="Shown as a Message on WhatsApp button to students and interns">
+          <Input id="mentor-whatsapp" inputMode="numeric" placeholder="10-digit mobile" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
         </FormField>
         <FormField id="mentor-photo" label="Profile photo URL" optional>
           <Input id="mentor-photo" value={profilePhotoUrl} onChange={(e) => setProfilePhotoUrl(e.target.value)} />

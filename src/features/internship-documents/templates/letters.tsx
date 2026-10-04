@@ -113,6 +113,8 @@ export interface LetterData {
   startDate: Date;
   endDate: Date | null;
   durationLabel: string;
+  /** Offer letter "Reporting to" (mentor at issuance); falls back to the generic project lead. */
+  reportingTo?: string | null;
 }
 
 /** "Frontend Development Internship" -> "Frontend Developer Intern". */
@@ -195,7 +197,7 @@ export function OfferLetterDocument({ data }: { data: LetterData }) {
           <Cell label="DURATION" value={data.durationLabel} />
           <Cell label="MODE" value="Remote" />
           <Cell label="STIPEND" value="₹3,000 per delivered project" />
-          <Cell label="REPORTING TO" value="Project Lead, Stively" />
+          <Cell label="REPORTING TO" value={data.reportingTo ?? "Project Lead, Stively"} />
         </View>
         <Text style={styles.p}>
           We look forward to having you on board. Your acceptance of the internship terms on the

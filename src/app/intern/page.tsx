@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/sections/empty-state";
 import { ProjectCard, ProjectPending } from "@/features/internships/components/intern/project-card";
 import { computeTaskStats, daysUntil, formatLongDate } from "@/features/internships/lib/stats";
 import { DocumentsSummary } from "@/features/internship-documents/components/documents-summary";
+import { MentorCard } from "@/features/internships/components/intern/mentor-card";
 import { InternShare } from "@/features/internships/components/intern/intern-share";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -20,6 +21,11 @@ const SUBMISSION_LABEL = {
     cta: "Update submission",
   },
   APPROVED: { text: "Approved", chip: "bg-success/10 text-success", cta: "View status" },
+  NOT_ELIGIBLE: {
+    text: "Not eligible",
+    chip: "bg-destructive/10 text-destructive",
+    cta: "View feedback",
+  },
 } as const;
 
 export default async function InternOverviewPage() {
@@ -42,7 +48,10 @@ export default async function InternOverviewPage() {
   const upNext = track.tasks.filter((t) => t.progress !== "DONE" && !t.isAddon).slice(0, 3);
   const finalStatus = track.project?.finalStatus;
   const submission =
-    finalStatus === "SUBMITTED" || finalStatus === "APPROVED" || finalStatus === "CHANGES_REQUESTED"
+    finalStatus === "SUBMITTED" ||
+    finalStatus === "APPROVED" ||
+    finalStatus === "CHANGES_REQUESTED" ||
+    finalStatus === "NOT_ELIGIBLE"
       ? SUBMISSION_LABEL[finalStatus]
       : SUBMISSION_LABEL.none;
 
@@ -117,6 +126,8 @@ export default async function InternOverviewPage() {
           </li>
         ))}
       </ul>
+
+      <MentorCard studentId={user.id} />
 
       <InternShare userId={user.id} track={track} />
 

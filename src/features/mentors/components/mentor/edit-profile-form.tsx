@@ -25,6 +25,7 @@ function EditProfileForm({ mentor }: { mentor: Mentor }) {
   const [languages, setLanguages] = React.useState(mentor.languages.join(", "));
   const [experienceYears, setExperienceYears] = React.useState(mentor.experienceYears?.toString() ?? "");
   const [profilePhotoUrl, setProfilePhotoUrl] = React.useState(mentor.profilePhotoUrl ?? "");
+  const [whatsappNumber, setWhatsappNumber] = React.useState(mentor.whatsappNumber ?? "");
   const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | undefined>();
   const [saved, setSaved] = React.useState(false);
@@ -41,6 +42,7 @@ function EditProfileForm({ mentor }: { mentor: Mentor }) {
       languages: splitTags(languages),
       experienceYears: experienceYears || undefined,
       profilePhotoUrl: profilePhotoUrl || undefined,
+      whatsappNumber,
     });
     setIsPending(false);
     if (!result.success) {
@@ -67,6 +69,14 @@ function EditProfileForm({ mentor }: { mentor: Mentor }) {
       </FormField>
       <FormField id="edit-experience" label="Years of experience" optional>
         <Input id="edit-experience" type="number" min={0} value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
+      </FormField>
+      <FormField
+        id="edit-whatsapp"
+        label="WhatsApp number"
+        optional
+        helpText="Students and interns see a Message on WhatsApp button that opens a chat with this number."
+      >
+        <Input id="edit-whatsapp" inputMode="numeric" placeholder="10-digit mobile" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} />
       </FormField>
       <FormField id="edit-photo" label="Profile photo URL" optional>
         <Input id="edit-photo" value={profilePhotoUrl} onChange={(e) => setProfilePhotoUrl(e.target.value)} />
