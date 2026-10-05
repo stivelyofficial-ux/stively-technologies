@@ -145,6 +145,11 @@ const DEFAULT_FAQS = [
     answer:
       "Yes. Payments are processed through Razorpay. You get instant access after enrolling, with lifetime access to all lessons and future updates.",
   },
+  {
+    question: "Is this course generated with AI?",
+    answer:
+      "Yes. This course is generated with the help of AI tools. We tell you this openly so you know how the course was made before you enrol.",
+  },
 ] as const;
 
 const trustRow = [
