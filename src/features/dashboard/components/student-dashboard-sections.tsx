@@ -27,6 +27,8 @@ import { cn } from "@/lib/utils";
 import type { DashboardCourse, DashboardInternship } from "../server/student-dashboard";
 import type { BlogPostPreview } from "@/features/blog/server/blog-feed";
 import { BLOG_HOME_URL } from "@/features/blog/lib/constants";
+import { MentorStatus } from "@/features/mentors/components/shared/mentor-status";
+import { getMentorSupportContact } from "@/features/support/server/mentor-contact";
 
 const CARD = "bg-card border-border rounded-2xl border";
 
@@ -430,22 +432,24 @@ function LatestBlogPosts({ posts }: { posts: BlogPostPreview[] }) {
   );
 }
 
-function HelpCard() {
+async function HelpCard() {
+  const contact = await getMentorSupportContact("I need help with: ");
   return (
     <div className={cn(CARD, "flex flex-col gap-3 p-[22px]")}>
       <h3 className="text-[17px] font-bold">Need help?</h3>
       <p className="text-muted-foreground text-sm leading-relaxed">
         A real person replies, usually within a few hours.
       </p>
+      {contact.isMentor && <MentorStatus />}
       <div className="flex flex-wrap gap-2">
         <a
-          href="https://wa.me/919579704823?text=Hi%20Stively%2C%20I%20need%20help%20with%20my%20student%20account."
+          href={contact.url}
           target="_blank"
           rel="noopener noreferrer"
           className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors"
         >
           <MessageCircle className="size-[18px]" aria-hidden="true" />
-          WhatsApp us
+          {contact.isMentor ? "WhatsApp your mentor" : "WhatsApp us"}
         </a>
         <Link
           href="/student/support"

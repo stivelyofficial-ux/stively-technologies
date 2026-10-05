@@ -149,6 +149,9 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// Refunds this user initiated - see Refund.initiatedBy.
+  refundsInitiated Refund[] @relation("RefundInitiatedBy")
 }
 
 /// Portal-level access role. STUDENT and CLIENT are the only two exposed on
@@ -1430,9 +1433,59 @@ model Order {
   /// checkout - see OfferingRequest.orderId above.
   offeringRequestQuote OfferingRequest?
 
+  /// Admin-initiated refunds against this order (see Refund below). The sum
+  /// of non-cancelled, non-failed rows is what has actually been returned.
+  refunds Refund[]
+
   @@index([userId])
   @@index([offeringId])
   @@index([status])
+}
+
+/// One admin-initiated refund against a PAID order. Lifecycle:
+/// DRAFT (created by admin - cancellable) -> INITIATED (sent to Razorpay,
+/// no longer cancellable from our side) -> PROCESSED / FAILED (set by the
+/// Razorpay refund.processed / refund.failed webhooks). Bank credit timing
+/// (5-7 working days for cards/net banking) is Razorpay's and the bank's.
+model Refund {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  /// Requested share of Order.amount (25 or 50 in the admin UI).
+  percent Int
+  /// Paise, computed once at draft time from Order.amount * percent / 100.
+  amount Int
+
+  status RefundStatus @default(DRAFT)
+
+  /// Razorpay's refund id, returned when the refund is sent. Unique so the
+  /// webhook can find this row from the payload.
+  razorpayRefundId  String? @unique
+  razorpayPaymentId String?
+  failureReason     String?
+  reason            String?
+
+  initiatedById String
+  initiatedBy   User   @relation("RefundInitiatedBy", fields: [initiatedById], references: [id], onDelete: Restrict)
+
+  initiatedAt DateTime  @default(now())
+  sentAt      DateTime?
+  processedAt DateTime?
+  cancelledAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+enum RefundStatus {
+  DRAFT
+  INITIATED
+  PROCESSED
+  FAILED
+  CANCELLED
 }
 
 enum OrderStatus {

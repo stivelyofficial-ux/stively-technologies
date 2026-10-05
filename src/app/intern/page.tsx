@@ -7,6 +7,8 @@ import { EmptyState } from "@/components/sections/empty-state";
 import { ProjectCard, ProjectPending } from "@/features/internships/components/intern/project-card";
 import { computeTaskStats, daysUntil, formatLongDate } from "@/features/internships/lib/stats";
 import { DocumentsSummary } from "@/features/internship-documents/components/documents-summary";
+import { buildMentorMessage } from "@/features/support/lib/mentor-whatsapp";
+import { formatInternId } from "@/features/internships/lib/id-card";
 import { MentorCard } from "@/features/internships/components/intern/mentor-card";
 import { InternShare } from "@/features/internships/components/intern/intern-share";
 
@@ -127,7 +129,15 @@ export default async function InternOverviewPage() {
         ))}
       </ul>
 
-      <MentorCard studentId={user.id} />
+      <MentorCard
+        studentId={user.id}
+        message={buildMentorMessage({
+          kind: "INTERN",
+          name: user.name ?? "an intern",
+          internId: formatInternId(track.sequence, track.title),
+          program: track.title,
+        })}
+      />
 
       <InternShare userId={user.id} track={track} />
 

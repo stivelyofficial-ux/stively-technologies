@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { handleOrderPaid } from "@/features/orders/server/post-purchase";
 import { fulfillGuestOrder } from "@/features/orders/server/guest-fulfillment";
+import { markRefundProcessed, markRefundFailed } from "@/features/refunds/server/webhook";
 
 /**
  * Razorpay webhook receiver. Configure this URL (`/api/webhooks/payment`)
@@ -121,6 +122,16 @@ ${line}`
       where: { razorpayOrderId: orderId, status: "PENDING" },
       data: { status: "FAILED" },
     });
+  }
+
+  // Refund lifecycle (see the Refund model). Sent from our admin refunds
+  // page; these events confirm what Razorpay actually did with the money.
+  if (event.event === "refund.processed") {
+    await markRefundProcessed(event.payload.refund.entity);
+  }
+
+  if (event.event === "refund.failed") {
+    await markRefundFailed(event.payload.refund.entity);
   }
 
   return NextResponse.json({ received: true });

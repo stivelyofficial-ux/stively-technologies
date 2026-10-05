@@ -42,6 +42,25 @@ export async function createRazorpayOrder(params: {
 }
 
 /**
+ * Issues a (partial or full) refund against a captured payment. `amountInPaise`
+ * must be paise - never rupees. `refundId` is our Refund row id, echoed back in
+ * notes so the refund.processed/refund.failed webhook can match the row even if
+ * the response to this call hasn't been stored yet.
+ */
+export async function createRazorpayRefund(params: {
+  paymentId: string;
+  amountInPaise: number;
+  refundId: string;
+}) {
+  return getRazorpayClient().payments.refund(params.paymentId, {
+    amount: params.amountInPaise,
+    speed: "normal",
+    notes: { refundId: params.refundId },
+    receipt: params.refundId,
+  });
+}
+
+/**
  * Pulls the useful parts out of a Razorpay SDK rejection - status code plus
  * Razorpay's own error code/description. Worth having because the raw error
  * object serializes to an unhelpful "{}" in most log sinks, which is what

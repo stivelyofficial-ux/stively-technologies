@@ -15,7 +15,8 @@ export async function getStudentQueriesForAdmin(status?: "OPEN" | "RESOLVED") {
       student: { select: { name: true, email: true } },
       resolvedBy: { select: { name: true } },
     },
-    orderBy: status === "RESOLVED" ? [{ createdAt: "desc" }] : [{ status: "asc" }, { createdAt: "asc" }],
+    orderBy:
+      status === "RESOLVED" ? [{ createdAt: "desc" }] : [{ status: "asc" }, { createdAt: "asc" }],
   });
 }
 

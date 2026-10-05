@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Mail, MessageCircle } from "lucide-react";
 
 import { requireUser } from "@/lib/session";
+import { MentorStatus } from "@/features/mentors/components/shared/mentor-status";
+import { getMentorSupportContact } from "@/features/support/server/mentor-contact";
 
 export const metadata: Metadata = { title: "Help Center" };
 
@@ -30,6 +32,7 @@ const QUESTIONS: [string, string][] = [
 
 export default async function InternHelpPage() {
   await requireUser();
+  const contact = await getMentorSupportContact("I need help with: ");
 
   return (
     <div className="flex max-w-2xl flex-col gap-7">
@@ -47,14 +50,15 @@ export default async function InternHelpPage() {
           team@stively.com
         </a>
         <a
-          href="https://wa.me/919579704823?text=Hi%20Stively%2C%20I%20am%20an%20intern%20and%20need%20help."
+          href={contact.url}
           target="_blank"
           rel="noopener noreferrer"
           className="border-border hover:border-primary hover:text-primary inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-colors"
         >
           <MessageCircle className="size-4" aria-hidden="true" />
-          WhatsApp us
+          WhatsApp your mentor
         </a>
+        <MentorStatus className="self-center" />
       </div>
 
       <ul className="flex flex-col gap-3">

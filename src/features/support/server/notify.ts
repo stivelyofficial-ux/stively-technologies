@@ -14,7 +14,10 @@ import { notifyAllAdmins } from "@/features/notifications/server/creation";
  * discipline, but to every admin (notifyAllAdmins) rather than the sales
  * team, since this was never a Lead to begin with.
  */
-export async function notifyNewStudentQuery(query: StudentQuery, student: Pick<User, "name" | "email">): Promise<void> {
+export async function notifyNewStudentQuery(
+  query: StudentQuery,
+  student: Pick<User, "name" | "email">
+): Promise<void> {
   const studentLabel = student.name ?? student.email ?? "A student";
 
   try {

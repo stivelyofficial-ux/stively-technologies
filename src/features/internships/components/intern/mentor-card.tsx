@@ -1,13 +1,15 @@
 import { MentorAvatar } from "@/features/mentors/components/shared/mentor-avatar";
+import { MentorStatus } from "@/features/mentors/components/shared/mentor-status";
 import { WhatsAppButton } from "@/features/mentors/components/shared/whatsapp-button";
 import { getPrimaryMentorForStudent } from "../../server/mentor-access";
+import { SUPPORT_WHATSAPP_NUMBER } from "@/features/support/lib/mentor-whatsapp";
 
 /**
  * "Your mentor" on the intern overview: who reviews the final project, and a
  * direct WhatsApp chat so questions go to the mentor, not the founder.
  * Renders nothing until a mentor is assigned.
  */
-async function MentorCard({ studentId }: { studentId: string }) {
+async function MentorCard({ studentId, message }: { studentId: string; message?: string }) {
   const mentor = await getPrimaryMentorForStudent(studentId);
   if (!mentor) return null;
 
@@ -32,7 +34,14 @@ async function MentorCard({ studentId }: { studentId: string }) {
           </span>
         </div>
       </div>
-      <WhatsAppButton number={mentor.whatsappNumber} mentorName={mentor.user.name} />
+      <div className="flex flex-col items-start gap-2 sm:items-end">
+        <WhatsAppButton
+          number={SUPPORT_WHATSAPP_NUMBER}
+          mentorName={mentor.user.name}
+          message={message}
+        />
+        <MentorStatus />
+      </div>
     </section>
   );
 }

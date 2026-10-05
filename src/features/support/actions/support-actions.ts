@@ -21,7 +21,8 @@ export async function submitStudentQuery(message: string): Promise<ActionResult>
 
   const trimmed = message.trim();
   if (!trimmed) return { success: false, error: "Write your question or issue before sending." };
-  if (trimmed.length > MAX_MESSAGE_LENGTH) return { success: false, error: "That message is too long - please shorten it." };
+  if (trimmed.length > MAX_MESSAGE_LENGTH)
+    return { success: false, error: "That message is too long - please shorten it." };
 
   try {
     const query = await prisma.studentQuery.create({
@@ -39,7 +40,10 @@ export async function submitStudentQuery(message: string): Promise<ActionResult>
     return { success: true };
   } catch (error) {
     console.error("submitStudentQuery failed:", error);
-    return { success: false, error: "Something went wrong sending your message. Please try again." };
+    return {
+      success: false,
+      error: "Something went wrong sending your message. Please try again.",
+    };
   }
 }
 

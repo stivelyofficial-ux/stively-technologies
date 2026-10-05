@@ -17,6 +17,7 @@ import {
   LifeBuoy,
   Rocket,
   Gift,
+  Undo2,
 } from "lucide-react";
 
 import type { NavigationConfig } from "./types";
@@ -49,6 +50,7 @@ export const adminNavigation: NavigationConfig = [
       { label: "Students", href: "/admin/students", icon: GraduationCap },
       { label: "Businesses", href: "/admin/businesses", icon: Building2 },
       { label: "Sales", href: "/admin/reports", icon: BarChart3 },
+      { label: "Refunds", href: "/admin/refunds", icon: Undo2 },
       { label: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },

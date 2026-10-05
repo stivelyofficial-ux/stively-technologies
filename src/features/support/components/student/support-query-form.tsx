@@ -36,7 +36,9 @@ function SupportQueryForm() {
     return (
       <div className="flex flex-col items-center gap-2 py-4 text-center">
         <CheckCircle2 className="text-success size-8" aria-hidden="true" />
-        <p className="text-foreground text-sm font-medium">Sent - we&apos;ll get back to you soon.</p>
+        <p className="text-foreground text-sm font-medium">
+          Sent - we&apos;ll get back to you soon.
+        </p>
         <Button variant="ghost" size="sm" onClick={() => setSent(false)}>
           Send another message
         </Button>

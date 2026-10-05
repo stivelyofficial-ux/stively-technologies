@@ -2,11 +2,13 @@ import { Briefcase, Globe, ExternalLink } from "lucide-react";
 
 import type { Mentor, User } from "@prisma/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { MentorStatus } from "../shared/mentor-status";
 import { WhatsAppButton } from "../shared/whatsapp-button";
 import { MentorAvatar } from "../shared/mentor-avatar";
 import { ExpertiseTags } from "../shared/expertise-tags";
 import { MENTOR_TYPE_LABEL } from "../../lib/mentor-types";
 import { socialLinksSchema } from "../../validation/mentor-schemas";
+import { SUPPORT_WHATSAPP_NUMBER } from "@/features/support/lib/mentor-whatsapp";
 
 interface MentorProfileViewProps {
   mentor: Mentor & { user: User };
@@ -31,7 +33,12 @@ function MentorProfileView({ mentor, showWhatsApp = false }: MentorProfileViewPr
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <WhatsAppButton number={showWhatsApp ? mentor.whatsappNumber : null} mentorName={mentor.user.name} className="w-fit" />
+        <WhatsAppButton
+          number={showWhatsApp ? SUPPORT_WHATSAPP_NUMBER : null}
+          mentorName={mentor.user.name}
+          className="w-fit"
+        />
+        {showWhatsApp && <MentorStatus />}
 
         {mentor.bio && <p className="text-foreground text-sm text-pretty whitespace-pre-line">{mentor.bio}</p>}
 

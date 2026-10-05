@@ -3,7 +3,8 @@ import Link from "next/link";
 import { LifeBuoy, MessageCircle } from "lucide-react";
 
 import { requireRole } from "@/lib/session";
-import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { MentorStatus } from "@/features/mentors/components/shared/mentor-status";
+import { getMentorSupportContact } from "@/features/support/server/mentor-contact";
 import { SetPageTitle } from "@/components/dashboard-shell/layout/dashboard-title-context";
 import { Container } from "@/components/shared/container";
 import { PageHeader } from "@/components/dashboard-shell/widgets/page-header";
@@ -12,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { SupportQueryForm } from "@/features/support/components/student/support-query-form";
 
 export const metadata: Metadata = { title: "Support" };
-
-const WHATSAPP_MESSAGE = "Hi Stively, I have a question about my course.";
 
 /**
  * Two real paths, not a link out to the public /contact lead form
@@ -24,6 +23,7 @@ const WHATSAPP_MESSAGE = "Hi Stively, I have a question about my course.";
  */
 export default async function StudentSupportPage() {
   await requireRole("STUDENT");
+  const contact = await getMentorSupportContact("I have a question about my course: ");
 
   return (
     <>
@@ -43,12 +43,13 @@ export default async function StudentSupportPage() {
               <div className="flex flex-col gap-1">
                 <h2 className="text-foreground text-sm font-semibold">WhatsApp</h2>
                 <p className="text-muted-foreground text-sm">
-                  Fastest way to reach us - a real person replies.
+                  Fastest way to reach {contact.isMentor ? `your mentor${contact.mentorName ? `, ${contact.mentorName}` : ""}` : "us"} - a real person replies.
                 </p>
+                {contact.isMentor && <MentorStatus />}
               </div>
               <Button asChild variant="outline" size="sm">
                 <Link
-                  href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
+                  href={contact.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

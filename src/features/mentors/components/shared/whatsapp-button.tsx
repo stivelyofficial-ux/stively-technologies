@@ -6,11 +6,14 @@ import { mentorWhatsappUrl } from "../../lib/whatsapp";
 function WhatsAppButton({
   number,
   mentorName,
+  message,
   className,
   label = "Message on WhatsApp",
 }: {
   number: string | null | undefined;
   mentorName?: string | null;
+  /** Prefilled chat text; should say whether the sender is a student or an intern. */
+  message?: string;
   className?: string;
   label?: string;
 }) {
@@ -18,7 +21,10 @@ function WhatsAppButton({
   const first = mentorName?.trim().split(/\s+/)[0];
   return (
     <a
-      href={mentorWhatsappUrl(number, `Hi${first ? ` ${first}` : ""}, I'm a Stively student. `)}
+      href={mentorWhatsappUrl(
+        number,
+        message ?? `Hi${first ? ` ${first}` : ""}, I'm a Stively student. `
+      )}
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
