@@ -7,10 +7,10 @@
  * fraud risk (AI-generated submissions, copy-pasted projects) actually
  * threatens.
  */
-export const STIPEND_TERMS_VERSION = "2026-10-03";
+export const STIPEND_TERMS_VERSION = "2026-10-06";
 
 export const STIPEND_TERMS_TEXT = `Stively Technologies — Internship Stipend Terms & Conditions
-Last updated: October 3, 2026
+Last updated: October 6, 2026
 
 These terms apply only to the paid internship stipend (₹3,000 per approved project) offered after completing Stively's Frontend Development training. They do not apply to, and never affect, your access to the course itself, your Training Certificate, your Internship Offer Letter, your Internship Completion Certificate, your Letter of Recommendation, or your Experience Letter — every enrolled student who completes the course receives all of these regardless of whether they ever submit a project for the stipend.
 
@@ -36,7 +36,7 @@ These terms apply to any student enrolled in Stively's Frontend Development trai
 4. Mentor review
 1. Every final submission is reviewed by a Stively mentor before any stipend is approved or paid.
 2. Review includes, at minimum: confirming the project meets the stated requirements for that project brief, checking that pagination, navigation, and core user flows actually work as specified, testing responsiveness and basic functionality, and a check for AI-assisted or copied work per Section 2 - including a review of your commit history, comparison against known public code, and, where the mentor considers it necessary, a live walkthrough of your code. No automated detector is perfectly reliable, so a mentor's decision is based on all of this evidence together, not on one tool's score.
-3. A mentor may approve the submission, or request specific changes before it can be approved. If changes are requested, you'll receive clear feedback on what to fix and may resubmit once those specific changes are made.
+3. A mentor may approve the submission, request specific changes before it can be approved, or mark it not eligible for the stipend - for example where it does not meet the project requirements (Section 5) or breaches the original-work rules (Section 2). If changes are requested, you'll receive clear feedback on what to fix and may resubmit once those specific changes are made. A submission marked not eligible cannot be resubmitted, and no stipend is paid for it. Being marked not eligible affects the stipend only - you still receive your Internship Completion Certificate, Letter of Recommendation and Experience Letter (see Section 8).
 4. A mentor's decision on whether a submission meets these terms is final.
 
 5. Project must match the requirements

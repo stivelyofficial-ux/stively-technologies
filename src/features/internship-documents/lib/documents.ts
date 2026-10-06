@@ -25,19 +25,19 @@ export const KIND_META: Record<InternshipDocumentKind, KindMeta> = {
   INTERNSHIP_CERTIFICATE: {
     code: "IC",
     label: "Internship Completion Certificate",
-    blurb: "Issued when your final project is approved.",
+    blurb: "Issued when your final project is reviewed.",
     order: 2,
   },
   LETTER_OF_RECOMMENDATION: {
     code: "LOR",
     label: "Letter of Recommendation",
-    blurb: "Issued when your final project is approved.",
+    blurb: "Issued when your final project is reviewed.",
     order: 3,
   },
   EXPERIENCE_LETTER: {
     code: "EXP",
     label: "Experience Letter",
-    blurb: "Issued when your final project is approved.",
+    blurb: "Issued when your final project is reviewed.",
     order: 4,
   },
 };

@@ -38,6 +38,8 @@ export interface CurriculumItem {
 
 export interface Curriculum {
   learningExperienceId: string;
+  /** Offering slug - used to decide whether finishing this course leads into the internship. */
+  offeringSlug: string;
   title: string;
   modules: ModuleWithLessons[];
   progressByLessonId: Map<string, LessonProgress>;
@@ -157,6 +159,7 @@ async function getCurriculumForEnrollmentImpl(
 
   return {
     learningExperienceId: learningExperience.id,
+    offeringSlug: learningExperience.offering.slug,
     title: learningExperience.title ?? learningExperience.offering.title,
     modules,
     progressByLessonId,

@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { Container } from "@/components/shared/container";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
+import { BookCallButton } from "@/components/shared/book-call-button";
+import { BOOKING_LABEL_SHORT } from "@/config/booking";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 
 // "/careers" is planned (see docs/phase-a-product-plan.md) but not built
@@ -20,15 +22,20 @@ import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetClose } from "@/com
 // a normal nav link, not the primary CTA (see PRIMARY_CTA below, which
 // stays fixed on "Start a project" regardless).
 const NAV_LINKS = [
-  { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
-  { href: "/work", label: "Our Work" },
+  { href: "/work", label: "Work" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/process", label: "Process" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+] as const;
+
+// Secondary audience: learners and buyers of digital products. Quiet text links, deliberately not
+// in the business nav and never styled as a button - the header's one dominant action is "Book a call".
+const LEARN_LINKS = [
   { href: "/training", label: "Training" },
   { href: "/digital-store", label: "Digital Store" },
 ] as const;
-
-const PRIMARY_CTA = { href: "/start-project", label: "Start a project" };
 
 export interface NavbarProps {
   /**
@@ -88,6 +95,16 @@ function Navbar({ dashboardHref }: NavbarProps) {
               </Link>
             );
           })}
+          <span aria-hidden="true" className="bg-border mx-2 h-4 w-px" />
+          {LEARN_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-muted-foreground/80 hover:text-foreground rounded-full px-2.5 py-2 text-[13px] transition-colors duration-150 ease-out"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
@@ -100,9 +117,7 @@ function Navbar({ dashboardHref }: NavbarProps) {
               <Button variant="ghost" size="default" asChild>
                 <Link href="/login">Log in</Link>
               </Button>
-              <Button variant="primary" size="default" asChild>
-                <Link href={PRIMARY_CTA.href}>{PRIMARY_CTA.label}</Link>
-              </Button>
+              <BookCallButton location="header" label={BOOKING_LABEL_SHORT} />
             </>
           )}
         </div>
@@ -126,6 +141,19 @@ function Navbar({ dashboardHref }: NavbarProps) {
                   </Link>
                 </SheetClose>
               ))}
+              <p className="text-muted-foreground mt-4 px-3 text-xs font-medium tracking-wide uppercase">
+                Learn and resources
+              </p>
+              {LEARN_LINKS.map((link) => (
+                <SheetClose asChild key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-md px-3 py-2 text-sm font-medium"
+                  >
+                    {link.label}
+                  </Link>
+                </SheetClose>
+              ))}
             </nav>
             <div className="mt-auto flex flex-col gap-2">
               {dashboardHref ? (
@@ -137,9 +165,7 @@ function Navbar({ dashboardHref }: NavbarProps) {
                   <Button variant="outline" asChild>
                     <Link href="/login">Log in</Link>
                   </Button>
-                  <Button variant="primary" asChild>
-                    <Link href={PRIMARY_CTA.href}>{PRIMARY_CTA.label}</Link>
-                  </Button>
+                  <BookCallButton location="header" label={BOOKING_LABEL_SHORT} />
                 </>
               )}
             </div>

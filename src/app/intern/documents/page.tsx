@@ -39,7 +39,7 @@ export default async function InternDocumentsPage() {
       <EmptyState
         icon={FileText}
         title="Your documents unlock with your internship"
-        description="Finish your course and start your internship - your offer letter appears here, and your completion certificate, recommendation and experience letters follow when your final project is approved."
+        description="Finish your course and start your internship - your offer letter appears here, and your completion certificate, recommendation and experience letters follow when your final project has been reviewed."
         actionLabel="Go to my learning"
         actionHref="/student/learning"
       />
@@ -62,8 +62,8 @@ export default async function InternDocumentsPage() {
         <h1 className="text-foreground text-3xl font-bold tracking-tight">My documents</h1>
         <p className="text-muted-foreground">
           Your offer letter is issued when your internship starts. Finish your final project and,
-          once it is approved, your completion certificate, letter of recommendation and experience
-          letter are issued too. Every document carries a QR code anyone can scan to verify it.
+          once it has been reviewed, your completion certificate, letter of recommendation and
+          experience letter are issued too - whatever the stipend decision. Every document carries a QR code anyone can scan to verify it.
         </p>
       </div>
 

@@ -237,6 +237,7 @@ function CourseDetailView({
           <GuestCheckoutForm
             offering={{
               id: offering.id,
+              slug: offering.slug,
               title: offering.title,
               price: payable,
               currency: offering.currency,

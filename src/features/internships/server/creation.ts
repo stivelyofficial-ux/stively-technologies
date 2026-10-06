@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { offeringHasInternship } from "../lib/eligibility";
 
 /**
  * Called from completeEnrollment (enrollments/server/creation.ts) the
@@ -19,9 +20,11 @@ export async function ensureInternshipTrack(
 
   const enrollment = await prisma.offeringEnrollment.findUnique({
     where: { id: enrollmentId },
-    select: { offering: { select: { title: true } } },
+    select: { offering: { select: { title: true, slug: true } } },
   });
   if (!enrollment) return;
+  // Only courses that lead into the internship unlock a track (today: Frontend Development).
+  if (!offeringHasInternship(enrollment.offering.slug)) return;
 
   await prisma.internshipTrack.create({
     data: {

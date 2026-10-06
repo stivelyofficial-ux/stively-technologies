@@ -7,6 +7,7 @@ import { PricingTiers } from "@/components/sections/pricing-tiers";
 import { PRICING_TIERS } from "@/lib/pricing";
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
+import { BOOKING_URL } from "@/config/booking";
 import { CTASection } from "@/components/sections/cta-section";
 
 const TITLE = "Pricing";
@@ -70,7 +71,7 @@ export default function PricingPage() {
         eyebrow="Pricing"
         heading="Three starting points, no pricing surprises"
         subheading="Every project is scoped individually once we understand what you need - these are the fixed points most engagements start from."
-        primaryCta={{ label: "Start a project", href: "/start-project" }}
+        primaryCta={{ label: "Book a free 20-min call", href: BOOKING_URL }}
         secondaryCta={{ label: "See how we work", href: "/#how-we-work" }}
       />
 
@@ -82,9 +83,9 @@ export default function PricingPage() {
             Every plan can flex
           </h2>
           <p className="text-muted-foreground text-pretty">
-            Enterprise Solution lists AI features &quot;if required&quot; because not every project
-            needs them - and the same applies across every tier. Tell us what you&apos;re building
-            and we&apos;ll scope it against one of these, or something in between.
+            The Platform tier is custom scope because no two applications are the same. Mobile apps
+            and AI features are scoped and priced separately. Tell us what you&apos;re building and
+            we&apos;ll scope it against one of these, or something in between.
           </p>
         </Container>
       </Section>
@@ -92,8 +93,8 @@ export default function PricingPage() {
       <CTASection
         heading="Not sure which tier fits?"
         description="A short call to talk through scope and get a straight answer - no obligation."
-        actionLabel="Start a project"
-        actionHref="/start-project"
+        actionLabel="Book a free 20-min call"
+        actionHref={BOOKING_URL}
         inverted
         glow
       />

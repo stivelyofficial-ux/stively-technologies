@@ -6,22 +6,28 @@ import { Logo } from "@/components/shared/logo";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { BookCallButton } from "@/components/shared/book-call-button";
+import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 
 // "/careers" omitted - planned (see docs/phase-a-product-plan.md) but not
 // built yet, and a live footer link pointing at a 404 is worse than no
 // link. "/pricing" shipped, so it's back in Product below.
 const FOOTER_LINKS = {
-  Product: [
+  Services: [
     { href: "/services", label: "Services" },
     { href: "/work", label: "Our Work" },
     { href: "/pricing", label: "Pricing" },
-    { href: "/training", label: "Training" },
-    { href: "/digital-store", label: "Digital Store" },
+    { href: "/process", label: "Our Process" },
   ],
   Company: [
     { href: "/about", label: "About" },
-    { href: "/process", label: "Our Process" },
     { href: "/contact", label: "Contact" },
+    { href: "/start-project", label: "Start a project" },
+  ],
+  "Learn and resources": [
+    { href: "/training", label: "Training" },
+    { href: "/digital-store", label: "Digital Store" },
   ],
   // All six now real pages (previously flagged as a pre-launch compliance
   // gap - the site collects PII via the Contact form, newsletter signup,
@@ -66,11 +72,29 @@ function Footer() {
       />
       <Container className="relative py-20">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-5 md:gap-10">
-          <div className="md:col-span-2 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 md:col-span-2">
             <Logo variant="dark" />
             <p className="text-ink-muted-foreground max-w-xs text-sm text-pretty">
               {siteConfig.description}
             </p>
+            <div className="flex flex-col gap-1.5 text-sm">
+              <a
+                href={`mailto:${siteConfig.contactEmail}`}
+                className="text-ink-foreground hover:underline"
+              >
+                {siteConfig.contactEmail}
+              </a>
+              <a
+                href={getWhatsAppUrl("/")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-ink-foreground hover:underline"
+              >
+                WhatsApp / call: +{WHATSAPP_NUMBER.slice(0, 2)} {WHATSAPP_NUMBER.slice(2, 7)}{" "}
+                {WHATSAPP_NUMBER.slice(7)}
+              </a>
+            </div>
+            <BookCallButton location="footer" variant="inverse" showNote noteTone="inverse" />
             <form className="flex max-w-sm gap-2" aria-label="Subscribe to the newsletter">
               <Input
                 type="email"
@@ -83,7 +107,7 @@ function Footer() {
                 // one the extension caused client-side, not our SSR output.
                 // See https://react.dev/link/hydration-mismatch.
                 suppressHydrationWarning
-                className="border-ink-border-strong bg-white/[0.04] text-ink-foreground placeholder:text-ink-muted-foreground/60 focus-visible:border-ink-foreground/40 rounded-full px-4"
+                className="border-ink-border-strong text-ink-foreground placeholder:text-ink-muted-foreground/60 focus-visible:border-ink-foreground/40 rounded-full bg-white/[0.04] px-4"
               />
               <Button type="submit" variant="inverse" suppressHydrationWarning>
                 Subscribe

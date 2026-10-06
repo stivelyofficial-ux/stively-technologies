@@ -124,8 +124,8 @@ export function CompletionCertificateDocument({
         </Text>
         <Text style={s.durationSub}>({data.durationLabel})</Text>
         <Text style={s.desc}>
-          {data.recipientName} completed the {data.program} at Stively Technologies, delivering a
-          client-style project that was reviewed and approved by the Stively team.
+          {data.recipientName} completed the {data.program} at Stively Technologies, working on a
+          client-style project reviewed by the Stively team.
         </Text>
         {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf <Image> has no alt prop */}
         <Image src={qrDataUrl} style={s.qr} />

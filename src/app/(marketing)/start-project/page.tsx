@@ -165,10 +165,10 @@ export default async function StartProjectPage() {
             <div className="flex max-w-2xl flex-col gap-3">
               <Eyebrow>Our work</Eyebrow>
               <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-                Real products, shipped and live
+                Portfolio concepts
               </h2>
               <p className="text-muted-foreground text-lg text-pretty">
-                Not mockups - live sites you can visit right now.
+                Live demo sites we designed and built to show our standard. Client projects will be added here as they ship.
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

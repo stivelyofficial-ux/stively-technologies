@@ -9,6 +9,7 @@ import {
 } from "@/features/learning/server/queries";
 import { markLessonStarted } from "@/features/learning/actions/progress-actions";
 import { flattenLessons, isLessonUnlocked } from "@/features/learning/lib/progress";
+import { offeringHasInternship } from "@/features/internships/lib/eligibility";
 import { LessonViewer } from "@/features/learning/components/student/lesson-viewer";
 import { LessonAssistantPanel } from "@/features/learning/components/student/lesson-assistant-panel";
 import { PlayerHeader } from "@/features/learning/components/player/player-header";
@@ -130,6 +131,7 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
       totalSteps={totalSteps}
       percent={curriculum.progressPercentage}
       trailer={{
+        available: offeringHasInternship(curriculum.offeringSlug),
         unlocked:
           curriculum.totalLessons > 0 && curriculum.completedLessons === curriculum.totalLessons,
       }}

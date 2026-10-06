@@ -697,6 +697,23 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 **API impact:** `reviewFinalSubmission` role check widened to MENTOR (assignment-scoped); no new routes besides the mentor pages.
 **Future considerations:** Per-mentor load balancing; a mentor-visible audit trail of decisions; notifying the intern by email.
 **Related components:** `src/app/(portal)/mentor/interns`, `src/features/internships/server/mentor-access.ts`, `src/features/mentors/components/shared/whatsapp-button.tsx`.
+**Amendment 2026-10-06:** "Not eligible" withholds ONLY the stipend. It still completes the track and issues the completion certificate, recommendation and experience letters (stipend terms section 8 promises them regardless); their wording is neutral (no "approved"/quality claims). Stipend terms bumped to version 2026-10-06 (section 4.3 now names "not eligible" explicitly).
+
+---
+
+## AD-042: Homepage redesigned as a company site (software first, training second)
+
+**Date:** 2026-10-06
+**Problem:** The business is refocusing on selling software/website/app development; the homepage read as a basic, white-space-heavy dual-audience page.
+**Options considered:** Restyle the existing sections vs. a new composition; AI-generated hero photography vs. a coded product scene; the reference mock's "50+ projects / 98% satisfaction / trusted-by logos" vs. real facts only.
+**Chosen solution:** New `src/components/home/*` sections composed in `(marketing)/page.tsx`: hero with a coded laptop/floating-card scene, "stack we build with" strip, two audience doors, dark approach panel, services, featured projects (real PortfolioItem rows only), dark process panel, six commitments, training band (real programs and prices), pricing teaser (real PRICING_TIERS), closing CTA. One heading grammar (`SectionHeading`) and a fixed section rhythm. Old section components stay for other pages.
+**Reason:** A coded scene stays crisp, themeable and image-free; real data keeps BRAND_PRINCIPLES #6 (no fabricated proof) intact.
+**Trade-offs:** The reference's stats and client logos were deliberately NOT copied (nothing real to back them). Portfolio and training-program blocks render only when the database has rows.
+**Database impact:** None.
+**API impact:** None.
+**Future considerations:** Real client logos/metrics once clients agree to be named; header restyle ("Talk to Us" + "Get Started").
+**Related components:** `src/components/home/*`, `src/app/(marketing)/page.tsx`, homepage block in `globals.css`.
+**Amendment 2026-10-06 (business-first conversion pass):** training demoted to a nav link, footer link and one bottom strip; portfolio shown as labelled "Portfolio concepts" (no implied client work); "Book a free 20-min call" is the primary CTA everywhere via `BookCallButton` + `config/booking.ts` (falls back to /contact?type=business until `NEXT_PUBLIC_BOOKING_URL` is set; Meta Pixel Schedule/Contact events); pricing is read from `lib/pricing.ts` and shown as "From" prices with outcome-named tiers (Launch/Grow/Platform), a custom-scope top tier and a flag-controlled founding-client banner (`config/founding-offer.ts`); data-driven niches, FAQ (FAQPage JSON-LD), risk block, Organization JSON-LD. `config/client-results.ts` and `config/team.ts` are empty on purpose and render nothing until real data is added.
 
 ---
 

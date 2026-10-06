@@ -48,6 +48,7 @@ function OfferingPricingCard({ offering, nonce }: { offering: Offering; nonce?: 
                 <GuestCheckoutForm
                   offering={{
                     id: offering.id,
+                    slug: offering.slug,
                     title: offering.title,
                     price: offering.discountPrice ?? offering.price,
                     currency: offering.currency,

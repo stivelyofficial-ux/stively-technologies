@@ -69,7 +69,8 @@ export default async function InternSubmitPage() {
     {
       title: "Certificate & letters issued",
       sub: "Internship Certificate, Recommendation and Experience Letter",
-      state: "todo" as const,
+      state:
+        status === "APPROVED" || status === "NOT_ELIGIBLE" ? ("done" as const) : ("todo" as const),
     },
   ];
 
@@ -184,6 +185,10 @@ export default async function InternSubmitPage() {
                 <p className="text-pretty whitespace-pre-line">
                   <span className="font-semibold">Reviewer&apos;s note: </span>
                   {project.finalFeedback}
+                  <span className="mt-2 block font-medium">
+                    Your certificate and letters are still yours - see Documents. Only the stipend is
+                    withheld.
+                  </span>
                 </p>
               </div>
             )}

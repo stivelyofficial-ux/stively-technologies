@@ -386,7 +386,7 @@ export default async function WebsiteDevelopmentPage() {
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
                   <Button variant="inverse" size="lg" asChild className="w-full">
-                    <Link href="/contact?type=business&offering=Website%20Development">
+                    <Link href="/start-project">
                       Request a quote
                     </Link>
                   </Button>

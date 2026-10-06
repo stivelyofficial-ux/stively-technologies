@@ -1,3 +1,4 @@
+import { offeringHasInternship } from "@/features/internships/lib/eligibility";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Award, Check, Lock, PartyPopper } from "lucide-react";
 
@@ -267,10 +268,16 @@ function LessonViewer({
               <div className="bg-success/10 text-foreground flex flex-wrap items-center justify-between gap-3 rounded-2xl p-5">
                 <span className="text-success flex items-center gap-2.5 text-[15px] font-semibold">
                   <PartyPopper className="size-6" aria-hidden="true" />
-                  Course complete - your internship is unlocked.
+                  {offeringHasInternship(curriculum.offeringSlug)
+                    ? "Course complete - your internship is unlocked."
+                    : "Course complete - well done! Your certificate is ready."}
                 </span>
                 <Button asChild size="sm">
-                  <Link href="/intern">Open Intern Portal</Link>
+                  {offeringHasInternship(curriculum.offeringSlug) ? (
+                    <Link href="/intern">Open Intern Portal</Link>
+                  ) : (
+                    <Link href={`/student/learning/${enrollmentId}`}>View my certificate</Link>
+                  )}
                 </Button>
               </div>
             )}

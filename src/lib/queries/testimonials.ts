@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { logQueryFailure } from "@/lib/log-query-failure";
 import type { Testimonial } from "@prisma/client";
 
 /**
@@ -14,7 +15,7 @@ export async function getFeaturedTestimonials(limit = 6): Promise<Testimonial[]>
       take: limit,
     });
   } catch (error) {
-    console.error("getFeaturedTestimonials failed:", error);
+    logQueryFailure("getFeaturedTestimonials", error);
     return [];
   }
 }

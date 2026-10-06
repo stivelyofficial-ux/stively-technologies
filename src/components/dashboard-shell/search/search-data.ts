@@ -48,7 +48,7 @@ export const SEARCH_RESULTS: SearchResult[] = [
   {
     label: "Request a Proposal",
     description: "Start a project with Stively",
-    href: "/contact?type=business",
+    href: "/start-project",
     icon: FileText,
     group: "Business",
   },

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { findProtectedRoute } from "@/config/rbac";
+import { trackMetaCta } from "@/lib/meta-pixel";
 
 /**
  * Fixed, site-wide (rendered once in the root layout) - a secondary,
@@ -40,6 +41,7 @@ function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with Stively on WhatsApp"
+      onClick={() => trackMetaCta("Contact", "whatsapp")}
       className="fixed bottom-5 left-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
     >
       <svg

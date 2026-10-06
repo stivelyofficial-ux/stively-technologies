@@ -72,3 +72,19 @@ export function trackMetaInitiateCheckout({ contentName, value, currency }: Cont
     ...(value != null && currency ? { value, currency } : {}),
   });
 }
+
+/** Where on the site a conversion-intent click happened (sent as content_name so Meta can split by placement). */
+export type CtaLocation = "hero" | "pricing" | "header" | "footer" | "banner" | "cta" | "whatsapp" | "other";
+
+/**
+ * Meta Pixel events for the business funnel, one small function with a fixed
+ * naming scheme instead of ad-hoc fbq calls:
+ *   - "Schedule" -> a "Book a call" click        (content_name = location)
+ *   - "Contact"  -> a WhatsApp chat click         (content_name = "whatsapp")
+ *   - "Lead"     -> a "Start a project" click     (content_name = location)
+ * Same silent no-op as the purchase events when the pixel isn't loaded.
+ */
+export function trackMetaCta(event: "Schedule" | "Contact" | "Lead", location: CtaLocation): void {
+  if (typeof window === "undefined" || typeof window.fbq !== "function") return;
+  window.fbq("track", event, { content_name: location });
+}

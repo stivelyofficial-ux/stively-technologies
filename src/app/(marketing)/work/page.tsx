@@ -13,7 +13,7 @@ import { Container } from "@/components/shared/container";
 
 const TITLE = "Our Work";
 const DESCRIPTION =
-  "Real websites and web apps Stively has designed and built - live projects you can visit, not mockups.";
+  "Live demo sites Stively designed and built to show its standard. Client projects will be added here as they ship.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -65,8 +65,8 @@ export default async function WorkPage() {
 
       <HeroSection
         eyebrow="Our Work"
-        heading="Real products, not mockups"
-        subheading="A look at websites and web apps we've designed and built - every project here is live, and you're welcome to click through."
+        heading="Portfolio concepts"
+        subheading="Live demo sites we designed and built to show our standard - each one is labelled as a concept unless it was made for a paying client. Client projects will be added here as they ship."
         primaryCta={{ label: "Start a project", href: "/start-project" }}
       />
 
@@ -78,9 +78,9 @@ export default async function WorkPage() {
             <EmptyState
               icon={Briefcase}
               title="Our work is coming to this page soon"
-              description="We're putting together a showcase of live projects to feature here. In the meantime, get in touch and we'll happily walk you through recent work directly."
+              description="We're putting together a showcase to feature here. In the meantime, get in touch and we'll walk you through how we work."
               actionLabel="Get in touch"
-              actionHref="/contact?type=business"
+              actionHref="/start-project"
             />
           )}
         </Container>

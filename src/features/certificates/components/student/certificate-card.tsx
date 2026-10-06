@@ -23,11 +23,14 @@ function CertificateCard({
   enrollmentId,
   certificate,
   shareSection,
+  internshipAvailable = false,
 }: {
   enrollmentId: string;
   certificate: Certificate | null;
   /** The "share your achievement" block, shown once the certificate is issued - built by the page (it needs the learner's referral link). */
   shareSection?: React.ReactNode;
+  /** Only courses that lead into the internship (Frontend Development) show the "Go to Internship Dashboard" block. */
+  internshipAvailable?: boolean;
 }) {
   if (!certificate) {
     return (
@@ -125,17 +128,19 @@ function CertificateCard({
           </Button>
         </div>
         {shareSection && <div className="w-full">{shareSection}</div>}
-        <div className="border-border/70 flex w-full flex-col items-start gap-2 border-t pt-4">
-          <p className="text-muted-foreground text-sm">
-            You&apos;re done here - your internship track is ready, with a real project waiting.
-          </p>
-          <Button asChild variant="outline">
-            <Link href="/intern">
-              <Rocket aria-hidden="true" />
-              Go to Internship Dashboard
-            </Link>
-          </Button>
-        </div>
+        {internshipAvailable && (
+          <div className="border-border/70 flex w-full flex-col items-start gap-2 border-t pt-4">
+            <p className="text-muted-foreground text-sm">
+              You&apos;re done here - your internship track is ready, with a real project waiting.
+            </p>
+            <Button asChild variant="outline">
+              <Link href="/intern">
+                <Rocket aria-hidden="true" />
+                Go to Internship Dashboard
+              </Link>
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

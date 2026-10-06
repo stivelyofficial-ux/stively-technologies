@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { logQueryFailure } from "@/lib/log-query-failure";
 import type { PortfolioItem } from "@prisma/client";
 
 /**
@@ -16,7 +17,7 @@ export async function getFeaturedPortfolioItems(limit = 3): Promise<PortfolioIte
       take: limit,
     });
   } catch (error) {
-    console.error("getFeaturedPortfolioItems failed:", error);
+    logQueryFailure("getFeaturedPortfolioItems", error);
     return [];
   }
 }

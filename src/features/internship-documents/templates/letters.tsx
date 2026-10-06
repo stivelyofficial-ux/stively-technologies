@@ -233,8 +233,8 @@ export function RecommendationLetterDocument({ data }: { data: LetterData }) {
         </Text>
         <Text style={styles.p}>
           During the internship, {first} worked on a client-style project, building responsive
-          interfaces with HTML, CSS, JavaScript and React.js. {first} delivered clean,
-          well-structured code and turned feedback into improvements.
+          interfaces with HTML, CSS, JavaScript and React.js, and responded to feedback from the
+          Stively team.
         </Text>
         <Text style={styles.p}>
           Beyond technical skill, {first} showed ownership, clear communication and a genuine
@@ -266,13 +266,13 @@ export function ExperienceLetterDocument({ data }: { data: LetterData }) {
           <B>{longDate(end)}</B>, in remote mode.
         </Text>
         <Text style={styles.p}>
-          During this period, {first} delivered a real-world, client-style project, including
+          During this period, {first} worked on a real-world, client-style project, including
           responsive websites and React.js components. Responsibilities included UI development,
           cross-device testing, version control with Git and deployment.
         </Text>
         <Text style={styles.p}>
           {first}&apos;s conduct throughout the internship was professional, and the final project
-          was reviewed and approved by the Stively team.
+          was reviewed by the Stively team.
         </Text>
         <Text style={styles.p}>We wish {first} every success in future endeavours.</Text>
       </LetterPage>

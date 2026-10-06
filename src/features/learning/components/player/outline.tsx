@@ -38,7 +38,8 @@ export interface OutlineProps {
   totalSteps: number;
   percent: number;
   /** Where the learner goes after the last module - the intern portal, once the whole course is done. */
-  trailer: { unlocked: boolean };
+  /** available = this course leads into the internship at all (only Frontend Development today); unlocked = every module is done. */
+  trailer: { available: boolean; unlocked: boolean };
 }
 
 const dotColor = { done: "bg-success", current: "bg-primary", todo: "bg-border" } as const;
@@ -211,26 +212,28 @@ function Outline({ modules, doneSteps, totalSteps, percent, trailer }: OutlinePr
           );
         })}
 
-        <div className="border-border mt-3 border-t px-1 pt-3">
-          {trailer.unlocked ? (
-            <Link
-              href="/intern"
-              onClick={close}
-              className="text-foreground hover:bg-muted flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold"
-            >
-              Start your internship
-            </Link>
-          ) : (
-            <span
-              aria-disabled="true"
-              title="Complete every module to unlock this."
-              className="text-muted-foreground flex items-center gap-2.5 px-3 py-2.5 text-sm"
-            >
-              <Lock className="size-4" aria-hidden="true" />
-              Internship - after all modules
-            </span>
-          )}
-        </div>
+        {trailer.available && (
+          <div className="border-border mt-3 border-t px-1 pt-3">
+            {trailer.unlocked ? (
+              <Link
+                href="/intern"
+                onClick={close}
+                className="text-foreground hover:bg-muted flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold"
+              >
+                Start your internship
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                title="Complete every module to unlock this."
+                className="text-muted-foreground flex items-center gap-2.5 px-3 py-2.5 text-sm"
+              >
+                <Lock className="size-4" aria-hidden="true" />
+                Internship - after all modules
+              </span>
+            )}
+          </div>
+        )}
       </nav>
     </div>
   );

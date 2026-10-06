@@ -45,10 +45,10 @@ function PortfolioShowcase({ items }: PortfolioShowcaseProps) {
           <div className="flex max-w-2xl flex-col gap-3">
             <Eyebrow>Our work</Eyebrow>
             <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-              Real products, shipped and live
+              Portfolio concepts
             </h2>
             <p className="text-muted-foreground text-lg text-pretty">
-              A look at what we&apos;ve actually built - not mockups, live sites you can visit.
+              Live demo sites we designed and built to show our standard. Client projects will be added here as they ship.
             </p>
           </div>
           <Button variant="outline" asChild className="shrink-0">

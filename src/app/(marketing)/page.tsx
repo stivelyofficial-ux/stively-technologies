@@ -3,24 +3,28 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { getFeaturedTestimonials } from "@/lib/queries/testimonials";
 import { getFeaturedPortfolioItems } from "@/lib/queries/portfolio";
-import { getFeaturedCourseOffering } from "@/features/offerings/server/queries";
-import { HeroSection } from "@/components/sections/hero-section";
-import { HeroVisual } from "@/components/sections/hero-visual";
-import { TrustStrip } from "@/components/sections/trust-strip";
-import { FeaturedCourseBanner } from "@/components/sections/featured-course-banner";
-import { CapabilitiesStrip } from "@/components/sections/capabilities-strip";
-import { PortfolioShowcase } from "@/components/sections/portfolio-showcase";
-import { PricingTiers } from "@/components/sections/pricing-tiers";
-import { BusinessProcess } from "@/components/sections/business-process";
+import { JsonLd } from "@/components/shared/json-ld";
 import { Testimonials } from "@/components/sections/testimonials";
-import { AudiencePaths } from "@/components/sections/audience-paths";
-import { CTASection } from "@/components/sections/cta-section";
+import { HomeHero } from "@/components/home/home-hero";
+import { BuiltWith } from "@/components/home/built-with";
+import { NicheCards } from "@/components/home/niche-cards";
+import { ApproachPanel } from "@/components/home/approach-panel";
+import { FeaturedWork } from "@/components/home/featured-work";
+import { ClientResults } from "@/components/home/client-results";
+import { ProcessDark } from "@/components/home/process-dark";
+import { RiskReduction } from "@/components/home/risk-reduction";
+import { PricingTeaser } from "@/components/home/pricing-teaser";
+import { ServicesBento } from "@/components/home/services-bento";
+import { TeamSection } from "@/components/home/team-section";
+import { HomeFaq } from "@/components/home/home-faq";
+import { TrainingStrip } from "@/components/home/training-strip";
+import { FinalCta } from "@/components/home/final-cta";
 
-const TITLE = "Stively - Software Development for Businesses";
+const TITLE = "Stively: Custom Websites and Software for Growing Businesses";
 // Kept under ~160 characters so Google and social previews don't truncate
 // it mid-sentence - see the same discipline applied site-wide in Phase 5.
 const DESCRIPTION =
-  "Stively builds custom software with developers trained and evaluated first - not a freelancer roster. Transparent process, fixed estimates, no black box.";
+  "Custom websites and software for growing businesses, built by a trained team. Fixed price, visible progress at every stage, and direct access to the people building it.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -46,84 +50,57 @@ export const metadata: Metadata = {
 };
 
 /**
- * Dual-audience homepage (AD-022, superseding the prior "business-first,
- * training demoted" rebuild this comment used to describe). Stively serves
- * two real audiences - businesses buying software, and learners buying
- * training - and the new brand identity ("Build. Learn. Grow.") commits to
- * both being visible from the first screen, not one buried under the other.
- * Narrative: both audiences acknowledged in the hero -> why trust us (still
- * business-detailed, that content stays) -> what we build -> proof (if any
- * exists) -> AudiencePaths gives training a real, equal-weight entry point
- * instead of a footnote -> pricing/process/testimonials (business, unchanged)
- * -> closing ask, now routing both audiences instead of only one.
+ * Business-first company homepage (AD-042). Everything above the pricing
+ * section speaks to businesses; training is only a nav link, a footer link
+ * and one quiet strip near the bottom. Order: hero -> stack -> who we build
+ * for -> approach -> portfolio concepts (labelled as concepts) -> client
+ * results (renders only when real ones exist) -> process -> risk -> pricing
+ * -> also available -> team (only when real) -> FAQ -> training strip -> ask.
  *
- * Still no fabricated stats or client logos anywhere below - BRAND_PRINCIPLES.md's
- * standing rule - but PortfolioShowcase is the first real exception to
- * "no case studies yet": actual shipped demo sites, shown only once real
- * PortfolioItem rows exist (same conditional-render-when-empty discipline
- * Testimonials already used below). Trust is still built through process
- * transparency first; this section adds concrete proof on top, not instead.
- *
- * WhyStivelyComparison (AD-027) used to sit here - removed, not just from
- * this page but the codebase (it had no other caller): its "not a
- * freelancer roster / no black box" message was already said above it by
- * TrustStrip and, for the business audience specifically, again by
- * /services' own WhyChooseStively - a real duplicate, not a design choice
- * worth keeping. FeaturedCourseBanner takes its slot with something the
- * page didn't have anywhere: the actual course, its actual founding price,
- * and how long that price lasts - concrete, not one more restatement of
- * the same abstract trust claim.
+ * BRAND_PRINCIPLES #6 stands: no fabricated stats, client logos, testimonials
+ * or team. Client results and team render nothing until real data is added in
+ * src/config.
  */
 export default async function HomePage() {
-  const [testimonials, portfolioItems, featuredCourse] = await Promise.all([
+  const [testimonials, portfolioItems] = await Promise.all([
     getFeaturedTestimonials(),
     getFeaturedPortfolioItems(),
-    getFeaturedCourseOffering(),
   ]);
 
   return (
     <>
-      <HeroSection
-        eyebrow="Build. Learn. Grow."
-        eyebrowMono
-        heading={
-          <>
-            Build custom software with developers{" "}
-            <span className="from-primary to-brand-teal-text bg-linear-to-r bg-clip-text text-transparent">
-              you can trust
-            </span>{" "}
-            - or become one.
-          </>
-        }
-        subheading="Stively builds custom software for businesses with developers trained on real projects - and runs the same practical programs for students and professionals who want to build real software themselves."
-        primaryCta={{ label: "Start a project", href: "/start-project" }}
-        secondaryCta={{ label: "Explore training", href: "/training" }}
-        visual={<HeroVisual />}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: siteConfig.name,
+          url: siteConfig.url,
+          logo: `${siteConfig.url}/logo.png`,
+          email: siteConfig.contactEmail,
+          telephone: siteConfig.contactPhone,
+          sameAs: [
+            siteConfig.links.linkedin,
+            siteConfig.links.instagram,
+            siteConfig.links.facebook,
+            ...(siteConfig.links.twitter ? [siteConfig.links.twitter] : []),
+          ],
+        }}
       />
-
-      <TrustStrip />
-      {featuredCourse && <FeaturedCourseBanner offering={featuredCourse} />}
-      <CapabilitiesStrip />
-
-      {portfolioItems.length > 0 && <PortfolioShowcase items={portfolioItems} />}
-
-      <PricingTiers variant="teaser" />
-      <BusinessProcess />
-
+      <HomeHero />
+      <BuiltWith />
+      <NicheCards />
+      <ApproachPanel />
+      <FeaturedWork items={portfolioItems} />
+      <ClientResults />
+      <ProcessDark />
+      <RiskReduction />
+      <PricingTeaser />
+      <ServicesBento />
       {testimonials.length > 0 && <Testimonials testimonials={testimonials} />}
-
-      <AudiencePaths />
-
-      <CTASection
-        heading="Ready to build, or ready to learn?"
-        description="Start a project if you're building something real - or explore training if you want to build it yourself."
-        actionLabel="Start a project"
-        actionHref="/start-project"
-        secondaryActionLabel="Explore training"
-        secondaryActionHref="/training"
-        inverted
-        glow
-      />
+      <TeamSection compact />
+      <HomeFaq />
+      <TrainingStrip />
+      <FinalCta />
     </>
   );
 }

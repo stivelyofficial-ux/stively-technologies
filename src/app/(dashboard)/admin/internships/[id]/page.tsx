@@ -183,8 +183,8 @@ export default async function AdminInternshipDetailPage({
           {documents.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               Nothing issued yet. The offer letter is issued when the intern starts; the completion
-              certificate, recommendation and experience letters when the final project is approved
-              (or the internship is marked completed).
+              certificate, recommendation and experience letters when the final project is reviewed
+              (approved or not eligible) or the internship is marked completed.
             </p>
           ) : (
             <ul className="flex flex-col gap-2">

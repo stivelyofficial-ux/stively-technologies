@@ -1,5 +1,6 @@
 "use client";
 
+import { offeringHasInternship } from "@/features/internships/lib/eligibility";
 import * as React from "react";
 import Script from "next/script";
 import Link from "next/link";
@@ -32,6 +33,8 @@ import {
 export interface GuestCheckoutFormProps {
   offering: {
     id: string;
+    /** Decides whether the "Internship guaranteed" promise shows - only internship-eligible courses make it. */
+    slug?: string;
     title: string;
     price: number;
     currency: string;
@@ -378,10 +381,12 @@ function GuestCheckoutForm({
         </label>
       )}
 
-      <p className="text-foreground flex items-center justify-center gap-1.5 text-sm font-semibold">
-        <ShieldCheck className="size-4 text-emerald-600" aria-hidden="true" />
-        Internship guaranteed on course completion
-      </p>
+      {offeringHasInternship(offering.slug) && (
+        <p className="text-foreground flex items-center justify-center gap-1.5 text-sm font-semibold">
+          <ShieldCheck className="size-4 text-emerald-600" aria-hidden="true" />
+          Internship guaranteed on course completion
+        </p>
+      )}
 
       {error && (
         <p role="alert" className="text-destructive text-sm">

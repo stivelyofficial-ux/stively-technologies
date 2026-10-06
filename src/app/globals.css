@@ -396,3 +396,41 @@ a[data-navigating="true"] {
   max-width: 1240px;
   padding-inline: clamp(1rem, 3vw, 1.75rem);
 }
+
+/* ------------------------------------------------------------
+   Homepage (src/components/home) - hero scene motion + canvas.
+   Pure CSS so it runs from first paint; reduced-motion safe.
+   ------------------------------------------------------------ */
+@keyframes home-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--home-tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--home-tilt, 0deg));
+  }
+}
+
+.home-float {
+  animation: home-float 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-float {
+    animation: none;
+  }
+}
+
+/* Faint engineering grid behind the hero, faded out toward the edges. */
+.home-grid {
+  background-image:
+    linear-gradient(to right, oklch(0.541 0.216 265.75 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.541 0.216 265.75 / 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 80% at 60% 30%, #000 20%, transparent 75%);
+}
+
+/* Tech-stack marquee (home/tech-marquee.tsx): the motion itself is JS-driven; this only fades the edges. */
+.home-marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}

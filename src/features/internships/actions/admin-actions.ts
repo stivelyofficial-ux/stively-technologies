@@ -56,7 +56,9 @@ async function notifyReviewDecision(
       },
       NOT_ELIGIBLE: {
         title: "Your final submission was marked not eligible for the stipend",
-        body: feedback,
+        body: `${feedback ?? ""}
+
+Your certificate and letters are still yours - find them in Documents. Only the stipend is withheld.`.trim(),
         link: "/intern/submit",
       },
     }[status];
@@ -251,8 +253,8 @@ export async function reviewFinalSubmission(input: unknown): Promise<ActionResul
         finalReviewedById: admin.id,
       },
     });
-    if (status === "APPROVED") {
-      // An approved final project completes the internship: close the track and issue the completion certificate, recommendation and experience letters.
+    if (status === "APPROVED" || status === "NOT_ELIGIBLE") {
+      // A reviewed final project completes the internship either way: close the track and issue the completion certificate, recommendation and experience letters. Ineligibility only withholds the stipend (terms section 8).
       await prisma.internshipTrack.update({
         where: { id: trackId },
         data: { status: "COMPLETED", completedAt: new Date() },

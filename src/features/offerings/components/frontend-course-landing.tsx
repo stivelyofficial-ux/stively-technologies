@@ -683,6 +683,7 @@ function FrontendCourseLanding({
               <GuestCheckoutForm
                 offering={{
                   id: offering.id,
+                  slug: offering.slug,
                   title: offering.title,
                   price: payable ?? offering.price ?? 0,
                   currency: offering.currency,

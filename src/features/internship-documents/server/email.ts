@@ -41,7 +41,7 @@ export async function sendOfferLetterEmail(documentNumber: string): Promise<bool
   const html = `<div style="font-family:Inter,Arial,sans-serif;font-size:15px;line-height:1.6;color:#0F172A;max-width:560px">
 <p>Hi ${name},</p>
 <p>Welcome aboard! Your official <strong>Offer Letter</strong> for the <strong>${escapeHtml(doc.program)}</strong> at Stively Technologies is attached to this email (reference <strong>${escapeHtml(doc.documentNumber)}</strong>, dated ${longDate(doc.issuedAt)}).</p>
-<p>You can always view, download and verify it from your <a href="${documentsUrl}">Documents</a> page in the Intern Portal. Your completion certificate, letter of recommendation and experience letter will appear there once your final project is approved.</p>
+<p>You can always view, download and verify it from your <a href="${documentsUrl}">Documents</a> page in the Intern Portal. Your completion certificate, letter of recommendation and experience letter will appear there once your final project has been reviewed.</p>
 <p style="margin-top:20px"><strong>One small ask - share it on LinkedIn 🚀</strong><br>
 Recruiters check LinkedIn first, and a verified offer letter shows you are building real work. Post it and mention <strong>Stively Technologies</strong> so we can cheer you on:</p>
 <ol style="padding-left:20px">

@@ -12,6 +12,7 @@ import { MyLearningView } from "@/features/enrollments/components/my-learning-vi
 import { EnrollmentTimeline } from "@/features/enrollments/components/enrollment-timeline";
 import { ComingSoonSection } from "@/features/enrollments/components/coming-soon-section";
 import { SupportCard } from "@/features/enrollments/components/support-card";
+import { offeringHasInternship } from "@/features/internships/lib/eligibility";
 import { CertificateCard } from "@/features/certificates/components/student/certificate-card";
 import { getCertificateVerificationUrl } from "@/features/certificates/lib/verification";
 import { ShareAchievement } from "@/features/sharing/components/share-achievement";
@@ -218,6 +219,7 @@ export default async function EnrollmentLearningPage({
               enrollmentId={enrollmentId}
               certificate={certificate}
               shareSection={shareSection}
+              internshipAvailable={offeringHasInternship(enrollment.offering.slug)}
             />
           ) : (
             <ComingSoonSection {...CERTIFICATES_COMING_SOON} />
