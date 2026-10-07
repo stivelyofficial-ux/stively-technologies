@@ -990,3 +990,208 @@ Congratulations: with this lesson the Bonus Module is complete. You can manage y
     },
   },
 ];
+
+/** Final "Module 5 Quiz" lesson - 20 questions across all six lectures, pass mark 50% like the other module quizzes. */
+export const MODULE_5_QUIZ_TITLE = "Module 5 Quiz: Git, GitHub & Deployment";
+export const MODULE_5_QUIZ_SLUG = "module-5-quiz";
+export const MODULE_5_QUIZ: Quiz = {
+  title: MODULE_5_QUIZ_TITLE,
+  questions: [
+    {
+      question: "What is the main job of Git?",
+      options: [
+        "Hosting your website on the internet",
+        "Remembering the history of your project through saved snapshots (commits)",
+        "Making your CSS load faster",
+        "Writing your code for you",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "Which statement about Git and GitHub is correct?",
+      options: [
+        "GitHub is the tool on your computer, Git is the website",
+        "Git runs on your computer; GitHub is a website that stores Git projects online",
+        "They are two names for the same thing",
+        "You must pay for GitHub to use Git",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "What does git init do?",
+      options: [
+        "Uploads your project to GitHub",
+        "Turns the current folder into a Git repository by creating a hidden .git folder",
+        "Installs Git",
+        "Deletes the last commit",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "Git has three places a change can be in. Which order is right?",
+      options: [
+        "Repository, staging area, working directory",
+        "Staging area, repository, working directory",
+        "Working directory, staging area, repository",
+        "Working directory, repository, staging area",
+      ],
+      correctIndex: 2,
+    },
+    {
+      question: "What does git add . do?",
+      options: [
+        "Commits everything",
+        "Puts all changed files in this folder into the staging area",
+        "Pushes your code online",
+        "Adds a new branch",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "Which commit message is the best?",
+      options: ["update", "asdf", "final final", "Fix navbar overlap on mobile"],
+      correctIndex: 3,
+    },
+    {
+      question:
+        "You run git commit without -m and a strange text editor (vim) opens. How do you get out?",
+      options: [
+        "Press Esc, type :q! and press Enter",
+        "Close your laptop",
+        "Delete the .git folder",
+        "Run git push",
+      ],
+      correctIndex: 0,
+    },
+    {
+      question: "Which entries should normally go in a React project's .gitignore?",
+      options: [
+        "src/ and index.html",
+        "node_modules/, dist/ and .env",
+        "package.json and README.md",
+        "Nothing, everything should be committed",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question:
+        "A file is already committed and you then add it to .gitignore. It is still tracked. What fixes this?",
+      options: [
+        "git rm --cached <file>, then commit",
+        "git reset --hard",
+        "Delete the repository",
+        "git branch -d <file>",
+      ],
+      correctIndex: 0,
+    },
+    {
+      question:
+        "Which command throws away your uncommitted changes to a file and restores the last committed version?",
+      options: [
+        "git restore index.html",
+        "git restore --staged index.html",
+        "git commit --amend",
+        "git revert",
+      ],
+      correctIndex: 0,
+    },
+    {
+      question: "A bad commit was already pushed and shared. What is the safest way to undo it?",
+      options: [
+        "git reset --hard, then force everyone to start over",
+        "git revert <commit-id>, which creates a new commit that reverses it",
+        "Delete the .git folder",
+        "Ignore it",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "What is the best reason to build a feature on its own branch?",
+      options: [
+        "Branches make code run faster",
+        "The stable main branch stays untouched until the feature is finished and tested",
+        "GitHub requires it",
+        "It uses less disk space",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "Which command creates a new branch and switches to it?",
+      options: [
+        "git branch -d feature/navbar",
+        "git switch main",
+        "git switch -c feature/navbar",
+        "git merge feature/navbar",
+      ],
+      correctIndex: 2,
+    },
+    {
+      question: "What does git push -u origin main do the first time you run it?",
+      options: [
+        "Downloads a project",
+        "Sends your local main branch online and links it, so later git push is enough",
+        "Creates a README",
+        "Deletes the remote",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question:
+        "You have just cloned a React project from GitHub. What must you run before npm run dev?",
+      options: ["git init", "npm install", "git push", "npm run build"],
+      correctIndex: 1,
+    },
+    {
+      question: "What is a pull request?",
+      options: [
+        "A command that downloads code",
+        "A request to review your branch and merge it into main",
+        "A way to delete a branch",
+        "A GitHub paid plan",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "When does a merge conflict happen?",
+      options: [
+        "Whenever you run git merge",
+        "When two people change the same place in the same file and Git cannot choose",
+        "When your internet is slow",
+        "When you forget git add",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question:
+        "What must you do with the <<<<<<<, ======= and >>>>>>> lines in a conflicted file?",
+      options: [
+        "Keep them, they are part of the code",
+        "Choose the right version, remove those marker lines, then git add and commit",
+        "Rename them",
+        "Push them to GitHub",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question: "What does npm run build create for a Vite project, and what is it for?",
+      options: [
+        "A node_modules folder, for development",
+        "A dist folder of plain HTML, CSS and JavaScript, which is what goes on the internet",
+        "A README, for GitHub",
+        "A new Git branch",
+      ],
+      correctIndex: 1,
+    },
+    {
+      question:
+        "Your React Router site works when you click links on Vercel, but refreshing /about shows a 404. What fixes it?",
+      options: [
+        "A vercel.json rewrite that sends every address to index.html",
+        "Buying a custom domain",
+        "Deleting the dist folder",
+        "Switching from GitHub to GitLab",
+      ],
+      correctIndex: 0,
+    },
+  ],
+};
