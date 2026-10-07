@@ -1,23 +1,26 @@
 import { Container } from "@/components/shared/container";
 import { Eyebrow } from "@/components/shared/eyebrow";
-import { Badge } from "@/components/ui/badge";
 
 /**
  * Per-project technology list - deliberately NOT the site-wide TechStack
- * component (src/components/sections/tech-stack.tsx), which is a hardcoded
- * description of Stively's own stack, not parameterized. This one just
- * renders whatever techStack: string[] the admin entered for this project.
+ * component, which describes Stively's own stack. This one renders whatever
+ * techStack: string[] the admin entered for this project.
  */
 function CaseStudyTechStack({ techStack }: { techStack: string[] }) {
   return (
-    <Container size="narrow" className="flex flex-col gap-4">
-      <Eyebrow>Technology Stack</Eyebrow>
-      <div className="flex flex-wrap gap-2">
-        {techStack.map((tech) => (
-          <Badge key={tech} variant="secondary">
-            {tech}
-          </Badge>
-        ))}
+    <Container>
+      <div className="border-border/70 bg-muted/40 flex flex-col gap-5 rounded-3xl border p-8 sm:flex-row sm:items-center sm:gap-10">
+        <Eyebrow>Technology stack</Eyebrow>
+        <ul className="flex flex-wrap gap-2">
+          {techStack.map((tech) => (
+            <li
+              key={tech}
+              className="border-border bg-card text-foreground rounded-full border px-4 py-1.5 text-sm font-medium"
+            >
+              {tech}
+            </li>
+          ))}
+        </ul>
       </div>
     </Container>
   );

@@ -6,12 +6,14 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent } from "@/components/ui/card";
-import { HeroSection } from "@/components/sections/hero-section";
+import { PageHero } from "@/components/biz/page-hero";
+import { HeroActions } from "@/components/biz/hero-actions";
 import { ContactMethods } from "@/components/sections/contact-methods";
 import { ContactForm } from "@/components/forms/contact-form";
 import { WhyChooseStively, type Reason } from "@/components/sections/why-choose-stively";
-import { FAQSection, type FAQItem } from "@/components/sections/faq-section";
-import { CTASection } from "@/components/sections/cta-section";
+import { FaqBlock } from "@/components/biz/faq-block";
+import type { FaqBlockItem as FAQItem } from "@/components/biz/faq-block";
+import { CtaBand } from "@/components/biz/cta-band";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -109,18 +111,18 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
         }}
       />
 
-      <HeroSection
+      <PageHero
         eyebrow="Contact"
-        heading="Let's talk"
-        subheading="Whether you're a student exploring a program or a business with a project in mind - tell us what's on your mind and we'll get back to you."
-        primaryCta={{ label: "Send a message", href: "#contact-form" }}
+        title="Let's talk"
+        description="Whether you're a student exploring a program or a business with a project in mind - tell us what's on your mind and we'll get back to you."
+        actions={<HeroActions secondary={null} />}
       />
 
       <ContactMethods />
 
-      <Section id="contact-form" background="default">
+      <Section id="contact-form" className="py-10 md:py-14">
         <Container className="flex justify-center">
-          <Card className="w-full max-w-xl">
+          <Card className="border-border/70 w-full max-w-xl rounded-3xl shadow-[0_30px_60px_-36px_rgba(18,32,92,0.35)]">
             <CardContent>
               <ContactForm defaultType={defaultType} offeringTitle={offering} />
             </CardContent>
@@ -129,14 +131,11 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
       </Section>
 
       <WhyChooseStively heading="Why reach out to Stively" reasons={TRUST_REASONS} />
-      <FAQSection items={FAQ_ITEMS} />
+      <FaqBlock items={FAQ_ITEMS} structuredData={false} />
 
-      <CTASection
+      <CtaBand
         heading="Still deciding?"
-        description="There's no wrong reason to reach out - ask us anything."
-        actionLabel="Send a message"
-        actionHref="#contact-form"
-        inverted
+        description="There is no wrong reason to reach out - ask us anything."
       />
     </>
   );

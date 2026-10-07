@@ -11,7 +11,8 @@ import { CaseStudyTechStack } from "@/components/sections/portfolio/case-study-t
 import { CaseStudyDeviceMockups } from "@/components/sections/portfolio/case-study-device-mockups";
 import { CaseStudyGallery } from "@/components/sections/portfolio/case-study-gallery";
 import { CaseStudyOutcomes } from "@/components/sections/portfolio/case-study-outcomes";
-import { CTASection } from "@/components/sections/cta-section";
+import { Container } from "@/components/shared/container";
+import { CtaBand } from "@/components/biz/cta-band";
 
 interface PortfolioDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -84,15 +85,29 @@ export default async function PortfolioDetailPage({ params }: PortfolioDetailPag
   const outcomes = (item.outcomes as { label: string; value: string }[] | null) ?? [];
 
   return (
-    <div className="flex flex-col gap-16 pb-16 md:gap-20">
+    <div className="flex flex-col gap-14 md:gap-20">
       <CaseStudyHero item={item} />
       <CaseStudyOverview summary={item.summary} clientName={item.clientName} />
 
-      {item.challenge && (
-        <CaseStudyNarrativeSection eyebrow="The Challenge" heading="Business challenge" body={item.challenge} />
-      )}
-      {item.solution && (
-        <CaseStudyNarrativeSection eyebrow="Our Approach" heading="Proposed solution" body={item.solution} />
+      {(item.challenge || item.solution) && (
+        <Container
+          className={`grid gap-6 ${item.challenge && item.solution ? "lg:grid-cols-2" : ""}`}
+        >
+          {item.challenge && (
+            <CaseStudyNarrativeSection
+              eyebrow="The challenge"
+              heading="Business challenge"
+              body={item.challenge}
+            />
+          )}
+          {item.solution && (
+            <CaseStudyNarrativeSection
+              eyebrow="Our approach"
+              heading="Proposed solution"
+              body={item.solution}
+            />
+          )}
+        </Container>
       )}
       {features.length > 0 && <CaseStudyFeatures features={features} />}
       {item.techStack.length > 0 && <CaseStudyTechStack techStack={item.techStack} />}
@@ -104,13 +119,9 @@ export default async function PortfolioDetailPage({ params }: PortfolioDetailPag
       )}
       {outcomes.length > 0 && <CaseStudyOutcomes outcomes={outcomes} />}
 
-      <CTASection
-        heading="Have a project in mind?"
-        description="Tell us what you're building and we'll get back to you the same day."
-        actionLabel="Start your project"
-        actionHref="/start-project"
-        inverted
-        glow
+      <CtaBand
+        heading="Want something like this?"
+        description="Tell us what you are building. We reply with a clear plan and a fixed estimate."
       />
     </div>
   );

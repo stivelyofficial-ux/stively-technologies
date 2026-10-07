@@ -4,9 +4,10 @@ import { Briefcase } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getAllPublishedPortfolioItems } from "@/lib/queries/portfolio";
 import { JsonLd } from "@/components/shared/json-ld";
-import { HeroSection } from "@/components/sections/hero-section";
+import { PageHero } from "@/components/biz/page-hero";
+import { HeroActions } from "@/components/biz/hero-actions";
 import { WorkGrid } from "@/components/sections/work-grid";
-import { CTASection } from "@/components/sections/cta-section";
+import { CtaBand } from "@/components/biz/cta-band";
 import { EmptyState } from "@/components/sections/empty-state";
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
@@ -63,14 +64,14 @@ export default async function WorkPage() {
         />
       )}
 
-      <HeroSection
-        eyebrow="Our Work"
-        heading="Portfolio concepts"
-        subheading="Live demo sites we designed and built to show our standard - each one is labelled as a concept unless it was made for a paying client. Client projects will be added here as they ship."
-        primaryCta={{ label: "Start a project", href: "/start-project" }}
+      <PageHero
+        eyebrow="Our work"
+        title="Portfolio concepts"
+        description="Live demo sites we designed and built to show our standard - each one is labelled as a concept unless it was made for a paying client. Client projects will be added here as they ship."
+        actions={<HeroActions secondary={null} />}
       />
 
-      <Section background="default">
+      <Section className="py-8 md:py-12">
         <Container>
           {items.length > 0 ? (
             <WorkGrid items={items} />
@@ -86,12 +87,9 @@ export default async function WorkPage() {
         </Container>
       </Section>
 
-      <CTASection
+      <CtaBand
         heading="Like what you see?"
-        description="Tell us about your project - we'll give you a straight answer on scope, timeline, and fit."
-        actionLabel="Start a project"
-        actionHref="/start-project"
-        inverted
+        description="Tell us about your project - we will give you a straight answer on scope, timeline, and fit."
       />
     </>
   );

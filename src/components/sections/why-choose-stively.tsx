@@ -2,8 +2,8 @@ import type { LucideIcon } from "lucide-react";
 
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
-import { Eyebrow } from "@/components/shared/eyebrow";
-import { Reveal } from "@/components/shared/reveal";
+import { SectionHeading } from "@/components/home/section-heading";
+import { FeatureCards } from "@/components/biz/feature-cards";
 
 export interface Reason {
   icon: LucideIcon;
@@ -16,29 +16,20 @@ export interface WhyChooseStivelyProps {
   reasons: Reason[];
 }
 
+/** "Why choose Stively" - a heading and a grid of reason cards on a muted band. */
 function WhyChooseStively({ heading = "Why choose Stively", reasons }: WhyChooseStivelyProps) {
   return (
-    <Section background="muted">
-      <Container className="flex flex-col gap-10 lg:flex-row lg:gap-16">
-        <div className="flex flex-col gap-3 lg:w-1/3 lg:shrink-0">
-          <Eyebrow>Why Stively</Eyebrow>
-          <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-            {heading}
-          </h2>
-        </div>
-        <div className="grid flex-1 gap-8 sm:grid-cols-2">
-          {reasons.map((reason, index) => (
-            <Reveal key={reason.title} delay={index * 60} className="flex gap-4">
-              <span className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-xl">
-                <reason.icon className="size-5" aria-hidden="true" />
-              </span>
-              <div className="flex flex-col gap-1">
-                <h3 className="text-foreground text-base font-semibold">{reason.title}</h3>
-                <p className="text-muted-foreground text-sm">{reason.description}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+    <Section className="bg-muted/40 border-border/60 border-y py-16 md:py-20 lg:py-24">
+      <Container className="flex flex-col gap-10 lg:gap-12">
+        <SectionHeading eyebrow="Why Stively" title={heading} />
+        <FeatureCards
+          columns={reasons.length % 3 === 0 ? 3 : 2}
+          items={reasons.map((reason) => ({
+            title: reason.title,
+            description: reason.description,
+            icon: reason.icon,
+          }))}
+        />
       </Container>
     </Section>
   );

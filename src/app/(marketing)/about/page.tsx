@@ -8,13 +8,14 @@ import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Badge } from "@/components/ui/badge";
-import { HeroSection } from "@/components/sections/hero-section";
+import { PageHero } from "@/components/biz/page-hero";
+import { HeroActions } from "@/components/biz/hero-actions";
 import { WhyWeExist } from "@/components/sections/why-we-exist";
 import { MissionVision } from "@/components/sections/mission-vision";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { WhyChooseStively, type Reason } from "@/components/sections/why-choose-stively";
 import { FounderNote } from "@/components/sections/founder-note";
-import { CTASection } from "@/components/sections/cta-section";
+import { CtaBand } from "@/components/biz/cta-band";
 
 // Founder's name included here deliberately (AD-030) - the meta
 // description is what Google most often surfaces as the search snippet, so
@@ -58,12 +59,12 @@ const BUSINESS_JOURNEY = [
   },
   { title: "Project", description: "Scoped, planned, and estimated before development starts." },
   {
-    title: "Senior-led Development",
-    description: "Built by a trained team, with an experienced lead directing the work.",
+    title: "Guided Development",
+    description: "Built by a trained team, working to a plan you can see.",
   },
   {
     title: "Quality Delivery",
-    description: "Reviewed and signed off before it reaches you, not after.",
+    description: "Work is tested and reviewed before it reaches you, not after.",
   },
   {
     title: "Long-term Partnership",
@@ -75,17 +76,19 @@ const DIFFERENTIATORS: Reason[] = [
   {
     icon: Building2,
     title: "A software company, not a marketplace",
-    description: "One accountable team on your project end to end - not a rotating cast of freelancers.",
+    description:
+      "One accountable team on your project end to end - not a rotating cast of freelancers.",
   },
   {
     icon: ShieldCheck,
-    title: "Senior sign-off before delivery",
-    description: "Every piece of work is reviewed and approved before it reaches you, not after.",
+    title: "Review before delivery",
+    description: "Work is tested and reviewed before it reaches you, not after.",
   },
   {
     icon: FolderGit2,
     title: "A transparent process",
-    description: "You see what's being built and when, not a black box that resurfaces at the deadline.",
+    description:
+      "You see what's being built and when, not a black box that resurfaces at the deadline.",
   },
   {
     icon: Users2,
@@ -95,7 +98,8 @@ const DIFFERENTIATORS: Reason[] = [
   {
     icon: Clock,
     title: "Delivery without agency overhead",
-    description: "Serious engineering discipline, without the price tag or the layers of account managers.",
+    description:
+      "Serious engineering discipline, without the price tag or the layers of account managers.",
   },
 ];
 
@@ -137,18 +141,18 @@ export default function AboutPage() {
           "@type": "Person",
           name: "Abhijit Karande",
           jobTitle: "Founder & CEO",
-          description: "Founder and CEO of Stively, a software engineer leading its engineering standards.",
+          description:
+            "Founder and CEO of Stively, a software engineer leading its engineering standards.",
           url: `${siteConfig.url}/about`,
           worksFor: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
         }}
       />
 
-      <HeroSection
+      <PageHero
         eyebrow="About Stively"
-        heading="A software company built to be trusted with your project"
-        subheading="Stively is a B2B web and application development company. Every project is built by a trained, evaluated team and reviewed by a senior lead before it ever reaches you."
-        primaryCta={{ label: "Start a project", href: "/start-project" }}
-        secondaryCta={{ label: "Explore services", href: "/services" }}
+        title="A software company built to be trusted with your project"
+        description="Stively is a B2B web and application development company. Every project is built by a trained, evaluated team and reviewed before it ever reaches you."
+        actions={<HeroActions secondary={{ label: "Explore services", href: "/services" }} />}
       />
 
       <WhyWeExist />
@@ -207,15 +211,9 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      <CTASection
+      <CtaBand
         heading="Have a project in mind?"
-        description="Tell us what you're building - we'll tell you exactly how we'd approach it."
-        actionLabel="Start a project"
-        actionHref="/start-project"
-        secondaryActionLabel="Explore training"
-        secondaryActionHref="/training"
-        inverted
-        glow
+        description="Tell us what you are building - we will tell you exactly how we would approach it."
       />
     </>
   );

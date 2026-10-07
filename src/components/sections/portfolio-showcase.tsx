@@ -7,8 +7,6 @@ import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Reveal } from "@/components/shared/reveal";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const PORTFOLIO_CATEGORY_LABEL: Record<PortfolioCategory, string> = {
@@ -48,7 +46,8 @@ function PortfolioShowcase({ items }: PortfolioShowcaseProps) {
               Portfolio concepts
             </h2>
             <p className="text-muted-foreground text-lg text-pretty">
-              Live demo sites we designed and built to show our standard. Client projects will be added here as they ship.
+              Live demo sites we designed and built to show our standard. Client projects will be
+              added here as they ship.
             </p>
           </div>
           <Button variant="outline" asChild className="shrink-0">
@@ -79,85 +78,71 @@ function PortfolioShowcase({ items }: PortfolioShowcaseProps) {
  */
 function PortfolioCard({ item }: { item: PortfolioItem }) {
   const isConcept = !item.clientName;
-  const detailHref = item.slug ? `/work/${item.slug}` : null;
+  const href = item.slug ? `/work/${item.slug}` : (item.liveUrl ?? "/work");
+  const external = !item.slug && !!item.liveUrl;
 
-  const cardBody = (
+  const body = (
     <>
-      <div className="bg-muted relative aspect-video w-full overflow-hidden">
+      <div className="bg-muted relative aspect-[4/3.2] w-full overflow-hidden">
         <Image
           src={item.imageUrl}
           alt={`Cover image for ${item.title}`}
           fill
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
+          className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
         />
-        {detailHref && (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 flex items-end justify-end bg-linear-to-t from-black/50 via-transparent to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          >
-            <span className="flex size-9 items-center justify-center rounded-full bg-white/90 text-black">
-              <ArrowUpRight className="size-4" />
-            </span>
-          </div>
-        )}
+        <span className="absolute top-4 left-4 flex flex-wrap gap-1.5">
+          <span className="bg-ink text-ink-foreground rounded-full px-3 py-1 text-xs font-semibold">
+            {isConcept ? "Portfolio Concept" : "Client Project"}
+          </span>
+          <span className="bg-card/90 text-foreground rounded-full px-3 py-1 text-xs font-semibold backdrop-blur">
+            {PORTFOLIO_CATEGORY_LABEL[item.category]}
+          </span>
+        </span>
+        <span className="bg-card/90 text-foreground absolute top-4 right-4 flex size-9 items-center justify-center rounded-full opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100">
+          <ArrowUpRight className="size-4" aria-hidden="true" />
+        </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-6 pb-3">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant={isConcept ? "default" : "secondary"} className="w-fit">
-            {isConcept ? "Portfolio Concept" : "Client Project"}
-          </Badge>
-          <Badge variant="outline" className="w-fit">
-            {PORTFOLIO_CATEGORY_LABEL[item.category]}
-          </Badge>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <h3 className="font-display text-foreground text-lg font-semibold">{item.title}</h3>
+      <div className="flex flex-1 flex-col gap-3 p-6">
+        <div className="flex flex-col gap-1.5">
+          <h3 className="font-display text-xl font-semibold tracking-tight">{item.title}</h3>
           {(item.industry || item.clientName) && (
-            <p className="text-muted-foreground text-sm">
-              {item.clientName ? item.clientName : item.industry}
+            <p className="text-muted-foreground text-xs">
+              {item.clientName ? item.clientName : `${item.industry} - self-initiated demo`}
             </p>
           )}
+          <p className="text-muted-foreground line-clamp-3 text-sm text-pretty">
+            {item.tagline ?? item.summary}
+          </p>
         </div>
-
-        <p className="text-muted-foreground line-clamp-2 text-sm text-pretty">{item.summary}</p>
-
         {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {item.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-muted-foreground font-normal">
+          <ul className="mt-auto flex flex-wrap gap-1.5 pt-1">
+            {item.tags.slice(0, 4).map((tag) => (
+              <li
+                key={tag}
+                className="border-border/80 text-muted-foreground rounded-full border px-2.5 py-1 text-[11px] font-medium"
+              >
                 {tag}
-              </Badge>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
     </>
   );
 
-  return (
-    <Card variant="interactive" className="group h-full gap-0 overflow-hidden py-0">
-      {detailHref ? (
-        <Link href={detailHref} className="contents">
-          {cardBody}
-        </Link>
-      ) : (
-        cardBody
-      )}
+  const className =
+    "group border-border/70 bg-card relative flex h-full flex-col overflow-hidden rounded-3xl border shadow-[0_1px_2px_rgba(18,32,92,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_60px_-28px_rgba(18,32,92,0.5)]";
 
-      {item.liveUrl && (
-        <div className="px-6 pb-6">
-          <Button variant="outline" size="sm" asChild className="w-fit">
-            <a href={item.liveUrl} target="_blank" rel="noopener noreferrer">
-              Live Preview
-              <ArrowUpRight className="size-3.5" aria-hidden="true" />
-            </a>
-          </Button>
-        </div>
-      )}
-    </Card>
+  return external ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+      {body}
+    </a>
+  ) : (
+    <Link href={href} className={className}>
+      {body}
+    </Link>
   );
 }
 

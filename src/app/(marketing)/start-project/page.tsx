@@ -43,7 +43,8 @@ const STEPS = [
   {
     icon: MessagesSquare,
     title: "We call you",
-    description: "A real person calls the same day to understand what you need and answer questions.",
+    description:
+      "A real person calls the same day to understand what you need and answer questions.",
   },
   {
     icon: FileCheck,
@@ -53,7 +54,8 @@ const STEPS = [
   {
     icon: Rocket,
     title: "We start building",
-    description: "Pay your first installment through Razorpay and track every update from your own dashboard.",
+    description:
+      "Pay your first installment through Razorpay and track every update from your own dashboard.",
   },
 ];
 
@@ -73,7 +75,8 @@ export default async function StartProjectPage() {
   // Only a CLIENT's own email is worth prefilling here - anyone else logged
   // in (staff, a student account, etc.) has no reason to have their session
   // email attached to a new business inquiry.
-  const defaultEmail = session?.user?.role === "CLIENT" ? (session.user.email ?? undefined) : undefined;
+  const defaultEmail =
+    session?.user?.role === "CLIENT" ? (session.user.email ?? undefined) : undefined;
 
   return (
     <>
@@ -111,7 +114,7 @@ export default async function StartProjectPage() {
             </span>
 
             <h1
-              className="font-display text-balance font-semibold tracking-[-0.03em]"
+              className="font-display font-semibold tracking-[-0.03em] text-balance"
               style={{ fontSize: "clamp(2.5rem, 5.5vw, 4.25rem)", lineHeight: 1.05 }}
             >
               Tell us what you&apos;re building. We&apos;ll call you back today.
@@ -129,7 +132,10 @@ export default async function StartProjectPage() {
                 "Track progress, chat, and documents from your own client dashboard",
               ].map((point) => (
                 <li key={point} className="flex items-start gap-2.5">
-                  <ShieldCheck className="text-brand-teal mt-0.5 size-4.5 shrink-0" aria-hidden="true" />
+                  <ShieldCheck
+                    className="text-brand-teal mt-0.5 size-4.5 shrink-0"
+                    aria-hidden="true"
+                  />
                   <span className="text-ink-foreground/90 text-sm">{point}</span>
                 </li>
               ))}
@@ -145,7 +151,7 @@ export default async function StartProjectPage() {
                 slow-connection JS/IntersectionObserver delay instead of
                 animating anything a visitor actually sees happen. */}
             <Card className="shadow-glow-xl mx-auto max-w-lg gap-0 p-6 md:p-8">
-              <h2 className="text-foreground mb-1 font-display text-xl font-semibold">
+              <h2 className="text-foreground font-display mb-1 text-xl font-semibold">
                 Start your project
               </h2>
               <p className="text-muted-foreground mb-6 text-sm">
@@ -160,7 +166,7 @@ export default async function StartProjectPage() {
       <TrustStrip />
 
       {portfolioItems.length > 0 && (
-        <Section background="muted">
+        <Section className="bg-muted/40 border-border/60 border-y py-16 md:py-20 lg:py-24">
           <Container className="flex flex-col gap-10">
             <div className="flex max-w-2xl flex-col gap-3">
               <Eyebrow>Our work</Eyebrow>
@@ -168,7 +174,8 @@ export default async function StartProjectPage() {
                 Portfolio concepts
               </h2>
               <p className="text-muted-foreground text-lg text-pretty">
-                Live demo sites we designed and built to show our standard. Client projects will be added here as they ship.
+                Live demo sites we designed and built to show our standard. Client projects will be
+                added here as they ship.
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -182,7 +189,7 @@ export default async function StartProjectPage() {
         </Section>
       )}
 
-      <Section>
+      <Section className="py-16 md:py-20 lg:py-24">
         <Container className="flex flex-col gap-10">
           <div className="flex max-w-2xl flex-col gap-3">
             <Eyebrow>What happens next</Eyebrow>
@@ -193,16 +200,18 @@ export default async function StartProjectPage() {
           <div className="grid gap-6 sm:grid-cols-3">
             {STEPS.map((step, index) => (
               <Reveal key={step.title} delay={index * 80}>
-                <div className="border-border bg-surface-elevated flex h-full flex-col gap-3 rounded-xl border p-6 shadow-sm">
+                <div className="border-border/70 bg-card flex h-full flex-col gap-3 rounded-3xl border p-7 shadow-[0_1px_2px_rgba(18,32,92,0.04)]">
                   <div className="flex items-center gap-3">
-                    <span className="bg-primary/10 flex size-9 shrink-0 items-center justify-center rounded-lg">
-                      <step.icon className="text-primary size-4.5" aria-hidden="true" />
+                    <span className="bg-primary/10 flex size-11 shrink-0 items-center justify-center rounded-2xl">
+                      <step.icon className="text-primary size-5" aria-hidden="true" />
                     </span>
                     <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
                       Step {index + 1}
                     </span>
                   </div>
-                  <h3 className="text-foreground font-display text-lg font-semibold">{step.title}</h3>
+                  <h3 className="text-foreground font-display text-lg font-semibold">
+                    {step.title}
+                  </h3>
                   <p className="text-muted-foreground text-sm text-pretty">{step.description}</p>
                 </div>
               </Reveal>
@@ -211,33 +220,37 @@ export default async function StartProjectPage() {
         </Container>
       </Section>
 
-      <Section background="inverted" className="texture-noise relative overflow-hidden">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(ellipse 900px 500px at 50% 0%, oklch(0.541 0.216 265.75 / 0.3), transparent 65%)",
-          }}
-        />
-        <Container className="relative flex flex-col items-center gap-6 text-center">
-          <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-            Prefer to just message us?
-          </h2>
-          <p className="text-ink-muted-foreground max-w-xl text-lg text-pretty">
-            Skip the form entirely and start a conversation on WhatsApp right now.
-          </p>
-          <a
-            href={getWhatsAppUrl("/start-project")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
-          >
-            <MessageCircle className="size-4.5" aria-hidden="true" />
-            Chat with us on WhatsApp
-          </a>
+      <section className="py-14 md:py-20">
+        <Container>
+          <div className="bg-ink text-ink-foreground relative overflow-hidden rounded-[32px] px-7 py-14 text-center sm:px-14">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(ellipse 800px 460px at 50% 0%, oklch(0.541 0.216 265.75 / 0.4), transparent 65%)",
+              }}
+            />
+            <div className="relative flex flex-col items-center gap-5">
+              <h2 className="font-display text-3xl font-semibold tracking-[-0.03em] text-balance md:text-4xl">
+                Prefer to just message us?
+              </h2>
+              <p className="text-ink-muted-foreground max-w-xl text-lg text-pretty">
+                Skip the form entirely and start a conversation on WhatsApp right now.
+              </p>
+              <a
+                href={getWhatsAppUrl("/start-project")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-7 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
+              >
+                <MessageCircle className="size-4.5" aria-hidden="true" />
+                Chat with us on WhatsApp
+              </a>
+            </div>
+          </div>
         </Container>
-      </Section>
+      </section>
     </>
   );
 }

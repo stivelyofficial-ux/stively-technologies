@@ -1,41 +1,31 @@
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
+import { SectionHeading } from "@/components/home/section-heading";
 
-/**
- * Static prose, not extracted for reuse elsewhere - this is genuinely
- * specific to About's narrative, unlike ServicesGrid/WhyChooseStively which
- * were built anticipating reuse. Kept as its own component anyway for
- * consistency with how every other page in this project structures its
- * sections, not because it's expected to be reused.
- *
- * B2B-only rewrite (2026-08-10, see AD-013's B2B_ONLY_MODE): the previous
- * copy led with the training-to-hiring bridge story. Every claim below is
- * grounded in what's already established and verified true elsewhere on
- * this site (homepage's TrustStrip, the talent pipeline language used
- * sitewide) - not new claims invented for this page.
- */
+/** The "why Stively exists" story: heading on the left, the three paragraphs on the right. */
 function WhyWeExist() {
   return (
-    <Section background="default">
-      <Container className="mx-auto flex max-w-3xl flex-col gap-6 text-center">
-        <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-          Why Stively exists
-        </h2>
-        <p className="text-muted-foreground text-lg text-pretty">
-          Businesses that need real software built usually end up choosing between two bad options:
-          a traditional agency, priced and paced for enterprise budgets, or a freelancer marketplace,
-          where quality is a gamble and there&apos;s no one to hold accountable when it goes wrong.
-        </p>
-        <p className="text-muted-foreground text-lg text-pretty">
-          Neither gives you what you actually need - a team you can trust, a process you can see, and
-          software built by people who&apos;ve already proven they can do the work, not people
-          learning on your dime.
-        </p>
-        <p className="text-foreground text-lg text-pretty">
-          Stively exists to be that middle path: a real software company, built around a trained,
-          evaluated team and a process where every project is reviewed and signed off before it
-          reaches you - not an afterthought bolted onto something else.
-        </p>
+    <Section className="py-16 md:py-20 lg:py-24">
+      <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
+        <SectionHeading eyebrow="Our story" title="Why Stively exists" />
+        <div className="flex flex-col gap-5">
+          <p className="text-muted-foreground text-lg leading-relaxed text-pretty">
+            Businesses that need real software built usually end up choosing between two bad
+            options: a traditional agency, priced and paced for enterprise budgets, or a freelancer
+            marketplace, where quality is a gamble and there&apos;s no one to hold accountable when
+            it goes wrong.
+          </p>
+          <p className="text-muted-foreground text-lg leading-relaxed text-pretty">
+            Neither gives you what you actually need - a team you can trust, a process you can see,
+            and software built by people who&apos;ve already proven they can do the work, not people
+            learning on your dime.
+          </p>
+          <p className="text-foreground text-lg leading-relaxed font-medium text-pretty">
+            Stively exists to be that middle path: a real software company, built around a trained,
+            evaluated team and a process where every project is reviewed before it reaches you - not
+            an afterthought bolted onto something else.
+          </p>
+        </div>
       </Container>
     </Section>
   );

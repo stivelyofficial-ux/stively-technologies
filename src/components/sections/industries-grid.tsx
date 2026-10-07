@@ -3,8 +3,8 @@ import type { LucideIcon } from "lucide-react";
 
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
-import { Eyebrow } from "@/components/shared/eyebrow";
 import { Reveal } from "@/components/shared/reveal";
+import { SectionHeading } from "@/components/home/section-heading";
 
 export interface Industry {
   icon: LucideIcon;
@@ -23,15 +23,14 @@ const DEFAULT_INDUSTRIES: Industry[] = [
 export interface IndustriesGridProps {
   eyebrow?: string;
   heading?: string;
-  /** Defaults to the site-wide 6 (unchanged /services behavior) - a service page can pass its own, more relevant list instead. */
+  /** Defaults to the site-wide 6 - a service page can pass its own, more relevant list instead. */
   industries?: Industry[];
 }
 
 /**
  * Framed as "industries we build for" (positioning), not "industries we've
  * served" (a track-record claim we can't back yet) - deliberate tense
- * choice, not an oversight. Kept true on every list passed in here, not
- * just the default one.
+ * choice, kept true on every list passed in here.
  */
 function IndustriesGrid({
   eyebrow = "Where we work",
@@ -39,26 +38,23 @@ function IndustriesGrid({
   industries = DEFAULT_INDUSTRIES,
 }: IndustriesGridProps) {
   return (
-    <Section background="muted">
-      <Container className="flex flex-col items-center gap-10">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Eyebrow>{eyebrow}</Eyebrow>
-          <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-            {heading}
-          </h2>
-        </div>
-        <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+    <Section className="bg-muted/40 border-border/60 border-y py-16 md:py-20 lg:py-24">
+      <Container className="flex flex-col gap-10 lg:gap-12">
+        <SectionHeading eyebrow={eyebrow} title={heading} />
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {industries.map((industry, index) => (
-            <Reveal key={industry.label} delay={index * 50}>
-              <div className="border-border bg-card hover:border-primary/25 hover:shadow-sm flex flex-col items-center gap-3 rounded-2xl border p-6 text-center transition-all duration-300 ease-out hover:-translate-y-1">
-                <span className="bg-primary/10 text-primary flex size-11 items-center justify-center rounded-xl">
-                  <industry.icon className="size-5" aria-hidden="true" />
-                </span>
-                <span className="text-foreground text-sm font-medium">{industry.label}</span>
-              </div>
-            </Reveal>
+            <li key={industry.label}>
+              <Reveal delay={Math.min(index, 5) * 50} className="h-full">
+                <div className="border-border/70 bg-card hover:border-primary/30 flex h-full flex-col items-center gap-4 rounded-3xl border p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-24px_rgba(43,89,230,0.35)]">
+                  <span className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-2xl">
+                    <industry.icon className="size-6" aria-hidden="true" />
+                  </span>
+                  <span className="text-foreground text-sm font-semibold">{industry.label}</span>
+                </div>
+              </Reveal>
+            </li>
           ))}
-        </div>
+        </ul>
       </Container>
     </Section>
   );

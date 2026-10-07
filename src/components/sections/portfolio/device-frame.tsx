@@ -18,7 +18,13 @@ function DeviceFrame({ imageUrl, alt }: { imageUrl: string; alt: string }) {
         <span className="size-2 rounded-full bg-green-400" aria-hidden="true" />
       </div>
       <div className="bg-muted relative aspect-video w-full">
-        <Image src={imageUrl} alt={alt} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover object-top" />
+        <Image
+          src={imageUrl}
+          alt={alt}
+          fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover object-top"
+        />
       </div>
     </div>
   );

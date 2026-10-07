@@ -13,6 +13,12 @@ import { BookCallButton } from "@/components/shared/book-call-button";
  * does not include.
  */
 function PricingGrid() {
+  const offerFacts = [
+    FOUNDING_OFFER.price,
+    FOUNDING_OFFER.discountPercent ? `${FOUNDING_OFFER.discountPercent}% off` : null,
+    FOUNDING_OFFER.slots ? `${FOUNDING_OFFER.slots} slots only` : null,
+  ].filter((fact): fact is string => Boolean(fact));
+
   return (
     <div className="flex flex-col gap-8">
       {FOUNDING_OFFER.enabled && (
@@ -24,6 +30,9 @@ function PricingGrid() {
             <p className="text-foreground max-w-2xl text-[15px] text-pretty">
               {FOUNDING_OFFER.text}
             </p>
+            {offerFacts.length > 0 && (
+              <p className="text-primary text-sm font-semibold">{offerFacts.join(" · ")}</p>
+            )}
           </div>
           <BookCallButton location="banner" label={FOUNDING_OFFER.cta} variant="outline" />
         </div>

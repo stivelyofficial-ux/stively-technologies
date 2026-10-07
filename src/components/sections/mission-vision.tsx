@@ -1,42 +1,43 @@
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
+import { Reveal } from "@/components/shared/reveal";
 
-/**
- * Mission and Vision paired in one section, not two separate full-width
- * bands - both are deliberately short ("Short, focused" / "Do NOT
- * exaggerate" per the brief), and two mostly-empty bands in a row would
- * read as filler. Still two clearly distinct, identifiable blocks, not
- * merged into one paragraph.
- *
- * B2B-only rewrite (2026-08-10): mission/vision no longer reference the
- * education-to-industry bridge. Both statements are now scoped to what
- * this page can honestly claim about client work today - a trained,
- * evaluated team and a senior-reviewed delivery process - without
- * inventing a formal program name that doesn't exist elsewhere on the site.
- */
+/** Mission and vision as two large cards - the first on the dark ink surface, the second light, so the pair reads as one deliberate composition. */
 function MissionVision() {
   return (
-    <Section background="muted">
-      <Container className="grid gap-12 sm:grid-cols-2">
-        <div className="flex flex-col gap-3">
-          <h2 className="text-primary font-mono text-xs font-semibold tracking-[0.14em] uppercase">
-            Our mission
-          </h2>
-          <p className="font-display text-foreground text-2xl font-semibold tracking-[-0.015em] text-pretty">
-            Give businesses a software partner they can actually trust - a trained, evaluated team,
-            a transparent process, and senior review on every project before it ships.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3">
-          <h2 className="text-primary font-mono text-xs font-semibold tracking-[0.14em] uppercase">
-            Our vision
-          </h2>
-          <p className="font-display text-foreground text-2xl font-semibold tracking-[-0.015em] text-pretty">
-            To be the software partner businesses choose over a traditional agency or a freelancer
-            gamble - because the work is reliable, the process is visible, and someone senior always
-            stands behind it.
-          </p>
-        </div>
+    <Section className="py-10 md:py-14">
+      <Container className="grid gap-6 md:grid-cols-2">
+        <Reveal className="h-full">
+          <article className="bg-ink text-ink-foreground relative flex h-full flex-col gap-4 overflow-hidden rounded-[32px] p-8 sm:p-12">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(ellipse 520px 320px at 100% 0%, oklch(0.541 0.216 265.75 / 0.35), transparent 60%)",
+              }}
+            />
+            <h2 className="text-ink-muted-foreground relative font-mono text-[11px] font-semibold tracking-[0.2em] uppercase">
+              Our mission
+            </h2>
+            <p className="font-display relative text-2xl leading-snug font-semibold tracking-[-0.02em] text-pretty sm:text-3xl">
+              Give businesses a software partner they can actually trust - a trained, evaluated
+              team, a transparent process, and review on every project before it ships.
+            </p>
+          </article>
+        </Reveal>
+        <Reveal delay={90} className="h-full">
+          <article className="border-primary/15 from-primary/[0.08] to-card relative flex h-full flex-col gap-4 overflow-hidden rounded-[32px] border bg-linear-to-br p-8 sm:p-12">
+            <h2 className="text-primary relative font-mono text-[11px] font-semibold tracking-[0.2em] uppercase">
+              Our vision
+            </h2>
+            <p className="font-display text-foreground relative text-2xl leading-snug font-semibold tracking-[-0.02em] text-pretty sm:text-3xl">
+              To be the software partner businesses choose over a traditional agency or a freelancer
+              gamble - because the work is reliable, the process is visible, and someone
+              accountable always stands behind it.
+            </p>
+          </article>
+        </Reveal>
       </Container>
     </Section>
   );

@@ -17,24 +17,23 @@ const TRUST_POINTS: TrustPoint[] = [
 ];
 
 /**
- * Sits directly under the Hero, before any other content - premium B2B
- * sites (Stripe, Clerk) put trust signals immediately after the headline,
- * not several scrolls down. Deliberately NOT client logos or stats - none
- * exist yet to show honestly (see AGENTS.md's no-fabricated-content rule).
- * These four are real, verifiable claims about how Stively actually
- * operates, not outcomes it can't yet back with numbers.
+ * Four real, verifiable claims about how Stively operates - deliberately NOT
+ * client logos or stats, none of which exist to show honestly (see
+ * BRAND_PRINCIPLES #6). A quiet band right under a business page's hero.
  */
 function TrustStrip() {
   return (
-    <div className="border-border bg-muted/40 relative border-y py-10">
-      <Container className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="border-border/60 border-y">
+      <Container className="grid grid-cols-1 gap-x-8 gap-y-5 py-8 sm:grid-cols-2 lg:grid-cols-4">
         {TRUST_POINTS.map((point, index) => (
-          <Reveal key={point.label} delay={index * 80}>
-            <div className="group border-border bg-surface-elevated hover:border-primary/30 flex h-full items-start gap-3 rounded-lg border p-4 shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-glow">
-              <span className="from-primary/15 to-primary/5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-linear-to-br">
-                <point.icon className="text-primary size-4.5" aria-hidden="true" />
+          <Reveal key={point.label} delay={index * 60}>
+            <div className="flex items-start gap-3">
+              <span className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+                <point.icon className="size-5" aria-hidden="true" />
               </span>
-              <span className="text-foreground pt-1.5 text-sm font-medium">{point.label}</span>
+              <span className="text-foreground pt-2 text-sm leading-snug font-medium">
+                {point.label}
+              </span>
             </div>
           </Reveal>
         ))}

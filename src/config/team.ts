@@ -22,3 +22,17 @@ export const TEAM: TeamMemberData[] = [];
 
 /** e.g. "Based in India. Working with clients across Rajasthan and Maharashtra." - leave empty until real. */
 export const TEAM_LOCATION_LINE = "";
+
+/**
+ * The founder, shown on the About page. Name and role are confirmed. `photo`
+ * and `linkedin` are optional slots: drop a photo in /public/team and set the
+ * path (e.g. "/team/abhijit.jpg"), and add his personal LinkedIn URL, and
+ * they appear on the About page automatically - until then the page shows
+ * initials and no link (no placeholder image, no wrong link).
+ */
+export const FOUNDER: { name: string; role: string; photo?: string; linkedin?: string } = {
+  name: "Abhijit Karande",
+  role: "Founder & CEO, Stively",
+  photo: "/team/abhijit.webp",
+  linkedin: undefined, // [FOUNDER TO SET] e.g. "https://www.linkedin.com/in/..."
+};

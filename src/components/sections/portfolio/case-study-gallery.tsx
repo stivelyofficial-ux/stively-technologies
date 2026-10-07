@@ -1,16 +1,19 @@
 import Image from "next/image";
 
 import { Container } from "@/components/shared/container";
-import { Eyebrow } from "@/components/shared/eyebrow";
+import { SectionHeading } from "@/components/home/section-heading";
 
 /** Additional screenshot grid - only rendered by the caller when `galleryImages` is non-empty. */
 function CaseStudyGallery({ galleryImages, title }: { galleryImages: string[]; title: string }) {
   return (
-    <Container className="flex flex-col gap-8">
-      <Eyebrow>Gallery</Eyebrow>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <Container className="flex flex-col gap-10">
+      <SectionHeading eyebrow="Gallery" title="More screens" />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {galleryImages.map((url, index) => (
-          <div key={url} className="bg-muted relative aspect-video overflow-hidden rounded-xl">
+          <div
+            key={url}
+            className="border-border/70 bg-muted relative aspect-video overflow-hidden rounded-2xl border"
+          >
             <Image
               src={url}
               alt={`${title} screenshot ${index + 1}`}

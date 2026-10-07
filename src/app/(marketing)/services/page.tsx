@@ -3,14 +3,16 @@ import { GraduationCap, Eye, Code2, ShieldCheck } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 import { JsonLd } from "@/components/shared/json-ld";
-import { HeroSection } from "@/components/sections/hero-section";
+import { PageHero } from "@/components/biz/page-hero";
+import { HeroActions } from "@/components/biz/hero-actions";
 import { ServicesGrid } from "@/components/sections/services-grid";
 import { IndustriesGrid } from "@/components/sections/industries-grid";
 import { TechStack } from "@/components/sections/tech-stack";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { WhyChooseStively, type Reason } from "@/components/sections/why-choose-stively";
-import { FAQSection, type FAQItem } from "@/components/sections/faq-section";
-import { CTASection } from "@/components/sections/cta-section";
+import { FaqBlock } from "@/components/biz/faq-block";
+import type { FaqBlockItem as FAQItem } from "@/components/biz/faq-block";
+import { CtaBand } from "@/components/biz/cta-band";
 
 const TITLE = "Software Development Services";
 const DESCRIPTION =
@@ -146,12 +148,11 @@ export default function ServicesPage() {
         }}
       />
 
-      <HeroSection
-        eyebrow="Software Development"
-        heading="Software built by developers who never stop learning"
-        subheading="Stively pairs businesses with developers trained on real projects - not a freelancer marketplace, a talent pipeline with a process behind it."
-        primaryCta={{ label: "Book a consultation", href: "/start-project" }}
-        secondaryCta={{ label: "Our process", href: "#how-it-works" }}
+      <PageHero
+        eyebrow="Software development"
+        title="Software built by developers who never stop learning"
+        description="Stively pairs businesses with developers trained on real projects - not a freelancer marketplace, a talent pipeline with a process behind it."
+        actions={<HeroActions secondary={{ label: "How we deliver", href: "#how-it-works" }} />}
       />
 
       <ServicesGrid />
@@ -159,14 +160,11 @@ export default function ServicesPage() {
       <TechStack />
       <HowItWorks heading="How we deliver" steps={[...PROCESS_STEPS]} />
       <WhyChooseStively reasons={WHY_CHOOSE_REASONS} />
-      <FAQSection items={FAQ_ITEMS} />
+      <FaqBlock items={FAQ_ITEMS} structuredData={false} />
 
-      <CTASection
+      <CtaBand
         heading="Have a project in mind?"
         description="A short call to talk through scope, timeline, and whether this is a fit - no obligation."
-        actionLabel="Book a consultation"
-        actionHref="/start-project"
-        inverted
       />
     </>
   );

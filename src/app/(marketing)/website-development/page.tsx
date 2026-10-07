@@ -11,7 +11,10 @@ import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { Eyebrow } from "@/components/shared/eyebrow";
 import { Reveal } from "@/components/shared/reveal";
-import { HeroSection } from "@/components/sections/hero-section";
+import { PageHero } from "@/components/biz/page-hero";
+import { HeroActions } from "@/components/biz/hero-actions";
+import { FaqBlock } from "@/components/biz/faq-block";
+import { CtaBand } from "@/components/biz/cta-band";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { ServiceStickyCta } from "@/components/sections/service-sticky-cta";
 import { ProcessTimeline } from "@/components/sections/process-timeline";
@@ -19,9 +22,14 @@ import { WhyChooseStively } from "@/components/sections/why-choose-stively";
 import { TechStack } from "@/components/sections/tech-stack";
 import { IndustriesGrid } from "@/components/sections/industries-grid";
 import { PortfolioCard } from "@/components/sections/portfolio-showcase";
-import { FAQSection } from "@/components/sections/faq-section";
-import { CTASection } from "@/components/sections/cta-section";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,7 +91,12 @@ export default async function WebsiteDevelopmentPage() {
           "@type": "BreadcrumbList",
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
-            { "@type": "ListItem", position: 2, name: "Services", item: `${siteConfig.url}/services` },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Services",
+              item: `${siteConfig.url}/services`,
+            },
             {
               "@type": "ListItem",
               position: 3,
@@ -127,16 +140,12 @@ export default async function WebsiteDevelopmentPage() {
         }}
       />
 
-      <HeroSection
+      <PageHero
         id={HERO_ID}
-        eyebrow="Website Development"
-        heading="A website built like software, not a template"
-        subheading="Stively designs and builds custom websites on the same modern stack we use for full products - fast, SEO-ready from day one, and handed over with source code you actually own."
-        primaryCta={{
-          label: "Get a free consultation",
-          href: "/start-project",
-        }}
-        secondaryCta={{ label: "See real work", href: "/work" }}
+        eyebrow="Website development"
+        title="A website built like software, not a template"
+        description="Stively designs and builds custom websites on the same modern stack we use for full products - fast, SEO-ready from day one, and handed over with source code you actually own."
+        actions={<HeroActions secondary={{ label: "See our work", href: "/work" }} />}
       />
 
       <TrustStrip />
@@ -148,7 +157,7 @@ export default async function WebsiteDevelopmentPage() {
       />
 
       {offering && (
-        <Section background="default">
+        <Section className="py-16 md:py-20 lg:py-24">
           <Container className="flex flex-col gap-10">
             <div className="flex flex-col items-center gap-3 text-center">
               <Eyebrow>What&rsquo;s included</Eyebrow>
@@ -179,7 +188,7 @@ export default async function WebsiteDevelopmentPage() {
         </Section>
       )}
 
-      <Section background="muted">
+      <Section className="bg-muted/40 border-border/60 border-y py-16 md:py-20 lg:py-24">
         <Container className="flex flex-col gap-10">
           <div className="flex flex-col items-center gap-3 text-center">
             <Eyebrow>The problem</Eyebrow>
@@ -203,7 +212,7 @@ export default async function WebsiteDevelopmentPage() {
         </Container>
       </Section>
 
-      <Section background="default">
+      <Section className="py-16 md:py-20 lg:py-24">
         <Container className="flex flex-col gap-10">
           <div className="flex flex-col items-center gap-3 text-center">
             <Eyebrow>The Stively approach</Eyebrow>
@@ -244,7 +253,7 @@ export default async function WebsiteDevelopmentPage() {
         }
       />
 
-      <Section background="default">
+      <Section className="py-16 md:py-20 lg:py-24">
         <Container className="flex flex-col gap-10">
           <div className="flex flex-col items-center gap-3 text-center">
             <Eyebrow>What you get</Eyebrow>
@@ -255,7 +264,7 @@ export default async function WebsiteDevelopmentPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((feature, index) => (
               <Reveal key={feature.title} delay={index * 60} className="h-full">
-                <Card variant="interactive" className="h-full">
+                <Card variant="interactive" className="h-full rounded-3xl">
                   <CardHeader className="gap-3">
                     <span className="from-primary/15 via-brand-iris/10 to-brand-teal/15 text-primary mb-1 flex size-12 items-center justify-center rounded-2xl bg-linear-to-br">
                       <feature.icon className="size-6" aria-hidden="true" />
@@ -281,7 +290,7 @@ export default async function WebsiteDevelopmentPage() {
       />
 
       {websiteProjects.length > 0 && (
-        <Section background="muted">
+        <Section className="bg-muted/40 border-border/60 border-y py-16 md:py-20 lg:py-24">
           <Container className="flex flex-col gap-12">
             <div className="flex flex-wrap items-end justify-between gap-6">
               <div className="flex max-w-2xl flex-col gap-3">
@@ -308,7 +317,7 @@ export default async function WebsiteDevelopmentPage() {
         </Section>
       )}
 
-      <Section background="default">
+      <Section className="py-16 md:py-20 lg:py-24">
         <Container className="flex flex-col gap-10">
           <div className="flex flex-col items-center gap-3 text-center">
             <Eyebrow>Pricing</Eyebrow>
@@ -316,8 +325,8 @@ export default async function WebsiteDevelopmentPage() {
               What a website with Stively actually costs
             </h2>
             <p className="text-muted-foreground max-w-xl text-pretty">
-              One real, fixed-price package to start. Anything bigger gets scoped and quoted for exactly
-              what you need.
+              One real, fixed-price package to start. Anything bigger gets scoped and quoted for
+              exactly what you need.
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
@@ -342,7 +351,10 @@ export default async function WebsiteDevelopmentPage() {
                     <ul className="flex flex-col gap-2.5">
                       {offering.benefits.map((benefit) => (
                         <li key={benefit} className="flex items-start gap-2.5 text-sm">
-                          <Check className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                          <Check
+                            className="text-primary mt-0.5 size-4 shrink-0"
+                            aria-hidden="true"
+                          />
                           <span className="text-foreground">{benefit}</span>
                         </li>
                       ))}
@@ -364,8 +376,8 @@ export default async function WebsiteDevelopmentPage() {
                   </Badge>
                   <CardTitle className="font-display text-xl">Something bigger</CardTitle>
                   <CardDescription className="text-ink-muted-foreground">
-                    Custom design, a CMS, e-commerce, or a full platform with an admin panel and mobile
-                    app.
+                    Custom design, a CMS, e-commerce, or a full platform with an admin panel and
+                    mobile app.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col gap-6">
@@ -378,7 +390,10 @@ export default async function WebsiteDevelopmentPage() {
                       "Admin panel and mobile app, if needed",
                     ].map((line) => (
                       <li key={line} className="flex items-start gap-2.5 text-sm">
-                        <Check className="text-brand-teal mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                        <Check
+                          className="text-brand-teal mt-0.5 size-4 shrink-0"
+                          aria-hidden="true"
+                        />
                         <span className="text-ink-foreground/90">{line}</span>
                       </li>
                     ))}
@@ -386,9 +401,7 @@ export default async function WebsiteDevelopmentPage() {
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
                   <Button variant="inverse" size="lg" asChild className="w-full">
-                    <Link href="/start-project">
-                      Request a quote
-                    </Link>
+                    <Link href="/start-project">Request a quote</Link>
                   </Button>
                   <Button variant="outline-inverse" size="sm" asChild className="w-full">
                     <Link href="/pricing">See full pricing breakdown</Link>
@@ -400,7 +413,7 @@ export default async function WebsiteDevelopmentPage() {
         </Container>
       </Section>
 
-      <Section background="muted">
+      <Section className="bg-muted/40 border-border/60 border-y py-16 md:py-20 lg:py-24">
         <Container className="flex flex-col gap-10">
           <div className="flex flex-col items-center gap-3 text-center">
             <Eyebrow>Why businesses choose us</Eyebrow>
@@ -424,15 +437,12 @@ export default async function WebsiteDevelopmentPage() {
         </Container>
       </Section>
 
-      <FAQSection heading="Website development, answered" items={FAQ_ITEMS} />
+      <FaqBlock title="Website development, answered" items={FAQ_ITEMS} structuredData={false} />
 
-      <CTASection
-        heading="Ready to build a website that actually works for your business?"
+      <CtaBand
+        heading="Ready for a website that works for your business?"
         description="A short call to talk through scope, timeline, and whether this is a fit - no obligation."
-        actionLabel="Get a free consultation"
-        actionHref="/start-project"
-        inverted
-        glow
+        whatsappPath="/website-development"
       />
     </>
   );

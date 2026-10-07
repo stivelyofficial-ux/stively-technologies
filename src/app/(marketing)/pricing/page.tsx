@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 
 import { siteConfig } from "@/config/site";
 import { JsonLd } from "@/components/shared/json-ld";
-import { HeroSection } from "@/components/sections/hero-section";
+import { PageHero } from "@/components/biz/page-hero";
+import { HeroActions } from "@/components/biz/hero-actions";
 import { PricingTiers } from "@/components/sections/pricing-tiers";
 import { PRICING_TIERS } from "@/lib/pricing";
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
-import { BOOKING_URL } from "@/config/booking";
-import { CTASection } from "@/components/sections/cta-section";
+import { CtaBand } from "@/components/biz/cta-band";
 
 const TITLE = "Pricing";
 const DESCRIPTION =
@@ -48,7 +48,12 @@ export default function PricingPage() {
           "@type": "BreadcrumbList",
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
-            { "@type": "ListItem", position: 2, name: "Pricing", item: `${siteConfig.url}/pricing` },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Pricing",
+              item: `${siteConfig.url}/pricing`,
+            },
           ],
         }}
       />
@@ -67,19 +72,21 @@ export default function PricingPage() {
         }}
       />
 
-      <HeroSection
+      <PageHero
         eyebrow="Pricing"
-        heading="Three starting points, no pricing surprises"
-        subheading="Every project is scoped individually once we understand what you need - these are the fixed points most engagements start from."
-        primaryCta={{ label: "Book a free 20-min call", href: BOOKING_URL }}
-        secondaryCta={{ label: "See how we work", href: "/#how-we-work" }}
+        title="Three starting points, no pricing surprises"
+        description="Every project is scoped individually once we understand what you need - these are the fixed points most engagements start from."
+        actions={<HeroActions secondary={{ label: "See how we work", href: "/process" }} />}
       />
 
       <PricingTiers variant="full" />
 
-      <Section background="muted">
-        <Container size="narrow" className="flex flex-col gap-3 text-center">
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-balance md:text-3xl">
+      <Section className="py-10 md:py-14">
+        <Container
+          size="narrow"
+          className="bg-muted/50 border-border/70 flex flex-col gap-3 rounded-[32px] border px-8 py-12 text-center"
+        >
+          <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-balance md:text-3xl">
             Every plan can flex
           </h2>
           <p className="text-muted-foreground text-pretty">
@@ -90,13 +97,9 @@ export default function PricingPage() {
         </Container>
       </Section>
 
-      <CTASection
+      <CtaBand
         heading="Not sure which tier fits?"
         description="A short call to talk through scope and get a straight answer - no obligation."
-        actionLabel="Book a free 20-min call"
-        actionHref={BOOKING_URL}
-        inverted
-        glow
       />
     </>
   );

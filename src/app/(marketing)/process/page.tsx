@@ -3,11 +3,16 @@ import { MessageCircle, Eye, FileCheck } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 import { JsonLd } from "@/components/shared/json-ld";
-import { HeroSection } from "@/components/sections/hero-section";
-import { ProcessStageDetailList, type ProcessStageDetail } from "@/components/sections/process-stage-detail";
+import { PageHero } from "@/components/biz/page-hero";
+import { HeroActions } from "@/components/biz/hero-actions";
+import {
+  ProcessStageDetailList,
+  type ProcessStageDetail,
+} from "@/components/sections/process-stage-detail";
 import { WhyChooseStively, type Reason } from "@/components/sections/why-choose-stively";
-import { FAQSection, type FAQItem } from "@/components/sections/faq-section";
-import { CTASection } from "@/components/sections/cta-section";
+import { FaqBlock } from "@/components/biz/faq-block";
+import type { FaqBlockItem as FAQItem } from "@/components/biz/faq-block";
+import { CtaBand } from "@/components/biz/cta-band";
 
 const TITLE = "Our Process - How Stively Takes a Project from Call to Launch";
 const DESCRIPTION =
@@ -54,7 +59,9 @@ const STAGES: ProcessStageDetail[] = [
     duration: "1-2 business days",
     summary:
       "We turn that conversation into a concrete list of what the product needs to do, who it's for, and what success looks like - the document everything else gets scoped against.",
-    deliverables: ["A written requirements document covering scope, pages/features, and what success looks like"],
+    deliverables: [
+      "A written requirements document covering scope, pages/features, and what success looks like",
+    ],
   },
   {
     title: "Proposal & quote",
@@ -71,7 +78,9 @@ const STAGES: ProcessStageDetail[] = [
     duration: "Same day",
     summary:
       "Once you approve the proposal, an advance payment confirms the engagement and reserves the team's time to start work.",
-    deliverables: ["A confirmed start date, with your project's time reserved on the team's schedule"],
+    deliverables: [
+      "A confirmed start date, with your project's time reserved on the team's schedule",
+    ],
     fromYou: ["The agreed advance payment, per the approved proposal"],
   },
   {
@@ -83,14 +92,18 @@ const STAGES: ProcessStageDetail[] = [
       "Real screens for your actual content and brand, not placeholder text",
       "Revisions before development starts, so a change request never means rebuilding something already coded",
     ],
-    fromYou: ["Feedback on design drafts, plus brand assets if you have them (logo, colors, existing content)"],
+    fromYou: [
+      "Feedback on design drafts, plus brand assets if you have them (logo, colors, existing content)",
+    ],
   },
   {
     title: "Development",
     duration: "5-10 business days",
     summary:
       "Built in visible stages on a staging environment you can check in on throughout, not a black box until the big reveal.",
-    deliverables: ["A staging link to a real, running version of your build - not a black box until the reveal"],
+    deliverables: [
+      "A staging link to a real, running version of your build - not a black box until the reveal",
+    ],
     fromYou: ["Timely feedback during check-ins, so progress never sits waiting on a reply"],
   },
   {
@@ -98,14 +111,18 @@ const STAGES: ProcessStageDetail[] = [
     duration: "1-2 business days",
     summary:
       "Checked against real devices, browsers, and edge cases - and against performance and accessibility standards - before anything reaches your users.",
-    deliverables: ["A build checked across real devices and browsers, and against performance/accessibility standards"],
+    deliverables: [
+      "A build checked across real devices and browsers, and against performance/accessibility standards",
+    ],
   },
   {
     title: "Deployment",
     duration: "Same day",
     summary:
       "Launched onto hosting and a domain you control, with a clean handover of source code and access - nothing held back once the project is paid.",
-    deliverables: ["A live product on hosting and a domain you control, with source code and access handed to you"],
+    deliverables: [
+      "A live product on hosting and a domain you control, with source code and access handed to you",
+    ],
     fromYou: ["Access to your domain registrar/DNS, if you'd like it connected at launch"],
   },
   {
@@ -113,7 +130,9 @@ const STAGES: ProcessStageDetail[] = [
     duration: "30 days",
     summary:
       "A defined post-launch window to fix anything that comes up once real users start clicking around - software needs upkeep, not a one-time handoff.",
-    deliverables: ["A month of post-launch support to fix anything that surfaces once real users are on it"],
+    deliverables: [
+      "A month of post-launch support to fix anything that surfaces once real users are on it",
+    ],
   },
 ];
 
@@ -141,7 +160,7 @@ const PROCESS_FAQ_ITEMS: FAQItem[] = [
   {
     question: "What do you need from me during the project?",
     answer:
-      "It varies by stage - see the \"What we need from you\" notes above. In short: your advance payment to start, feedback during design and development, and domain/DNS access if you want us to connect it at launch.",
+      'It varies by stage - see the "What we need from you" notes above. In short: your advance payment to start, feedback during design and development, and domain/DNS access if you want us to connect it at launch.',
   },
   {
     question: "What happens if a stage takes longer than planned?",
@@ -164,7 +183,8 @@ const WHY_THIS_ORDER: Reason[] = [
   {
     icon: Eye,
     title: "You see progress the whole way through",
-    description: "A staging link and regular check-ins during development, not silence until launch.",
+    description:
+      "A staging link and regular check-ins during development, not silence until launch.",
   },
   {
     icon: MessageCircle,
@@ -196,7 +216,12 @@ export default function ProcessPage() {
           "@type": "BreadcrumbList",
           itemListElement: [
             { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
-            { "@type": "ListItem", position: 2, name: "Our Process", item: `${siteConfig.url}/process` },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Our Process",
+              item: `${siteConfig.url}/process`,
+            },
           ],
         }}
       />
@@ -212,12 +237,11 @@ export default function ProcessPage() {
         }}
       />
 
-      <HeroSection
+      <PageHero
         eyebrow="Our process"
-        heading="What happens after you contact us"
-        subheading="Nine defined stages, the same way for every project - with the timeline, deliverables, and what we need from you at each one, so nothing is a surprise."
-        primaryCta={{ label: "Start a project", href: "/start-project" }}
-        secondaryCta={{ label: "See our pricing", href: "/pricing" }}
+        title="What happens after you contact us"
+        description="Nine defined stages, the same way for every project - with the timeline, deliverables, and what we need from you at each one, so nothing is a surprise."
+        actions={<HeroActions secondary={{ label: "See our pricing", href: "/pricing" }} />}
       />
 
       <ProcessStageDetailList
@@ -229,15 +253,15 @@ export default function ProcessPage() {
 
       <WhyChooseStively heading="Why we work this way" reasons={WHY_THIS_ORDER} />
 
-      <FAQSection heading="Questions about how we work" items={PROCESS_FAQ_ITEMS} />
+      <FaqBlock
+        title="Questions about how we work"
+        items={PROCESS_FAQ_ITEMS}
+        structuredData={false}
+      />
 
-      <CTASection
+      <CtaBand
         heading="Ready to start with a discovery call?"
-        description="No obligation - just a conversation about what you're trying to build."
-        actionLabel="Start a project"
-        actionHref="/start-project"
-        inverted
-        glow
+        description="No obligation - just a conversation about what you are trying to build."
       />
     </>
   );
