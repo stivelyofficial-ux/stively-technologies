@@ -25,7 +25,7 @@ export const TEAM_LOCATION_LINE = "";
 
 /**
  * The founder, shown on the About page. Name and role are confirmed. `photo`
- * and `linkedin` are optional slots: drop a photo in /public/team and set the
+ * and `linkedin` are optional slots: drop a photo in /public/founder (NOT /public/team - that URL prefix is the protected team portal) and set the
  * path (e.g. "/team/abhijit.jpg"), and add his personal LinkedIn URL, and
  * they appear on the About page automatically - until then the page shows
  * initials and no link (no placeholder image, no wrong link).
@@ -33,6 +33,6 @@ export const TEAM_LOCATION_LINE = "";
 export const FOUNDER: { name: string; role: string; photo?: string; linkedin?: string } = {
   name: "Abhijit Karande",
   role: "Founder & CEO, Stively",
-  photo: "/team/abhijit.webp",
+  photo: "/founder/abhijit.webp",
   linkedin: undefined, // [FOUNDER TO SET] e.g. "https://www.linkedin.com/in/..."
 };
