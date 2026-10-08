@@ -717,6 +717,21 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-043: Outreach queue inside Lead Intelligence (manual WhatsApp, one tap per business)
+
+**Date:** 2026-10-08
+**Problem:** Messaging discovered businesses one by one was slow; the founder wanted to send ~100 personalised WhatsApp openers a day with the offer "free sample website in 2 days, no charge if not liked" (no website) or a fix offer (weak website).
+**Options considered:** (a) WhatsApp Business API / automated sending; (b) a new standalone outreach module; (c) a queue inside the existing Lead Intelligence area using `wa.me` click-to-chat.
+**Chosen solution:** (c). New "Outreach" tab: one business at a time, template message built from real data (name, city, and for websites a problem the analyzer actually measured), editable, "Send on WhatsApp" opens `wa.me` prefilled and advances. Replies are turned into Sales CRM leads through the existing `promoteToSalesLead`. Segment rules: no own website (social/directory links count as none) -> free-sample offer; analyzed site with performance <= 50 or overall < 60 -> fix offer. No daily cap enforced (counter only), per founder.
+**Reason:** The send stays a human tap, so the business number is not exposed to automation bans and no API approval or per-message cost is needed; reusing Business/BusinessActivity/promote avoids a second pipeline.
+**Trade-offs:** ~100 taps a day instead of zero; message cannot judge visual design (only measured speed/security/search/contact problems are cited); websites must be analyzed before they can be offered a fix.
+**Database impact:** Additive: `Business.outreachStatus`, `Business.outreachContactedAt`, enum `BusinessOutreachStatus`, `BusinessActivityType` OUTREACH_* values (migration 20261008100000).
+**API impact:** Server actions `markOutreachSent`, `markOutreachOutcome`; one new admin page.
+**Future considerations:** Follow-up reminders for unanswered messages, a templates editor, a bulk "analyze all websites" action, Hinglish variants.
+**Related components:** `src/features/lead-intelligence/{lib/outreach.ts,server/outreach-queries.ts,actions/outreach-actions.ts,components/admin/outreach-queue.tsx}`, `src/app/(dashboard)/admin/lead-intelligence/outreach`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

@@ -6,12 +6,13 @@ const TABS = [
   { label: "Dashboard", href: "/admin/lead-intelligence/dashboard" },
   { label: "Businesses", href: "/admin/lead-intelligence/businesses" },
   { label: "Discover", href: "/admin/lead-intelligence/discover" },
+  { label: "Outreach", href: "/admin/lead-intelligence/outreach" },
   { label: "Scoring", href: "/admin/lead-intelligence/scoring-config" },
   { label: "Runs", href: "/admin/lead-intelligence/runs" },
 ];
 
 /** Same "one flat sidebar entry, sub-nav does the rest" pattern as sales-crm's SalesCrmSubnav. */
-function LeadIntelligenceSubnav({ active }: { active: "Dashboard" | "Businesses" | "Discover" | "Scoring" | "Runs" }) {
+function LeadIntelligenceSubnav({ active }: { active: "Dashboard" | "Businesses" | "Discover" | "Outreach" | "Scoring" | "Runs" }) {
   return (
     <nav className="border-border flex gap-1 border-b overflow-x-auto">
       {TABS.map((tab) => (

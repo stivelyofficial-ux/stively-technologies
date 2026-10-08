@@ -4938,6 +4938,18 @@ enum BusinessDataSource {
   MANUAL_ENTRY
 }
 
+/// Cold-outreach state, tracked separately from BusinessStatus (which is the
+/// discovery/qualification stage) so contacting a business never changes
+/// whether it counts as NEW/ANALYZED/PROMOTED.
+enum BusinessOutreachStatus {
+  NOT_CONTACTED
+  CONTACTED
+  REPLIED
+  NOT_INTERESTED
+  /// Passed over in the Outreach queue - never shown there again.
+  SKIPPED
+}
+
 enum BusinessStatus {
   /// Just discovered/imported, nothing done with it yet.
   NEW
@@ -4988,6 +5000,10 @@ enum ConnectorRunStatus {
 }
 
 enum BusinessActivityType {
+  /// A WhatsApp opening message was sent from the Outreach queue.
+  OUTREACH_SENT
+  OUTREACH_REPLIED
+  OUTREACH_NOT_INTERESTED
   BUSINESS_DISCOVERED
   WEBSITE_ANALYZED
   AI_REPORT_GENERATED
@@ -5027,6 +5043,10 @@ model Business {
   dataSource BusinessDataSource
   status     BusinessStatus     @default(NEW)
 
+  outreachStatus      BusinessOutreachStatus @default(NOT_CONTACTED)
+  /// When the WhatsApp opening message was last sent from the Outreach queue.
+  outreachContactedAt DateTime?
+
   /// Google Places' unique place identifier - the second dedupe key,
   /// present only for dataSource GOOGLE_PLACES.
   googlePlaceId     String? @unique
@@ -5062,6 +5082,7 @@ model Business {
   updatedAt DateTime @updatedAt
 
   @@index([status])
+  @@index([outreachStatus])
   @@index([dataSource])
   @@index([websiteDomain])
   @@index([city])
