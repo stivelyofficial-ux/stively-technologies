@@ -21,7 +21,12 @@ const FIELD_MASK = [
   "places.rating",
   "places.userRatingCount",
   "places.types",
+  "nextPageToken",
 ].join(",");
+
+/** Text Search returns 20 results per page and at most 3 pages (60) per query - Google's hard limit. */
+const PAGE_SIZE = 20;
+const MAX_PAGES = 3;
 
 export class GooglePlacesNotConfiguredError extends Error {
   constructor() {
@@ -66,22 +71,34 @@ export interface GooglePlaceResult {
  */
 export async function searchTextPlaces(input: { query: string; location: string; radiusMeters?: number }): Promise<GooglePlaceResult[]> {
   const apiKey = assertGooglePlacesConfigured();
+  const textQuery = `${input.query} in ${input.location}`;
 
-  const response = await fetch(`${PLACES_API_BASE}/places:searchText`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": apiKey,
-      "X-Goog-FieldMask": FIELD_MASK,
-    },
-    body: JSON.stringify({ textQuery: `${input.query} in ${input.location}` }),
-  });
+  const places: GooglePlaceResult[] = [];
+  let pageToken: string | undefined;
 
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`Google Places search failed (${response.status}): ${body.slice(0, 300)}`);
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const response = await fetch(`${PLACES_API_BASE}/places:searchText`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": FIELD_MASK,
+      },
+      body: JSON.stringify({ textQuery, pageSize: PAGE_SIZE, ...(pageToken ? { pageToken } : {}) }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      // A later page failing should not throw away the pages already fetched.
+      if (page > 0) break;
+      throw new Error(`Google Places search failed (${response.status}): ${body.slice(0, 300)}`);
+    }
+
+    const data = (await response.json()) as { places?: GooglePlaceResult[]; nextPageToken?: string };
+    places.push(...(data.places ?? []));
+    pageToken = data.nextPageToken;
+    if (!pageToken) break;
   }
 
-  const data = (await response.json()) as { places?: GooglePlaceResult[] };
-  return data.places ?? [];
+  return places;
 }
