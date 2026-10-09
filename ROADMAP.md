@@ -28,7 +28,8 @@ Shipped in prior sessions, listed here for context — not re-litigated unless s
 |---|---|
 | AI Sales Workspace (CRM core: leads, quotes, proposals, projects, payments, commission) | Released |
 | Client Workspace (portal, Razorpay payments, documents, progress, timeline, RBAC) | Released |
-| Outreach queue (Lead Intelligence: personalised WhatsApp openers, AD-043) | Completed - built 2026-10-08, not yet pushed |
+| Outreach queue (Lead Intelligence: personalised WhatsApp openers, AD-043) | Completed - built 2026-10-08 |
+| Team member workspace (outreach + 2 searches/day, AD-044) | Completed - built 2026-10-09, not yet pushed |
 | Sales negotiation loop (in-portal quotes, meetings, chat) | Released |
 | Offering Request → Sales CRM bridge (self-service clients get full Client Workspace on quote approval) | Released |
 | Uber-style lead claim system (`/sales/inbound`, race-safe claim, notifications) | Released |

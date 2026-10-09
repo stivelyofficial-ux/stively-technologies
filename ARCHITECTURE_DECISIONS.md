@@ -732,6 +732,21 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-044: Team member workspace - outreach and capped discovery
+
+**Date:** 2026-10-09
+**Problem:** The founder wants a teammate (Yogiraj Lokhande, `User.role` TEAM_MEMBER) to take over finding and messaging businesses, without access to the sales pipeline, payments or client data. `/team/dashboard` was an empty placeholder.
+**Options considered:** (a) move him to the SALES portal (leads, quotes, deal access he does not need); (b) a new module; (c) reuse the Outreach queue and Google Places form inside the existing `/team` portal.
+**Chosen solution:** (c). `/team/dashboard` (personal stats), `/team/outreach` (the shared queue, in "team mode"), `/team/discover` (Google Places search only, capped at 2 per IST day via `getDiscoverQuota`; failed runs do not count; a TEAM_MEMBER without a linked `TeamMember` profile is blocked). He is linked to a `TeamMember` row with role SALESPERSON so every message and search is attributed to him. Sending uses the shared business WhatsApp number; the founder answers all replies. "Got a reply" marks the business REPLIED and notifies all admins (`OUTREACH_REPLY`); it does NOT create a Sales CRM lead - the founder promotes it.
+**Reason:** Least privilege: the role can only reach find-and-message, and the founder keeps the sales conversation.
+**Trade-offs:** The pool and queue are shared, so he and the founder see the same businesses; his "waiting for reply" list shows only messages he sent.
+**Database impact:** Additive: `NotificationType.OUTREACH_REPLY` (migration 20261009100000). One `TeamMember` row for Yogiraj (data, not schema).
+**API impact:** `markOutreachSent`, `markOutreachOutcome`, `runGoogleBusinessSearch` now accept TEAM_MEMBER; the search action enforces the quota.
+**Future considerations:** Per-person leaderboard for the founder, an adjustable daily limit, a team-member view of replies the founder has handled.
+**Related components:** `src/app/(portal)/team/*`, `src/features/team-workspace`, `src/features/lead-intelligence/server/discover-quota.ts`, `src/config/navigation/team.ts`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

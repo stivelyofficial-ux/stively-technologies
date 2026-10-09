@@ -26,6 +26,8 @@ interface OutreachQueueProps {
   cards: OutreachCard[];
   stats: OutreachStats;
   awaitingReply: SentOutreachRow[];
+  /** Team members hand replies to the founder instead of moving them into the Sales CRM, and cannot open admin pages. */
+  teamMode?: boolean;
 }
 
 /**
@@ -34,7 +36,7 @@ interface OutreachQueueProps {
  * queue advances. The send itself is always the user's own tap inside
  * WhatsApp - nothing here sends automatically.
  */
-function OutreachQueue({ cards, stats, awaitingReply }: OutreachQueueProps) {
+function OutreachQueue({ cards, stats, awaitingReply, teamMode = false }: OutreachQueueProps) {
   const router = useRouter();
   const [queue, setQueue] = React.useState(cards);
   const [sentThisSession, setSentThisSession] = React.useState(0);
@@ -80,9 +82,11 @@ function OutreachQueue({ cards, stats, awaitingReply }: OutreachQueueProps) {
       setBusyId(null);
       return;
     }
-    const promoted = await promoteToSalesLead(row.id);
+    if (!teamMode) {
+      const promoted = await promoteToSalesLead(row.id);
+      if (!promoted.success) setError(promoted.error);
+    }
     setBusyId(null);
-    if (!promoted.success) setError(promoted.error);
     router.refresh();
   }
 
@@ -173,11 +177,11 @@ function OutreachQueue({ cards, stats, awaitingReply }: OutreachQueueProps) {
           title="Queue is empty"
           description={
             stats.needsAnalysis > 0
-              ? `${stats.needsAnalysis} businesses with websites haven't been analyzed yet, so they can't be sorted into an offer. Analyze them from the Businesses tab, or discover more businesses.`
+              ? `${stats.needsAnalysis} businesses with websites haven't been analyzed yet, so they can't be sorted into an offer. ${teamMode ? "Abhijit can analyze them." : "Analyze them from the Businesses tab."} You can also discover more businesses.`
               : "Discover more businesses to fill the queue. Only businesses with a mobile number and either no website or a weak one appear here."
           }
           actionLabel="Discover businesses"
-          actionHref="/admin/lead-intelligence/discover"
+          actionHref={teamMode ? "/team/discover" : "/admin/lead-intelligence/discover"}
         />
       )}
 
@@ -199,8 +203,9 @@ function OutreachQueue({ cards, stats, awaitingReply }: OutreachQueueProps) {
               Sent - waiting for a reply
             </h2>
             <p className="text-muted-foreground text-sm">
-              Replies arrive on your WhatsApp. When someone replies, tap &quot;Got a reply&quot; to
-              move them into the Sales CRM.
+              {teamMode
+                ? 'When someone replies on WhatsApp, tap "Got a reply" - Abhijit is notified and takes over the conversation.'
+                : 'Replies arrive on your WhatsApp. When someone replies, tap "Got a reply" to move them into the Sales CRM.'}
             </p>
           </div>
           <ul className="border-border bg-card divide-border divide-y rounded-2xl border">
@@ -210,12 +215,16 @@ function OutreachQueue({ cards, stats, awaitingReply }: OutreachQueueProps) {
                 className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
               >
                 <div className="flex flex-col">
-                  <Link
-                    href={`/admin/lead-intelligence/businesses/${row.id}`}
-                    className="text-foreground text-sm font-medium hover:underline"
-                  >
-                    {row.businessName}
-                  </Link>
+                  {teamMode ? (
+                    <span className="text-foreground text-sm font-medium">{row.businessName}</span>
+                  ) : (
+                    <Link
+                      href={`/admin/lead-intelligence/businesses/${row.id}`}
+                      className="text-foreground text-sm font-medium hover:underline"
+                    >
+                      {row.businessName}
+                    </Link>
+                  )}
                   <span className="text-muted-foreground text-xs">
                     {row.city ? `${row.city} · ` : ""}
                     sent{" "}

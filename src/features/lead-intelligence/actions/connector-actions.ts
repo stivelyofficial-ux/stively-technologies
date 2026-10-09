@@ -7,6 +7,7 @@ import { requireRole } from "@/lib/session";
 import type { ActionResult } from "@/actions/leads";
 import { importBusinessesSchema, runWebsiteConnectorSchema, googlePlacesSearchSchema } from "../validation/business-schemas";
 import { runConnectorAndPersist } from "../server/creation";
+import { getDiscoverQuota } from "../server/discover-quota";
 
 async function resolveActorId(userId: string): Promise<string | undefined> {
   const linked = await prisma.teamMember.findUnique({ where: { userId } });
@@ -35,10 +36,15 @@ export async function importBusinesses(input: unknown): Promise<RunConnectorActi
 
 /** Google Places Text Search trigger - creates real Business rows for each result, auto-chaining into the website connector for any result with a website (see runConnectorAndPersist). No-ops gracefully with a clear error if GOOGLE_PLACES_API_KEY isn't configured yet. */
 export async function runGoogleBusinessSearch(input: unknown): Promise<RunConnectorActionResult> {
-  const user = await requireRole("ADMIN", "SUPER_ADMIN", "SALES");
+  const user = await requireRole("ADMIN", "SUPER_ADMIN", "SALES", "TEAM_MEMBER");
 
   const parsed = googlePlacesSearchSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+  const quota = await getDiscoverQuota(user.id, user.role);
+  if (quota.remaining !== null && quota.remaining <= 0) {
+    return { success: false, error: `You've used today's ${quota.limit} searches. They reset at midnight.` };
+  }
 
   try {
     const actorId = await resolveActorId(user.id);

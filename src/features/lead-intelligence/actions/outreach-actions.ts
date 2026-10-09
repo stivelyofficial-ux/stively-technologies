@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/session";
+import { notifyAllAdmins } from "@/features/notifications/server/creation";
 import type { ActionResult } from "@/actions/leads";
 
 const outreachIdSchema = z.string().min(1);
@@ -21,7 +22,7 @@ async function resolveActorId(userId: string): Promise<string | null> {
  * NOT_CONTACTED, so a double-click or a second tab can't log it twice.
  */
 export async function markOutreachSent(businessId: string, message: string): Promise<ActionResult> {
-  const user = await requireRole("ADMIN", "SUPER_ADMIN", "SALES");
+  const user = await requireRole("ADMIN", "SUPER_ADMIN", "SALES", "TEAM_MEMBER");
   const parsedId = outreachIdSchema.safeParse(businessId);
   if (!parsedId.success) return { success: false, error: "Invalid business." };
 
@@ -54,13 +55,29 @@ export async function markOutreachOutcome(
   businessId: string,
   outcome: "SKIPPED" | "NOT_INTERESTED" | "REPLIED"
 ): Promise<ActionResult> {
-  const user = await requireRole("ADMIN", "SUPER_ADMIN", "SALES");
+  const user = await requireRole("ADMIN", "SUPER_ADMIN", "SALES", "TEAM_MEMBER");
   const parsedId = outreachIdSchema.safeParse(businessId);
   if (!parsedId.success) return { success: false, error: "Invalid business." };
 
   try {
     const actorId = await resolveActorId(user.id);
     await prisma.business.update({ where: { id: businessId }, data: { outreachStatus: outcome } });
+
+    if (outcome === "REPLIED" && user.role === "TEAM_MEMBER") {
+      // The founder owns the conversation from the first reply - tell them straight away.
+      const business = await prisma.business.findUnique({
+        where: { id: businessId },
+        select: { businessName: true },
+      });
+      if (business) {
+        await notifyAllAdmins({
+          type: "OUTREACH_REPLY",
+          title: "A business replied on WhatsApp",
+          body: `${business.businessName} replied to the outreach message - open WhatsApp and take it from here.`,
+          link: `/admin/lead-intelligence/businesses/${businessId}`,
+        }).catch((error) => console.error("notify outreach reply failed:", error));
+      }
+    }
 
     if (outcome === "REPLIED" || outcome === "NOT_INTERESTED") {
       await prisma.businessActivity.create({

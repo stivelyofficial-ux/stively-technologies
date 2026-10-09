@@ -41,7 +41,7 @@ export interface OutreachStats {
   needsAnalysis: number;
 }
 
-function startOfTodayIst(): Date {
+export function startOfTodayIst(): Date {
   const offsetMs = 5.5 * 60 * 60 * 1000;
   const istNow = new Date(Date.now() + offsetMs);
   istNow.setUTCHours(0, 0, 0, 0);
@@ -142,9 +142,18 @@ export interface SentOutreachRow {
 }
 
 /** The 30 most recently messaged businesses still awaiting an outcome - where replies get turned into Sales CRM leads. */
-export async function getAwaitingReply(): Promise<SentOutreachRow[]> {
+export async function getAwaitingReply(sentByTeamMemberId?: string): Promise<SentOutreachRow[]> {
   const rows = await prisma.business.findMany({
-    where: { outreachStatus: "CONTACTED" },
+    where: {
+      outreachStatus: "CONTACTED",
+      ...(sentByTeamMemberId
+        ? {
+            activities: {
+              some: { type: "OUTREACH_SENT" as const, performedById: sentByTeamMemberId },
+            },
+          }
+        : {}),
+    },
     orderBy: { outreachContactedAt: "desc" },
     take: 30,
     select: {
@@ -162,4 +171,44 @@ export async function getAwaitingReply(): Promise<SentOutreachRow[]> {
     contactedAt: row.outreachContactedAt ?? new Date(),
     promoted: row.promotedSalesLeadId !== null,
   }));
+}
+
+export interface MyOutreachStats {
+  sentToday: number;
+  sentLast7Days: number;
+  repliesLast7Days: number;
+  foundToday: number;
+}
+
+/** One team member's own activity - what the Team dashboard shows. */
+export async function getMyOutreachStats(teamMemberId: string): Promise<MyOutreachStats> {
+  const today = startOfTodayIst();
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [sentToday, sentLast7Days, repliesLast7Days, runsToday] = await Promise.all([
+    prisma.businessActivity.count({
+      where: { type: "OUTREACH_SENT", performedById: teamMemberId, createdAt: { gte: today } },
+    }),
+    prisma.businessActivity.count({
+      where: { type: "OUTREACH_SENT", performedById: teamMemberId, createdAt: { gte: weekAgo } },
+    }),
+    prisma.businessActivity.count({
+      where: { type: "OUTREACH_REPLIED", performedById: teamMemberId, createdAt: { gte: weekAgo } },
+    }),
+    prisma.leadIntelligenceSearchRun.aggregate({
+      where: {
+        triggeredById: teamMemberId,
+        connectorType: "GOOGLE_PLACES",
+        startedAt: { gte: today },
+      },
+      _sum: { createdCount: true },
+    }),
+  ]);
+
+  return {
+    sentToday,
+    sentLast7Days,
+    repliesLast7Days,
+    foundToday: runsToday._sum.createdCount ?? 0,
+  };
 }

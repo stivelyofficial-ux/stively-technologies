@@ -2954,6 +2954,9 @@ enum NotificationType {
   BUSINESS_HIGH_OPPORTUNITY_SCORE
   /// A LeadIntelligenceSearchRun (connector run) ends in status FAILED.
   LEAD_INTELLIGENCE_RUN_FAILED
+  /// A team member marks an Outreach-queue business as having replied -
+  /// the founder takes over the conversation from there.
+  OUTREACH_REPLY
 
   // --- AI Proposal Management ---
   /// The client opens a sent Proposal's public link for the first time.

@@ -31,7 +31,8 @@ function RunResultMessage({ result }: { result: RunConnectorActionResult | null 
   );
 }
 
-function GooglePlacesSearchForm() {
+/** `remaining` is set for capped users (team members): the button disables at 0 and the card says how many searches are left today. */
+function GooglePlacesSearchForm({ remaining = null }: { remaining?: number | null }) {
   const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [location, setLocation] = React.useState("");
@@ -67,8 +68,13 @@ function GooglePlacesSearchForm() {
             <Input id="places-location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Pune, India" />
           </div>
         </div>
+        {remaining !== null && (
+          <p className="text-muted-foreground text-sm">
+            {remaining > 0 ? `${remaining} search${remaining === 1 ? "" : "es"} left today.` : "No searches left today. They reset at midnight."}
+          </p>
+        )}
         <RunResultMessage result={result} />
-        <Button size="sm" loading={isPending} disabled={!query.trim() || !location.trim()} onClick={handleSearch} className="self-end">
+        <Button size="sm" loading={isPending} disabled={!query.trim() || !location.trim() || remaining === 0} onClick={handleSearch} className="self-end">
           <Search className="size-4" aria-hidden="true" />
           Search
         </Button>
@@ -216,4 +222,4 @@ function DiscoverPanel() {
   );
 }
 
-export { DiscoverPanel };
+export { DiscoverPanel, GooglePlacesSearchForm };
