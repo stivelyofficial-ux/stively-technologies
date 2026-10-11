@@ -24,5 +24,10 @@ export function parseInternId(id: string): number | null {
 }
 
 export function formatCardDate(date: Date): string {
-  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  });
 }

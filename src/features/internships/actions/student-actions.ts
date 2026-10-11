@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import type { ActionResult } from "@/actions/leads";
-import { startOfTodayUtc } from "@/features/learning/lib/ai-tutor";
+import { istDateAsUtcMidnight } from "@/lib/ist";
 import {
   submitDailyReportSchema,
   startInternshipSchema,
@@ -41,7 +41,8 @@ export async function submitDailyReport(input: unknown): Promise<ActionResult> {
   if (!track) return { success: false, error: "Internship track not found." };
 
   try {
-    const reportDate = startOfTodayUtc();
+    // India calendar date (stored as UTC midnight), so a report written at 1 am IST belongs to that day, not the previous UTC day.
+    const reportDate = istDateAsUtcMidnight();
     await prisma.internshipDailyReport.upsert({
       where: { trackId_reportDate: { trackId, reportDate } },
       create: { trackId, reportDate, content },

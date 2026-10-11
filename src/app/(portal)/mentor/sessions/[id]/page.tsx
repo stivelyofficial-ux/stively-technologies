@@ -1,3 +1,4 @@
+import { formatIstDateTime } from "@/lib/ist";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CalendarDays, Clock, Link as LinkIcon } from "lucide-react";
@@ -60,7 +61,7 @@ export default async function MentorSessionDetailPage({ params }: PageProps) {
             <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">
               <span className="flex items-center gap-1.5">
                 <CalendarDays className="size-4" aria-hidden="true" />
-                {session.scheduledAt.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" })}
+                {formatIstDateTime(session.scheduledAt, { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" })}
               </span>
               {session.durationMinutes && (
                 <span className="flex items-center gap-1.5">

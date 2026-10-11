@@ -1,5 +1,6 @@
 "use server";
 
+import { formatIstDateTime } from "@/lib/ist";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
@@ -55,7 +56,7 @@ export async function createMentorSession(input: unknown): Promise<ActionResult 
             userId: studentId,
             type: "SESSION_SCHEDULED",
             title: `New session: ${data.title}`,
-            body: `Scheduled for ${new Date(data.scheduledAt).toLocaleString()}.`,
+            body: `Scheduled for ${formatIstDateTime(new Date(data.scheduledAt))} IST.`,
             link: `/student/mentors/${mentor.id}`,
           })
         )

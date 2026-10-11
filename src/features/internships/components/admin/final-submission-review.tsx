@@ -1,5 +1,6 @@
 "use client";
 
+import { formatIstDate } from "@/lib/ist";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -70,11 +71,7 @@ function FinalSubmissionReview({
         {project.finalSubmittedAt && (
           <span className="text-muted-foreground text-xs">
             Submitted{" "}
-            {project.finalSubmittedAt.toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            {formatIstDate(project.finalSubmittedAt)}
           </span>
         )}
       </div>

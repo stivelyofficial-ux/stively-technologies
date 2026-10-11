@@ -1,3 +1,4 @@
+import { istParts } from "@/lib/ist";
 import { siteConfig } from "@/config/site";
 import { programCode } from "@/features/internships/lib/id-card";
 
@@ -58,7 +59,7 @@ export function formatDocumentNumber(params: {
   issuedAt: Date;
 }): string {
   const { kind, program, sequence, issuedAt } = params;
-  return `STV-${programCode(program)}-${KIND_META[kind].code}-${issuedAt.getFullYear()}-${String(sequence).padStart(5, "0")}`;
+  return `STV-${programCode(program)}-${KIND_META[kind].code}-${istParts(issuedAt).year}-${String(sequence).padStart(5, "0")}`;
 }
 
 /** Public URL the document's QR code and share links point to. Always the live site. */

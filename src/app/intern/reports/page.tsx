@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Briefcase, NotebookPen } from "lucide-react";
 
 import { getInternContext } from "@/features/internships/server/access";
+import { formatIstDate, istDateKey } from "@/lib/ist";
 import { EmptyState } from "@/components/sections/empty-state";
 import { DailyReportForm } from "@/features/internships/components/student/daily-report-form";
 
@@ -26,7 +27,7 @@ export default async function InternReportsPage() {
     );
   }
 
-  const todaysKey = toDateKey(new Date());
+  const todaysKey = istDateKey();
   const todaysReport = track.dailyReports.find((r) => toDateKey(r.reportDate) === todaysKey);
   const history = track.dailyReports
     .filter((r) => toDateKey(r.reportDate) !== todaysKey)
@@ -46,11 +47,7 @@ export default async function InternReportsPage() {
         <div className="bg-card border-border flex flex-col gap-4 rounded-2xl border p-7">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-xl font-bold">
-              {new Date().toLocaleDateString("en-IN", {
-                weekday: "short",
-                day: "numeric",
-                month: "short",
-              })}
+              {formatIstDate(new Date(), { weekday: "short", day: "numeric", month: "short" })}
             </h2>
             <span
               className={
@@ -83,7 +80,7 @@ export default async function InternReportsPage() {
                 className="bg-card border-border flex flex-col gap-2 rounded-2xl border px-5 py-4"
               >
                 <span className="text-[15px] font-bold">
-                  {report.reportDate.toLocaleDateString("en-IN", {
+                  {formatIstDate(report.reportDate, {
                     weekday: "short",
                     day: "numeric",
                     month: "short",

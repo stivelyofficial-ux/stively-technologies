@@ -1,5 +1,7 @@
 import type { InternshipTask } from "@prisma/client";
 
+import { formatIstDate, istDayDiff } from "@/lib/ist";
+
 /** Progress is measured on the core project tasks; add-on features are a bonus and counted separately. */
 export function computeTaskStats(tasks: Pick<InternshipTask, "progress" | "isAddon">[]) {
   const core = tasks.filter((t) => !t.isAddon);
@@ -16,15 +18,15 @@ export function computeTaskStats(tasks: Pick<InternshipTask, "progress" | "isAdd
   };
 }
 
-/** Whole days from today to the end date (0 once it has passed). */
+/** Whole India calendar days from today to the end date (0 once it has passed). */
 export function daysUntil(end: Date | null, now: Date = new Date()): number | null {
   if (!end) return null;
-  const ms = new Date(end.toDateString()).getTime() - new Date(now.toDateString()).getTime();
-  return Math.max(0, Math.round(ms / 86_400_000));
+  return Math.max(0, istDayDiff(now, end));
 }
 
+/** "11 Oct 2026", always as the India calendar date regardless of the server's time zone. */
 export function formatLongDate(date: Date): string {
-  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return formatIstDate(date);
 }
 
 export interface ProjectDetails {

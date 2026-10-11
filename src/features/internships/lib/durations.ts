@@ -1,3 +1,5 @@
+import { addDaysIst, addMonthsIst, istDayDiff } from "@/lib/ist";
+
 /** The internship lengths a student can choose at /intern/start. */
 export const INTERNSHIP_DURATIONS = [
   {
@@ -23,21 +25,17 @@ export function isValidDuration(months: number): months is InternshipDurationMon
   return INTERNSHIP_DURATIONS.some((d) => d.months === months);
 }
 
+/** The internship end date: `months` calendar months after `date`, in India time (31 Jan + 1 month = end of Feb). */
 export function addMonths(date: Date, months: number): Date {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + months);
-  return d;
+  return addMonthsIst(date, months);
 }
 
-/** Calendar date of "Day N" (Day 1 = the start date). */
+/** Calendar date of "Day N" (Day 1 = the start date), in India time. */
 export function dateOfDay(start: Date, day: number): Date {
-  const d = new Date(start);
-  d.setDate(d.getDate() + day - 1);
-  return d;
+  return addDaysIst(start, day - 1);
 }
 
-/** 1-based day number of `now` within an internship that began at `start`. */
+/** 1-based day number of `now` within an internship that began at `start`, counted in India calendar days. */
 export function currentDay(start: Date, now: Date = new Date()): number {
-  const ms = new Date(now.toDateString()).getTime() - new Date(start.toDateString()).getTime();
-  return Math.floor(ms / 86_400_000) + 1;
+  return istDayDiff(start, now) + 1;
 }

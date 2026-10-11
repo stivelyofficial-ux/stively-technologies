@@ -1,3 +1,4 @@
+import { formatIstDateTime } from "@/lib/ist";
 import type { Metadata } from "next";
 import { Megaphone } from "lucide-react";
 
@@ -46,7 +47,7 @@ export default async function MentorAnnouncementsPage() {
                 <CardContent className="flex flex-col gap-1">
                   <p className="text-foreground text-sm whitespace-pre-line">{announcement.content}</p>
                   <span className="text-muted-foreground text-xs">
-                    {announcement.createdAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                    {formatIstDateTime(announcement.createdAt)}
                   </span>
                 </CardContent>
               </Card>

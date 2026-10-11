@@ -4,7 +4,14 @@ import { cookies } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
-import { leadSchema, contactEnquirySchema, startProjectLeadSchema, type LeadInput } from "@/lib/validations/lead";
+import {
+  leadSchema,
+  contactEnquirySchema,
+  startProjectLeadSchema,
+  START_PROJECT_TIMELINE_LABEL,
+  type LeadInput,
+} from "@/lib/validations/lead";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { notifyNewLeadCreated } from "@/features/leads/server/notify";
 import { RECENT_LEAD_EMAIL_COOKIE } from "@/lib/auth-constants";
 
@@ -145,7 +152,20 @@ export async function submitStartProjectLead(
     phone: formData.get("phone"),
     service: formData.get("service") || undefined,
     budget: formData.get("budget") || undefined,
+    businessName: formData.get("businessName"),
+    businessType: formData.get("businessType"),
+    timeline: formData.get("timeline") || undefined,
+    details: formData.get("details") || undefined,
   };
+
+  // Honeypot: a hidden field real visitors never see or fill. Bots that fill
+  // every input trip it - answer "success" so they don't retry, store nothing.
+  if (
+    typeof formData.get("companyWebsite") === "string" &&
+    String(formData.get("companyWebsite")).trim() !== ""
+  ) {
+    return { success: true };
+  }
 
   const parsed = startProjectLeadSchema.safeParse(raw);
 
@@ -153,6 +173,18 @@ export async function submitStartProjectLead(
     return {
       success: false,
       error: parsed.error.issues[0]?.message ?? "Please check your details and try again.",
+    };
+  }
+
+  // Bot check (Cloudflare Turnstile), after the cheap field validation so a
+  // visitor fixing a typo isn't made to wait for a new token unnecessarily.
+  // Skipped (with a warning) until the keys are configured - see lib/turnstile.ts.
+  const humanToken = formData.get("cf-turnstile-response");
+  if (!(await verifyTurnstile(typeof humanToken === "string" ? humanToken : null))) {
+    return {
+      success: false,
+      error:
+        "We couldn't confirm you're human. Please wait a moment and try again, or message us on WhatsApp.",
     };
   }
 
@@ -164,7 +196,14 @@ export async function submitStartProjectLead(
     phone: data.phone,
     source: "START_PROJECT",
     leadType: "BUSINESS",
-    metadata: { service: data.service, budget: data.budget },
+    companyName: data.businessName,
+    message: data.details,
+    metadata: {
+      service: data.service,
+      budget: data.budget,
+      businessType: data.businessType,
+      ...(data.timeline ? { timeline: START_PROJECT_TIMELINE_LABEL[data.timeline] } : {}),
+    },
     estimatedValue: BUDGET_ESTIMATED_VALUE[data.budget],
     acquisitionChannel: "GOOGLE_ADS",
   });

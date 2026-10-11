@@ -176,8 +176,9 @@ function StartProjectMetadata({ metadata }: { metadata: unknown }) {
   const budget = typeof record.budget === "string" ? record.budget : undefined;
   const businessType = typeof record.businessType === "string" ? record.businessType : undefined;
   const whatsappNumber = typeof record.whatsappNumber === "string" ? record.whatsappNumber : undefined;
+  const timeline = typeof record.timeline === "string" ? record.timeline : undefined;
 
-  if (!service && !budget && !businessType && !whatsappNumber) {
+  if (!service && !budget && !businessType && !whatsappNumber && !timeline) {
     return null;
   }
 
@@ -203,6 +204,12 @@ function StartProjectMetadata({ metadata }: { metadata: unknown }) {
         <div>
           <dt className="text-muted-foreground text-xs tracking-wide uppercase">Business type</dt>
           <dd className="text-foreground text-sm">{businessType}</dd>
+        </div>
+      )}
+      {timeline && (
+        <div>
+          <dt className="text-muted-foreground text-xs tracking-wide uppercase">Preferred timeline</dt>
+          <dd className="text-foreground text-sm">{timeline}</dd>
         </div>
       )}
       {whatsappNumber && (

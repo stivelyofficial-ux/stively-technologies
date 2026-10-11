@@ -102,6 +102,15 @@ export const START_PROJECT_SERVICE_LABEL: Record<(typeof START_PROJECT_SERVICES)
   SEO: "SEO",
 };
 
+export const START_PROJECT_TIMELINES = ["ASAP", "WITHIN_MONTH", "ONE_TO_THREE_MONTHS", "EXPLORING"] as const;
+
+export const START_PROJECT_TIMELINE_LABEL: Record<(typeof START_PROJECT_TIMELINES)[number], string> = {
+  ASAP: "As soon as possible (within 2 weeks)",
+  WITHIN_MONTH: "Within 1 month",
+  ONE_TO_THREE_MONTHS: "1 to 3 months",
+  EXPLORING: "Just exploring for now",
+};
+
 export const START_PROJECT_BUDGETS = ["UNDER_10K", "10K_25K", "25K_50K", "50K_1L", "1L_PLUS"] as const;
 
 export const START_PROJECT_BUDGET_LABEL: Record<(typeof START_PROJECT_BUDGETS)[number], string> = {
@@ -145,6 +154,18 @@ export const startProjectLeadSchema = z.object({
   phone: z.string().trim().min(7, "Enter a valid phone number so we can reach you"),
   service: z.enum(START_PROJECT_SERVICES, { error: "Select a service" }),
   budget: z.enum(START_PROJECT_BUDGETS, { error: "Select your budget" }),
+  // Added with the 2026-10 form redesign: the three fields that let a rep
+  // filter out fake/low-intent submissions before calling.
+  businessName: z.string().trim().min(2, "Enter your business or company name"),
+  businessType: z.string().trim().min(2, "Tell us what your business does"),
+  timeline: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    z.enum(START_PROJECT_TIMELINES).optional()
+  ),
+  details: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    z.string().trim().max(2000, "Keep the extra details under 2000 characters").optional()
+  ),
 });
 
 export type StartProjectLeadInput = z.infer<typeof startProjectLeadSchema>;

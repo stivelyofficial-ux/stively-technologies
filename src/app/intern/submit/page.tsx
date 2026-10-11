@@ -7,19 +7,13 @@ import { EmptyState } from "@/components/sections/empty-state";
 import { ProjectPending } from "@/features/internships/components/intern/project-card";
 import { FinalSubmitForm } from "@/features/internships/components/intern/final-submit-form";
 import { computeTaskStats } from "@/features/internships/lib/stats";
+import { formatIstDateTime } from "@/lib/ist";
 
 export const metadata: Metadata = { title: "Final submission" };
 
 function formatStamp(date: Date): string {
-  return date.toLocaleString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return formatIstDateTime(date);
 }
-
 export default async function InternSubmitPage() {
   const { track } = await getInternContext({ requireOnboarded: true });
 
@@ -186,8 +180,8 @@ export default async function InternSubmitPage() {
                   <span className="font-semibold">Reviewer&apos;s note: </span>
                   {project.finalFeedback}
                   <span className="mt-2 block font-medium">
-                    Your certificate and letters are still yours - see Documents. Only the stipend is
-                    withheld.
+                    Your certificate and letters are still yours - see Documents. Only the stipend
+                    is withheld.
                   </span>
                 </p>
               </div>

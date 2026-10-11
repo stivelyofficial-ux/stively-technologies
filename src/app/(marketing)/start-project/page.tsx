@@ -1,5 +1,19 @@
 import type { Metadata } from "next";
-import { MessageCircle, ShieldCheck, FileCheck, MessagesSquare, Rocket } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  CreditCard,
+  FileCheck,
+  LayoutDashboard,
+  Lock,
+  MessageCircle,
+  MessagesSquare,
+  Phone,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 import { auth } from "@/lib/auth";
@@ -7,10 +21,6 @@ import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { getFeaturedPortfolioItems } from "@/lib/queries/portfolio";
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
-import { Eyebrow } from "@/components/shared/eyebrow";
-import { Reveal } from "@/components/shared/reveal";
-import { TrustStrip } from "@/components/sections/trust-strip";
-import { PortfolioCard } from "@/components/sections/portfolio-showcase";
 import { StartProjectForm } from "@/components/forms/start-project-form";
 import { Card } from "@/components/ui/card";
 
@@ -41,34 +51,48 @@ export const metadata: Metadata = {
 
 const STEPS = [
   {
-    icon: MessagesSquare,
+    icon: Phone,
     title: "We call you",
-    description:
-      "A real person calls the same day to understand what you need and answer questions.",
+    description: "Our team will reach out the same day to understand your needs.",
+  },
+  {
+    icon: MessagesSquare,
+    title: "Free 20-min discussion",
+    description: "We discuss your goals, show relevant solutions and suggest the best approach.",
   },
   {
     icon: FileCheck,
-    title: "You get a quote",
-    description: "A clear, itemized price. Nothing starts until you review and approve it.",
+    title: "Get a fixed quote",
+    description: "You receive a clear proposal with timeline and cost. No hidden charges.",
   },
-  {
-    icon: Rocket,
-    title: "We start building",
-    description:
-      "Pay your first installment through Razorpay and track every update from your own dashboard.",
-  },
+];
+
+const VALUE_POINTS = [
+  { icon: ShieldCheck, title: "No Hidden Fees", description: "Clear & upfront pricing" },
+  { icon: Zap, title: "Direct Team Support", description: "Talk to real experts" },
+  { icon: BarChart3, title: "On-Time Delivery", description: "Track progress in your dashboard" },
+];
+
+/**
+ * Only things Stively actually does and can show - the founder's design mock
+ * had client stats and a client testimonial in this band, but there are no
+ * such numbers or quotes to back them yet (BRAND_PRINCIPLES #6: no fabricated
+ * proof). These four are real, verifiable commitments instead.
+ */
+const COMMITMENTS = [
+  { icon: FileCheck, label: "You approve the quote before anything starts" },
+  { icon: CreditCard, label: "Secure payments through Razorpay" },
+  { icon: LayoutDashboard, label: "Progress, chat and files in your own dashboard" },
+  { icon: Lock, label: "NDA on request, before any details are shared" },
 ];
 
 /**
  * Dedicated Google Ads landing page - a single, form-first page built for
  * paid traffic, not a variant of the Contact page (different intent: this
  * visitor is already sold, they just need a fast way to hand over details).
- * The floating light form card on the dark hero is the page's one
- * deliberate visual move: a calm, bright surface for handing over contact
- * details set against the same ambient dark marketing canvas the rest of
- * the site uses - the founder's own brief was "attractive and trustworthy,
- * should not feel like a scam," so the card reads as a storefront counter,
- * not another dark full-bleed sales pitch.
+ * Dark ambient hero with the pitch and "what happens next" on the left and
+ * the bright form card on the right (2026-10 redesign): the card reads as a
+ * clear, high-contrast counter set against the dark canvas.
  */
 export default async function StartProjectPage() {
   const [portfolioItems, session] = await Promise.all([getFeaturedPortfolioItems(3), auth()]);
@@ -77,12 +101,13 @@ export default async function StartProjectPage() {
   // email attached to a new business inquiry.
   const defaultEmail =
     session?.user?.role === "CLIENT" ? (session.user.email ?? undefined) : undefined;
+  const proof = portfolioItems[0];
 
   return (
     <>
       <Section
         background="inverted"
-        className="texture-noise relative overflow-hidden pt-10 pb-16 md:pt-14 md:pb-20 lg:pt-16 lg:pb-24"
+        className="texture-noise relative overflow-hidden pt-8 pb-16 md:pt-10 md:pb-20 lg:pt-10 lg:pb-24"
       >
         <div
           aria-hidden="true"
@@ -99,123 +124,137 @@ export default async function StartProjectPage() {
           className="text-ink-foreground/[0.05] bg-dot-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_80%_60%_at_50%_0%,black,transparent)]"
         />
 
-        <Container className="relative flex flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-10">
-          {/* order-2/order-1 below puts the form first on mobile - a paid-
-              search visitor should reach it without scrolling past the pitch
-              they already believed when they clicked the ad. lg: resets to
-              the original visual layout (copy left, form right). */}
-          <div className="order-2 flex flex-col items-center gap-6 text-center lg:order-1 lg:w-[48%] lg:shrink-0 lg:items-start lg:pt-6 lg:text-left">
-            <span className="border-ink-border-strong text-ink-muted-foreground inline-flex items-center gap-2 rounded-full border bg-white/[0.04] px-3.5 py-1.5 font-mono text-xs font-medium tracking-widest uppercase">
-              <span
-                aria-hidden="true"
-                className="from-primary via-brand-iris to-brand-teal size-1.5 rounded-full bg-linear-to-br"
-              />
-              Start a project
-            </span>
+        <Container className="relative grid items-start gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:gap-12">
+          {/* order-2/order-1 puts the form first on mobile - a paid-search
+              visitor should reach it without scrolling past the pitch they
+              already believed when they clicked the ad. lg: restores the
+              visual layout (pitch left, form right). */}
+          <div className="order-2 flex min-w-0 flex-col gap-10 lg:order-1">
+            <div className="flex flex-col items-start gap-6">
+              <span className="border-ink-border-strong text-ink-muted-foreground inline-flex items-center gap-3 rounded-full border bg-white/[0.04] px-4 py-1.5 font-mono text-xs font-medium tracking-widest uppercase">
+                <span className="text-brand-teal">&bull; Build</span>
+                <span className="text-brand-teal">&bull; Launch</span>
+                <span className="text-brand-teal">&bull; Grow</span>
+              </span>
 
-            <h1
-              className="font-display font-semibold tracking-[-0.03em] text-balance"
-              style={{ fontSize: "clamp(2.5rem, 5.5vw, 4.25rem)", lineHeight: 1.05 }}
-            >
-              Tell us what you&apos;re building. We&apos;ll call you back today.
-            </h1>
+              <h1
+                className="font-display font-semibold tracking-[-0.03em] text-balance"
+                style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)", lineHeight: 1.05 }}
+              >
+                Turn Your Idea Into a High-Performing{" "}
+                <span className="from-brand-teal to-primary bg-linear-to-r bg-clip-text text-transparent">
+                  Website or App
+                </span>
+              </h1>
 
-            <p className="text-ink-muted-foreground max-w-xl text-lg text-pretty">
-              Fill in a few details and a real person from our team will reach out - no chatbot, no
-              hidden fees. You review and approve every quote before anything starts.
-            </p>
+              <p className="text-ink-muted-foreground max-w-xl text-lg text-pretty">
+                Get a modern, fast and conversion-focused website or mobile app built by our team.
+                We handle design, development and deployment so you can focus on your business.
+              </p>
+            </div>
 
-            <ul className="flex flex-col gap-3 text-left">
-              {[
-                "Real Razorpay payments, split into installments you agree to",
-                "You approve every quote before we start a single line of work",
-                "Track progress, chat, and documents from your own client dashboard",
-              ].map((point) => (
-                <li key={point} className="flex items-start gap-2.5">
-                  <ShieldCheck
-                    className="text-brand-teal mt-0.5 size-4.5 shrink-0"
-                    aria-hidden="true"
+            <ul className="grid gap-5 sm:grid-cols-3">
+              {VALUE_POINTS.map((point) => (
+                <li
+                  key={point.title}
+                  className="flex items-center gap-3.5 sm:flex-col sm:items-start"
+                >
+                  <span className="bg-brand-teal/15 text-brand-teal flex size-12 shrink-0 items-center justify-center rounded-2xl">
+                    <point.icon className="size-6" aria-hidden="true" />
+                  </span>
+                  <span className="flex flex-col gap-0.5">
+                    <strong className="text-ink-foreground text-base font-semibold">
+                      {point.title}
+                    </strong>
+                    <span className="text-ink-muted-foreground text-sm">{point.description}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex flex-col gap-5">
+              <h2 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+                What happens next?
+              </h2>
+              <ol className="grid gap-4 md:grid-cols-3">
+                {STEPS.map((step, index) => (
+                  <li
+                    key={step.title}
+                    className="border-ink-border-strong relative flex flex-col gap-3 rounded-2xl border bg-white/[0.04] p-5"
+                  >
+                    <span className="bg-brand-teal text-ink absolute -top-3 -left-2 flex size-7 items-center justify-center rounded-full text-sm font-bold">
+                      {index + 1}
+                    </span>
+                    <span className="bg-brand-teal/15 text-brand-teal flex size-11 items-center justify-center rounded-xl">
+                      <step.icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <strong className="text-ink-foreground text-base font-semibold">
+                      {step.title}
+                    </strong>
+                    <span className="text-ink-muted-foreground text-sm text-pretty">
+                      {step.description}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {proof && (
+              <div className="border-ink-border-strong grid items-center gap-5 overflow-hidden rounded-2xl border bg-white/[0.04] p-4 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-white/5">
+                  <Image
+                    src={proof.imageUrl}
+                    alt={`Cover image for ${proof.title}`}
+                    fill
+                    sizes="(min-width: 1024px) 320px, 90vw"
+                    className="object-cover object-top"
                   />
-                  <span className="text-ink-foreground/90 text-sm">{point}</span>
+                </div>
+                <div className="flex flex-col items-start gap-3">
+                  <span className="bg-brand-teal/20 text-brand-teal rounded-md px-2.5 py-1 font-mono text-[11px] font-semibold tracking-widest uppercase">
+                    {proof.clientName ? "Client project" : "Portfolio concept"}
+                  </span>
+                  <h3 className="font-display text-xl font-semibold">{proof.title}</h3>
+                  {proof.tagline && (
+                    <p className="text-ink-muted-foreground text-sm text-pretty">{proof.tagline}</p>
+                  )}
+                  <Link
+                    href={proof.slug ? `/work/${proof.slug}` : "/work"}
+                    className="border-ink-border-strong text-ink-foreground inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold hover:bg-white/[0.06]"
+                  >
+                    View demo
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            <ul className="border-ink-border-strong grid gap-5 border-t pt-8 sm:grid-cols-2">
+              {COMMITMENTS.map((item) => (
+                <li key={item.label} className="flex items-center gap-3.5">
+                  <span className="bg-brand-teal/15 text-brand-teal flex size-11 shrink-0 items-center justify-center rounded-full">
+                    <item.icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="text-ink-foreground/90 text-sm leading-snug">{item.label}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="order-1 w-full lg:order-2 lg:flex-1">
+          <div className="order-1 w-full lg:order-2">
             {/* No Reveal wrapper here, deliberately - this card is the page's
-                entire point, and now it's the very first thing in the
-                mobile viewport too (see order-1 above). It's never
-                scrolled into view; it's just there on load, so a
-                scroll-triggered fade would only ever hide it behind a
-                slow-connection JS/IntersectionObserver delay instead of
-                animating anything a visitor actually sees happen. */}
-            <Card className="shadow-glow-xl mx-auto max-w-lg gap-0 p-6 md:p-8">
-              <h2 className="text-foreground font-display mb-1 text-xl font-semibold">
+                entire point, and it's the very first thing in the mobile
+                viewport (see order-1 above). It's never scrolled into view;
+                it's just there on load. */}
+            <Card className="shadow-glow-xl mx-auto max-w-xl gap-0 p-6 md:p-8">
+              <h2 className="text-foreground font-display mb-1 text-2xl font-semibold">
                 Start your project
               </h2>
               <p className="text-muted-foreground mb-6 text-sm">
-                Takes under a minute. We never share your details.
+                Takes under a minute. We&apos;ll call you back to discuss your requirements.
               </p>
               <StartProjectForm defaultEmail={defaultEmail} />
             </Card>
-          </div>
-        </Container>
-      </Section>
-
-      <TrustStrip />
-
-      {portfolioItems.length > 0 && (
-        <Section className="bg-muted/40 border-border/60 border-y py-16 md:py-20 lg:py-24">
-          <Container className="flex flex-col gap-10">
-            <div className="flex max-w-2xl flex-col gap-3">
-              <Eyebrow>Our work</Eyebrow>
-              <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-                Portfolio concepts
-              </h2>
-              <p className="text-muted-foreground text-lg text-pretty">
-                Live demo sites we designed and built to show our standard. Client projects will be
-                added here as they ship.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {portfolioItems.map((item, index) => (
-                <Reveal key={item.id} delay={index * 60} className="h-full">
-                  <PortfolioCard item={item} />
-                </Reveal>
-              ))}
-            </div>
-          </Container>
-        </Section>
-      )}
-
-      <Section className="py-16 md:py-20 lg:py-24">
-        <Container className="flex flex-col gap-10">
-          <div className="flex max-w-2xl flex-col gap-3">
-            <Eyebrow>What happens next</Eyebrow>
-            <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-balance md:text-4xl">
-              Three steps from submit to build
-            </h2>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {STEPS.map((step, index) => (
-              <Reveal key={step.title} delay={index * 80}>
-                <div className="border-border/70 bg-card flex h-full flex-col gap-3 rounded-3xl border p-7 shadow-[0_1px_2px_rgba(18,32,92,0.04)]">
-                  <div className="flex items-center gap-3">
-                    <span className="bg-primary/10 flex size-11 shrink-0 items-center justify-center rounded-2xl">
-                      <step.icon className="text-primary size-5" aria-hidden="true" />
-                    </span>
-                    <span className="text-muted-foreground font-mono text-xs tracking-widest uppercase">
-                      Step {index + 1}
-                    </span>
-                  </div>
-                  <h3 className="text-foreground font-display text-lg font-semibold">
-                    {step.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm text-pretty">{step.description}</p>
-                </div>
-              </Reveal>
-            ))}
           </div>
         </Container>
       </Section>

@@ -63,7 +63,7 @@ function buildCsp(nonce: string, isDev: boolean) {
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' blob: data: https://res.cloudinary.com https://blog.stively.com https://www.googletagmanager.com https://www.google.com https://www.google.co.in https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.facebook.com https://connect.facebook.net`,
     `font-src 'self' data:`,
-    `connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.google.co.in https://ad.doubleclick.net https://www.googleadservices.com https://googleads.g.doubleclick.net https://api.razorpay.com https://lumberjack.razorpay.com https://www.facebook.com https://connect.facebook.net${isDev ? " ws://localhost:* http://localhost:*" : ""}`,
+    `connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.google.co.in https://ad.doubleclick.net https://www.googleadservices.com https://googleads.g.doubleclick.net https://api.razorpay.com https://lumberjack.razorpay.com https://www.facebook.com https://connect.facebook.net https://challenges.cloudflare.com${isDev ? " ws://localhost:* http://localhost:*" : ""}`,
     `frame-src 'self' https:`,
     `media-src 'self' https:`,
     `object-src 'none'`,
