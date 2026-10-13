@@ -103,6 +103,7 @@ const HEADER_IMAGES = {
   EXPERIENCE_LETTER: toDataUri("letter-header-exp.png"),
 } as const;
 const SIGNOFF = toDataUri("letter-signoff.png");
+const SEAL = toDataUri("official-seal.png");
 const FOOTER = toDataUri("letter-footer.png");
 
 export interface LetterData {
@@ -115,6 +116,9 @@ export interface LetterData {
   durationLabel: string;
   /** Offer letter "Reporting to" (mentor at issuance); falls back to the generic project lead. */
   reportingTo?: string | null;
+  /** Who signs. Null/absent = the original founder sign-off artwork (documents issued before signatories existed). */
+  signatoryName?: string | null;
+  signatoryTitle?: string | null;
 }
 
 /** "Frontend Development Internship" -> "Frontend Developer Intern". */
@@ -159,11 +163,82 @@ function LetterPage({
       <Text style={styles.subtitle}>{data.program.toUpperCase()}</Text>
       <View style={styles.rule} />
       <View style={[styles.body, { top: px(bodyTop) }]}>{children}</View>
-      {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf <Image> has no alt prop */}
-      <Image src={SIGNOFF} style={styles.signoff} />
+      <SignOff data={data} />
       {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf <Image> has no alt prop */}
       <Image src={FOOTER} style={styles.footer} />
     </Page>
+  );
+}
+
+/**
+ * The sign-off block at the foot of every letter. With a signatory set it is
+ * live text (script signature, rule, name, title) beside the official seal;
+ * without one it is the original founder artwork, byte-for-byte as before.
+ */
+function SignOff({ data }: { data: LetterData }) {
+  if (!data.signatoryName) {
+    // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf <Image> has no alt prop
+    return <Image src={SIGNOFF} style={styles.signoff} />;
+  }
+  return (
+    <View style={styles.signoff}>
+      <Text
+        style={{ position: "absolute", top: px(8), left: px(113), fontSize: px(20), color: BODY }}
+      >
+        Warm regards,
+      </Text>
+      <Text
+        style={{
+          position: "absolute",
+          top: px(24),
+          left: px(113),
+          fontFamily: "Alex Brush",
+          fontSize: px(66),
+          color: INK,
+        }}
+      >
+        {data.signatoryName}
+      </Text>
+      <View
+        style={{
+          position: "absolute",
+          top: px(118),
+          left: px(113),
+          width: px(300),
+          height: 0.8,
+          backgroundColor: INK,
+        }}
+      />
+      <Text
+        style={{
+          position: "absolute",
+          top: px(130),
+          left: px(113),
+          fontSize: px(19),
+          fontWeight: 700,
+          letterSpacing: 1.1,
+          color: INK,
+        }}
+      >
+        {data.signatoryName.toUpperCase()}
+      </Text>
+      <Text
+        style={{
+          position: "absolute",
+          top: px(160),
+          left: px(113),
+          fontSize: px(18),
+          color: "#2A3A34",
+        }}
+      >
+        {data.signatoryTitle ?? "Stively Technologies"}
+      </Text>
+      {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf <Image> has no alt prop */}
+      <Image
+        src={SEAL}
+        style={{ position: "absolute", top: px(2), left: px(934), width: px(206), height: px(184) }}
+      />
+    </View>
   );
 }
 

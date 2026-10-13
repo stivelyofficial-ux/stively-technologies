@@ -44,6 +44,32 @@ export function registerDocumentFonts() {
     fonts: [{ src: path.join(FONT_DIR, "AlexBrush-Regular.ttf"), fontWeight: 400 }],
   });
 
+  // Display serifs for the internship completion certificate (SIL OFL,
+  // via @fontsource - static WOFF instances, same "no variable fonts" rule).
+  Font.register({
+    family: "Playfair Display",
+    fonts: [
+      { src: path.join(FONT_DIR, "PlayfairDisplay-SemiBold.woff"), fontWeight: 600 },
+      { src: path.join(FONT_DIR, "PlayfairDisplay-Bold.woff"), fontWeight: 700 },
+      {
+        src: path.join(FONT_DIR, "PlayfairDisplay-MediumItalic.woff"),
+        fontWeight: 500,
+        fontStyle: "italic",
+      },
+    ],
+  });
+  Font.register({
+    family: "Cormorant Garamond",
+    fonts: [
+      { src: path.join(FONT_DIR, "CormorantGaramond-SemiBold.woff"), fontWeight: 600 },
+      {
+        src: path.join(FONT_DIR, "CormorantGaramond-MediumItalic.woff"),
+        fontWeight: 500,
+        fontStyle: "italic",
+      },
+    ],
+  });
+
   // @react-pdf/renderer hyphenates by default, which reads oddly for
   // proper nouns, currency, and IDs in a business document.
   Font.registerHyphenationCallback((word) => [word]);

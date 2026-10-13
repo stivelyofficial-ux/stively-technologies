@@ -2691,6 +2691,9 @@ model InternshipDocument {
   durationLabel String
   /// Offer letter's "Reporting to": the intern's mentor at issuance (null -> "Project Lead, Stively").
   reportingTo String?
+  /// Who signs this document (e.g. "Manish Ray" / "Co-Founder, Stively Technologies"). Null = the original founder sign-off artwork, so documents issued before this field existed render exactly as they did.
+  signatoryName  String?
+  signatoryTitle String?
 
   status        CertificateStatus @default(ISSUED)
   issuedAt      DateTime          @default(now())

@@ -20,7 +20,18 @@ import {
  * action that triggered it (starting the internship, approving a project);
  * the missing document is simply issued on the next trigger or by an admin.
  */
-async function issueKinds(trackId: string, kinds: InternshipDocumentKind[], completion: boolean) {
+/** Who signs the documents. Omit for the original founder sign-off. */
+export interface DocumentSignatory {
+  name: string;
+  title: string;
+}
+
+async function issueKinds(
+  trackId: string,
+  kinds: InternshipDocumentKind[],
+  completion: boolean,
+  signatory?: DocumentSignatory
+) {
   const track = await prisma.internshipTrack.findUnique({
     where: { id: trackId },
     select: {
@@ -76,6 +87,8 @@ async function issueKinds(trackId: string, kinds: InternshipDocumentKind[], comp
           endDate,
           durationLabel: label,
           reportingTo,
+          signatoryName: signatory?.name ?? null,
+          signatoryTitle: signatory?.title ?? null,
           issuedAt: now,
         },
       });
@@ -88,13 +101,13 @@ async function issueKinds(trackId: string, kinds: InternshipDocumentKind[], comp
 }
 
 /** Offer letter - the moment the internship starts. */
-export function issueStartDocuments(trackId: string) {
-  return issueKinds(trackId, KINDS_ON_START, false);
+export function issueStartDocuments(trackId: string, signatory?: DocumentSignatory) {
+  return issueKinds(trackId, KINDS_ON_START, false, signatory);
 }
 
 /** Completion certificate + letter of recommendation + experience letter - when the final project is approved. */
-export function issueCompletionDocuments(trackId: string) {
-  return issueKinds(trackId, KINDS_ON_COMPLETION, true);
+export function issueCompletionDocuments(trackId: string, signatory?: DocumentSignatory) {
+  return issueKinds(trackId, KINDS_ON_COMPLETION, true, signatory);
 }
 
 export async function listTrackDocuments(trackId: string) {

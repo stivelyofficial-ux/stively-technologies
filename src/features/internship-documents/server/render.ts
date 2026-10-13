@@ -12,6 +12,7 @@ import {
   type LetterData,
 } from "../templates/letters";
 import { CompletionCertificateDocument } from "../templates/completion-certificate";
+import { SignedCompletionCertificateDocument } from "../templates/completion-certificate-signed";
 
 /** Renders a document row to PDF bytes on demand - never stored, same as training certificates. */
 export async function renderInternshipDocumentPdf(doc: InternshipDocument): Promise<Buffer> {
@@ -24,6 +25,8 @@ export async function renderInternshipDocumentPdf(doc: InternshipDocument): Prom
     endDate: doc.endDate,
     durationLabel: doc.durationLabel,
     reportingTo: doc.reportingTo,
+    signatoryName: doc.signatoryName,
+    signatoryTitle: doc.signatoryTitle,
   };
 
   switch (doc.kind) {
@@ -35,7 +38,12 @@ export async function renderInternshipDocumentPdf(doc: InternshipDocument): Prom
       return renderDocumentPdf(ExperienceLetterDocument({ data }));
     case "INTERNSHIP_CERTIFICATE": {
       const qrDataUrl = await generateQrDataUrl(documentVerificationUrl(doc.documentNumber));
-      return renderDocumentPdf(CompletionCertificateDocument({ data, qrDataUrl }));
+      // Certificates with a named signatory use the redesigned layout; older ones keep the original artwork unchanged.
+      return renderDocumentPdf(
+        data.signatoryName
+          ? SignedCompletionCertificateDocument({ data, qrDataUrl })
+          : CompletionCertificateDocument({ data, qrDataUrl })
+      );
     }
   }
 }
