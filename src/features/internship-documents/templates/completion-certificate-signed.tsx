@@ -331,7 +331,7 @@ export function SignedCompletionCertificateDocument({
           <Text style={{ fontFamily: "Alex Brush", fontSize: 58, color: INK, lineHeight: 1 }}>
             {signatory}
           </Text>
-          <View style={{ height: 1.2, backgroundColor: INK, marginTop: 6 }} />
+          <View style={{ height: 1.2, backgroundColor: INK, marginTop: -8 }} />
           <Text style={{ fontSize: 15, fontWeight: 700, letterSpacing: 1.4, marginTop: 8 }}>
             {signatory.toUpperCase()}
           </Text>

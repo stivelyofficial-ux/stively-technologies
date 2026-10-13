@@ -190,7 +190,7 @@ function SignOff({ data }: { data: LetterData }) {
       <Text
         style={{
           position: "absolute",
-          top: px(24),
+          top: px(40),
           left: px(113),
           fontFamily: "Alex Brush",
           fontSize: px(66),
