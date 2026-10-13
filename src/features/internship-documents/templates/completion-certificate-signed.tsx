@@ -311,7 +311,7 @@ export function SignedCompletionCertificateDocument({
             }}
           >
             {data.recipientName} completed the {data.program} at Stively Technologies as a paid
-            intern, earning a stipend of ₹3,000 for each client-style project delivered, every one
+            intern, earning a stipend of ₹3,000 for each project delivered. Every project was
             reviewed and approved by the Stively team.
           </Text>
         </View>
