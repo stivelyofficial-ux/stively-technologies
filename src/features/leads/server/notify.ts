@@ -49,7 +49,7 @@ export async function notifyNewLeadCreated(lead: Lead): Promise<void> {
         userId: u.id,
         type: "LEAD_NEW_INBOUND",
         title: "New lead available",
-        body: `${lead.name} - ${SOURCE_LABEL[lead.source] ?? lead.source}. First to claim it owns it.`,
+        body: `${lead.name} - ${SOURCE_LABEL[lead.source] ?? lead.source}${callbackPreference(lead) ? ` (prefers ${callbackPreference(lead) === "WHATSAPP" ? "WhatsApp" : "a phone call"})` : ""}. First to claim it owns it.`,
         link: "/sales/inbound",
       });
     } catch (error) {
@@ -62,7 +62,7 @@ export async function notifyNewLeadCreated(lead: Lead): Promise<void> {
         from: EMAIL_FROM,
         to: u.email,
         subject: `New lead: ${lead.name}`,
-        html: `<p>A new lead just came in - <strong>${lead.name}</strong> (${SOURCE_LABEL[lead.source] ?? lead.source}). First to claim it owns it.</p><p><a href="${siteConfig.url}/sales/inbound">Claim it now</a></p>`,
+        html: `<p>A new lead just came in - <strong>${lead.name}</strong> (${SOURCE_LABEL[lead.source] ?? lead.source})${callbackPreference(lead) ? ` - prefers ${callbackPreference(lead) === "WHATSAPP" ? "WhatsApp" : "a phone call"}` : ""}. First to claim it owns it.</p><p><a href="${siteConfig.url}/sales/inbound">Claim it now</a></p>`,
       });
     } catch (error) {
       console.error("notifyNewLeadCreated: sales-team email failed for", u.email, error);
@@ -93,6 +93,12 @@ export async function notifyLeadClaimed(lead: Lead, claimedByTeamMemberId: strin
   }
 }
 
+/** "CALL" or "WHATSAPP" for a /start-project lead (saved in Lead.metadata), otherwise null. */
+function callbackPreference(lead: Lead): "CALL" | "WHATSAPP" | null {
+  const value = lead.metadata && typeof lead.metadata === "object" ? (lead.metadata as Record<string, unknown>).callbackPreference : null;
+  return value === "CALL" || value === "WHATSAPP" ? value : null;
+}
+
 const SOURCE_LABEL: Record<string, string> = {
   CONTACT_FORM: "Contact Form",
   PROGRAM_INTEREST: "Program Interest",
@@ -107,10 +113,16 @@ function buildAcknowledgementEmail(lead: Lead): { subject: string; html: string 
   const greeting = lead.name ? `Hi ${lead.name},` : "Hi there,";
 
   if (lead.source === "START_PROJECT") {
-    return {
-      subject: "Got it - we'll call you today",
-      html: `<p>${greeting}</p><p>Thanks for reaching out to Stively - we've got your details and a real person from our team will call you back today.</p><p>If it's urgent, you can message us on WhatsApp any time.</p>`,
-    };
+    const viaWhatsApp = callbackPreference(lead) === "WHATSAPP";
+    return viaWhatsApp
+      ? {
+          subject: "Got it - we'll message you on WhatsApp today",
+          html: `<p>${greeting}</p><p>Thanks for reaching out to Stively - we've got your details and a real person from our team will message you on WhatsApp today.</p><p>If you'd rather talk, just reply here and we'll call you instead.</p>`,
+        }
+      : {
+          subject: "Got it - we'll call you today",
+          html: `<p>${greeting}</p><p>Thanks for reaching out to Stively - we've got your details and a real person from our team will call you back today.</p><p>If it's urgent, you can message us on WhatsApp any time.</p>`,
+        };
   }
 
   return {

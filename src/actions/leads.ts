@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import {
   leadSchema,
   contactEnquirySchema,
@@ -12,6 +12,7 @@ import {
   type LeadInput,
 } from "@/lib/validations/lead";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { notifyAllAdmins } from "@/features/notifications/server/creation";
 import { notifyNewLeadCreated } from "@/features/leads/server/notify";
 import { RECENT_LEAD_EMAIL_COOKIE } from "@/lib/auth-constants";
 
@@ -55,7 +56,55 @@ export async function submitLead(input: LeadInput): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
+    // The same business submitting /start-project again (email is now required,
+    // so repeats are easy to spot) is a repeat enquiry, not an error: keep the
+    // one lead, refresh it with the latest answers and tell the team.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002" &&
+      parsed.data.source === "START_PROJECT" &&
+      parsed.data.email
+    ) {
+      return recordRepeatStartProjectEnquiry(parsed.data);
+    }
     console.error("submitLead failed:", error);
+    return { success: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+async function recordRepeatStartProjectEnquiry(input: LeadInput): Promise<ActionResult> {
+  try {
+    const existing = await prisma.lead.findFirst({
+      where: { email: input.email, leadType: input.leadType ?? "STUDENT" },
+    });
+    if (!existing) return { success: false, error: "Something went wrong. Please try again." };
+
+    const previous = existing.metadata && typeof existing.metadata === "object" ? (existing.metadata as Record<string, unknown>) : {};
+    await prisma.lead.update({
+      where: { id: existing.id },
+      data: {
+        lastEnquiryAt: new Date(),
+        phone: input.phone,
+        metadata: { ...previous, ...(input.metadata ?? {}) } as Prisma.InputJsonValue,
+        ...(input.message ? { message: input.message } : {}),
+      },
+    });
+    await prisma.leadHistory.create({
+      data: {
+        leadId: existing.id,
+        eventType: "RE_ENQUIRY",
+        description: "Submitted the start-project form again with the same email.",
+      },
+    });
+    await notifyAllAdmins({
+      type: "LEAD_NEW_INBOUND",
+      title: "Repeat enquiry",
+      body: `${existing.name} filled in the start-project form again.`,
+      link: `/admin/leads/${existing.id}`,
+    }).catch((error) => console.error("repeat enquiry notification failed:", error));
+    return { success: true };
+  } catch (error) {
+    console.error("recordRepeatStartProjectEnquiry failed:", error);
     return { success: false, error: "Something went wrong. Please try again." };
   }
 }
@@ -150,6 +199,7 @@ export async function submitStartProjectLead(
     fullName: formData.get("fullName"),
     email: formData.get("email") || undefined,
     phone: formData.get("phone"),
+    callbackPreference: formData.get("callbackPreference") || undefined,
     service: formData.get("service") || undefined,
     budget: formData.get("budget") || undefined,
     businessName: formData.get("businessName"),
@@ -201,6 +251,7 @@ export async function submitStartProjectLead(
     metadata: {
       service: data.service,
       budget: data.budget,
+      callbackPreference: data.callbackPreference,
       businessType: data.businessType,
       ...(data.timeline ? { timeline: START_PROJECT_TIMELINE_LABEL[data.timeline] } : {}),
     },

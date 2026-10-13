@@ -747,6 +747,21 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-045: Required email, callback preference, and automatic client dashboard on qualify
+
+**Date:** 2026-10-13
+**Problem:** /start-project leads could arrive without an email, so a qualified business had no way to be given a client dashboard; sales could not see whether a lead wanted a call or WhatsApp; and creating a client dashboard was a manual step on the Sales CRM client page only.
+**Options considered:** (a) create a passwordless CLIENT account the moment a lead is marked Interested; (b) reuse the existing invite flow (token link, the client sets their own password) and trigger it when a business Lead is qualified; (c) leave it manual.
+**Chosen solution:** (b). Email and "Preferred callback" (call / WhatsApp, saved in `Lead.metadata.callbackPreference`) are required on the form and shown on the admin lead page; the acknowledgement email and the sales notification follow the preference. `provisionClientAccess` (sales-crm/server/client-access.ts) is the single implementation of "give this client record a dashboard" (link an existing CLIENT account or email an invite). It runs automatically when `updateLead` qualifies a BUSINESS Lead (status Qualified/CONVERTED, the step that creates the Sales CRM client record), and from a "Create client dashboard" button on /admin/leads/[id] that qualifies first if needed and offers "Resend invite". A repeat submission with the same email is recorded as a RE_ENQUIRY on the existing lead instead of an error.
+**Reason:** A client dashboard hangs off the Sales CRM client record (SalesLead), which only exists after qualification; reusing the invite flow means nobody gets an account with a password they do not know, and no new tables or auth paths.
+**Trade-offs:** Marking a lead only "Interested" does not create a dashboard (there is no client record yet) - the button covers "do it now". The invite email is the existing generic one.
+**Database impact:** None (callback preference lives in the existing metadata Json).
+**API impact:** New server action `createClientDashboardForLead`; `sendClientInviteLink` now delegates to `provisionClientAccess`.
+**Future considerations:** A dedicated welcome email wording for auto-created dashboards; auto-qualify on Interested if the team wants it.
+**Related components:** `src/actions/crm.ts`, `src/actions/leads.ts`, `src/features/leads/*`, `src/features/sales-crm/server/client-access.ts`, `src/components/forms/start-project-form.tsx`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

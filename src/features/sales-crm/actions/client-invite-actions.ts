@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/session";
 import { hashPassword } from "@/lib/password";
-import { resend, EMAIL_FROM } from "@/lib/resend";
 import { signIn } from "@/lib/auth";
 import { isNextRedirectError } from "@/lib/next-redirect";
 import type { AuthActionResult } from "@/actions/auth";
@@ -13,22 +12,11 @@ import type { ActionResult } from "@/actions/leads";
 import { inviteClientToPortalSchema, acceptClientInviteSchema } from "../validation/client-invite-schemas";
 import { resolveSalesCrmViewer } from "../server/rbac";
 import { resolveClientInviteToken } from "../server/invite-queries";
-import { ensureClientInviteToken, sendClientInviteEmail } from "../server/invite-creation";
-import { siteConfig } from "@/config/site";
+import { provisionClientAccess } from "../server/client-access";
 
 async function actorTeamMemberId(userId: string): Promise<string | undefined> {
   const teamMember = await prisma.teamMember.findUnique({ where: { userId } });
   return teamMember?.id;
-}
-
-function buildAlreadyLinkedEmailHtml(businessName: string) {
-  return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; color: #111827;">
-      <p>Hi,</p>
-      <p>Your existing Stively account has been linked to a new business workspace for <strong>${businessName}</strong>. Sign in as usual to see everything.</p>
-      <p><a href="${siteConfig.url}/login" style="display:inline-block;background:#2e3a46;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;">Sign in</a></p>
-    </div>
-  `;
 }
 
 export type SendClientInviteLinkResult = ActionResult & { alreadyHadAccount?: boolean; inviteLink?: string };
@@ -62,49 +50,15 @@ export async function sendClientInviteLink(input: unknown): Promise<SendClientIn
       return { success: false, error: "Lead not found." };
     }
 
-    if (lead.clientUserId) return { success: false, error: "This business already has a linked client account." };
-    if (!lead.email) return { success: false, error: "This lead has no email on file - add one before inviting a client account." };
-
     const actorId = await actorTeamMemberId(user.id);
-    const existingUser = await prisma.user.findUnique({ where: { email: lead.email } });
-
-    if (existingUser && existingUser.role !== "CLIENT") {
-      return {
-        success: false,
-        error: `An account with this email already exists as a ${existingUser.role.toLowerCase()} account - it can't be reused as a client account.`,
-      };
-    }
-
-    if (existingUser) {
-      await prisma.$transaction(async (tx) => {
-        await tx.salesLead.update({ where: { id: lead.id }, data: { clientUserId: existingUser.id } });
-        await tx.salesLeadActivity.create({
-          data: { salesLeadId: lead.id, type: "CLIENT_ACCOUNT_INVITED", performedById: actorId ?? null },
-        });
-      });
-      await resend.emails
-        .send({
-          from: EMAIL_FROM,
-          to: existingUser.email!,
-          subject: `${lead.businessName} is now on your Stively account`,
-          html: buildAlreadyLinkedEmailHtml(lead.businessName),
-        })
-        .catch((error) => console.error("sendClientInviteLink (existing user) email failed:", error));
-
-      revalidatePath(`/admin/sales-crm/leads/${lead.id}`);
-      revalidatePath(`/sales/leads/${lead.id}`);
-      return { success: true, alreadyHadAccount: true };
-    }
-
-    const { link } = await ensureClientInviteToken(lead.id);
-    await sendClientInviteEmail(lead.email, lead.businessName, link);
-    await prisma.salesLeadActivity.create({
-      data: { salesLeadId: lead.id, type: "CLIENT_ACCOUNT_INVITED", performedById: actorId ?? null },
-    });
+    const result = await provisionClientAccess(lead.id, actorId);
+    if (!result.ok) return { success: false, error: result.error };
 
     revalidatePath(`/admin/sales-crm/leads/${lead.id}`);
     revalidatePath(`/sales/leads/${lead.id}`);
-    return { success: true, alreadyHadAccount: false, inviteLink: link };
+    return result.alreadyHadAccount
+      ? { success: true, alreadyHadAccount: true }
+      : { success: true, alreadyHadAccount: false, inviteLink: result.inviteLink };
   } catch (error) {
     console.error("sendClientInviteLink failed:", error);
     return { success: false, error: "Something went wrong. Please try again." };

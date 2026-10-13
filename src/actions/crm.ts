@@ -1,5 +1,6 @@
 "use server";
 
+import { provisionClientAccess } from "@/features/sales-crm/server/client-access";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
@@ -191,6 +192,21 @@ export async function updateLead(
         );
       } catch (error) {
         console.error("updateLead: qualify notification failed:", error);
+      }
+    }
+
+    // Qualifying a business lead also gives the client a dashboard: email them
+    // an invite to set a password and sign in (or link an account they already
+    // have). Best-effort - a mail/provider hiccup must never undo the
+    // qualification, and the lead page's "Create client dashboard" button can
+    // resend it. Only when the lead left an email (the start-project form now
+    // requires one).
+    if (txResult?.qualifyResult && current.email) {
+      try {
+        const access = await provisionClientAccess(txResult.qualifyResult.salesLeadId, actorId);
+        if (!access.ok) console.warn("updateLead: client dashboard invite skipped:", access.error);
+      } catch (error) {
+        console.error("updateLead: client dashboard invite failed:", error);
       }
     }
 

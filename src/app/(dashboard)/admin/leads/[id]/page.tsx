@@ -6,7 +6,11 @@ import { ArrowLeft } from "lucide-react";
 import { getLeadById, getLeadTimeline, getLeadNotes, getLeadMeetings } from "@/lib/queries/leads";
 import { getAllTeamMembers } from "@/lib/queries/team-members";
 import { formatPrice } from "@/lib/utils";
-import { START_PROJECT_SERVICE_LABEL, START_PROJECT_BUDGET_LABEL } from "@/lib/validations/lead";
+import {
+  START_PROJECT_SERVICE_LABEL,
+  START_PROJECT_BUDGET_LABEL,
+  START_PROJECT_CALLBACK_LABEL,
+} from "@/lib/validations/lead";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LeadStatusBadge } from "@/components/dashboard/lead-status-badge";
@@ -15,6 +19,8 @@ import { LeadNotes } from "@/components/dashboard/lead-notes";
 import { LeadUpdateForm } from "@/components/dashboard/lead-update-form";
 import { LeadOwnerPanel } from "@/components/dashboard/lead-owner-panel";
 import { LeadMeetingPanel } from "@/components/dashboard/lead-meeting-panel";
+import { LeadClientDashboardPanel } from "@/components/dashboard/lead-client-dashboard-panel";
+import { getLeadClientAccess } from "@/features/leads/server/client-access-status";
 
 interface LeadDetailPageProps {
   params: Promise<{ id: string }>;
@@ -48,6 +54,8 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
   if (!lead) {
     notFound();
   }
+
+  const clientAccess = lead.leadType === "BUSINESS" ? await getLeadClientAccess(lead.promotedSalesLeadId) : "none";
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -155,6 +163,10 @@ export default async function LeadDetailPage({ params }: LeadDetailPageProps) {
 
           <LeadMeetingPanel leadId={lead.id} meetings={meetings} />
 
+          {lead.leadType === "BUSINESS" && (
+            <LeadClientDashboardPanel leadId={lead.id} email={lead.email} access={clientAccess} />
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Update lead</CardTitle>
@@ -177,8 +189,9 @@ function StartProjectMetadata({ metadata }: { metadata: unknown }) {
   const businessType = typeof record.businessType === "string" ? record.businessType : undefined;
   const whatsappNumber = typeof record.whatsappNumber === "string" ? record.whatsappNumber : undefined;
   const timeline = typeof record.timeline === "string" ? record.timeline : undefined;
+  const callbackPreference = typeof record.callbackPreference === "string" ? record.callbackPreference : undefined;
 
-  if (!service && !budget && !businessType && !whatsappNumber && !timeline) {
+  if (!service && !budget && !businessType && !whatsappNumber && !timeline && !callbackPreference) {
     return null;
   }
 
@@ -204,6 +217,14 @@ function StartProjectMetadata({ metadata }: { metadata: unknown }) {
         <div>
           <dt className="text-muted-foreground text-xs tracking-wide uppercase">Business type</dt>
           <dd className="text-foreground text-sm">{businessType}</dd>
+        </div>
+      )}
+      {callbackPreference && (
+        <div>
+          <dt className="text-muted-foreground text-xs tracking-wide uppercase">Preferred callback</dt>
+          <dd className="text-foreground text-sm font-medium">
+            {START_PROJECT_CALLBACK_LABEL[callbackPreference as keyof typeof START_PROJECT_CALLBACK_LABEL] ?? callbackPreference}
+          </dd>
         </div>
       )}
       {timeline && (

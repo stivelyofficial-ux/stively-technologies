@@ -14,6 +14,7 @@ import {
   MessageCircle,
   MessageSquareText,
   Phone,
+  PhoneCall,
   User,
 } from "lucide-react";
 
@@ -25,6 +26,8 @@ import {
   START_PROJECT_BUDGET_LABEL,
   START_PROJECT_TIMELINES,
   START_PROJECT_TIMELINE_LABEL,
+  START_PROJECT_CALLBACK_PREFERENCES,
+  START_PROJECT_CALLBACK_LABEL,
 } from "@/lib/validations/lead";
 import { getWhatsAppUrl } from "@/lib/whatsapp";
 import { markStartProjectConversionPending } from "@/lib/conversion-tracking";
@@ -204,20 +207,45 @@ function StartProjectForm({ defaultEmail }: StartProjectFormProps = {}) {
         </Field>
       </div>
 
-      <Field id="email" label="Email" optional>
-        <div className={FIELD_BOX}>
-          <Mail className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            defaultValue={defaultEmail}
-            placeholder="you@example.com"
-            className={FIELD_CONTROL}
-          />
-        </div>
-      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field id="email" label="Email" required>
+          <div className={FIELD_BOX}>
+            <Mail className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              defaultValue={defaultEmail}
+              placeholder="you@example.com"
+              className={FIELD_CONTROL}
+            />
+          </div>
+        </Field>
+        <Field id="callbackPreference" label="Preferred callback" required>
+          <div className={`${FIELD_BOX} relative`}>
+            <PhoneCall className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+            <select
+              id="callbackPreference"
+              name="callbackPreference"
+              required
+              defaultValue="CALL"
+              className={`${FIELD_CONTROL} appearance-none pr-6`}
+            >
+              {START_PROJECT_CALLBACK_PREFERENCES.map((option) => (
+                <option key={option} value={option}>
+                  {START_PROJECT_CALLBACK_LABEL[option]}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className="text-muted-foreground pointer-events-none absolute right-3.5 size-4"
+              aria-hidden="true"
+            />
+          </div>
+        </Field>
+      </div>
 
       <Field id="businessName" label="Business Name" required>
         <div className={FIELD_BOX}>

@@ -111,6 +111,13 @@ export const START_PROJECT_TIMELINE_LABEL: Record<(typeof START_PROJECT_TIMELINE
   EXPLORING: "Just exploring for now",
 };
 
+export const START_PROJECT_CALLBACK_PREFERENCES = ["CALL", "WHATSAPP"] as const;
+
+export const START_PROJECT_CALLBACK_LABEL: Record<(typeof START_PROJECT_CALLBACK_PREFERENCES)[number], string> = {
+  CALL: "Phone call",
+  WHATSAPP: "WhatsApp message",
+};
+
 export const START_PROJECT_BUDGETS = ["UNDER_10K", "10K_25K", "25K_50K", "50K_1L", "1L_PLUS"] as const;
 
 export const START_PROJECT_BUDGET_LABEL: Record<(typeof START_PROJECT_BUDGETS)[number], string> = {
@@ -147,11 +154,15 @@ export const START_PROJECT_BUDGET_LABEL: Record<(typeof START_PROJECT_BUDGETS)[n
  */
 export const startProjectLeadSchema = z.object({
   fullName: z.string().trim().min(2, "Enter your full name"),
-  email: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-    z.string().trim().email("Enter a valid email address").optional()
-  ),
+  // Required (2026-10): the email is where the client dashboard invite goes once
+  // the lead is qualified, and it filters out throwaway submissions.
+  email: z
+    .string({ error: "Enter your email address" })
+    .trim()
+    .min(1, "Enter your email address")
+    .email("Enter a valid email address"),
   phone: z.string().trim().min(7, "Enter a valid phone number so we can reach you"),
+  callbackPreference: z.enum(START_PROJECT_CALLBACK_PREFERENCES, { error: "Choose how we should get back to you" }),
   service: z.enum(START_PROJECT_SERVICES, { error: "Select a service" }),
   budget: z.enum(START_PROJECT_BUDGETS, { error: "Select your budget" }),
   // Added with the 2026-10 form redesign: the three fields that let a rep
