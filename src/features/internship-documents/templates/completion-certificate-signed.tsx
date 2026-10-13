@@ -261,8 +261,8 @@ export function SignedCompletionCertificateDocument({
           style={{
             position: "absolute",
             top: 650,
-            left: 280,
-            width: W - 560,
+            left: 200,
+            width: W - 400,
             flexDirection: "row",
             justifyContent: "center",
           }}
@@ -283,8 +283,20 @@ export function SignedCompletionCertificateDocument({
             <Text style={{ fontSize: 10.5, letterSpacing: 3.5, color: GOLD, fontWeight: 600 }}>
               MODE
             </Text>
-            <Text style={{ fontSize: 19, fontWeight: 600, marginTop: 6 }}>Remote Internship</Text>
+            <Text style={{ fontSize: 19, fontWeight: 600, marginTop: 6 }}>
+              Remote · Paid Internship
+            </Text>
             <Text style={{ fontSize: 13.5, color: MUTED, marginTop: 3 }}>Project based</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: GOLD_LIGHT, marginHorizontal: 20 }} />
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <Text style={{ fontSize: 10.5, letterSpacing: 3.5, color: GOLD, fontWeight: 600 }}>
+              STIPEND
+            </Text>
+            <Text style={{ fontSize: 19, fontWeight: 600, marginTop: 6 }}>₹3,000 per project</Text>
+            <Text style={{ fontSize: 13.5, color: MUTED, marginTop: 3 }}>
+              Paid on each delivered project
+            </Text>
           </View>
         </View>
 
@@ -298,8 +310,9 @@ export function SignedCompletionCertificateDocument({
               color: "#2A3A34",
             }}
           >
-            {data.recipientName} completed the {data.program} at Stively Technologies, delivering a
-            client-style project that was reviewed and approved by the Stively team.
+            {data.recipientName} completed the {data.program} at Stively Technologies as a paid
+            intern, earning a stipend of ₹3,000 for each client-style project delivered, every one
+            reviewed and approved by the Stively team.
           </Text>
         </View>
 
