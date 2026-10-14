@@ -8,6 +8,7 @@ import { ProjectPending } from "@/features/internships/components/intern/project
 import { FinalSubmitForm } from "@/features/internships/components/intern/final-submit-form";
 import { computeTaskStats } from "@/features/internships/lib/stats";
 import { formatIstDateTime } from "@/lib/ist";
+import { ProjectHistory } from "@/features/internships/components/shared/project-history";
 
 export const metadata: Metadata = { title: "Final submission" };
 
@@ -62,16 +63,17 @@ export default async function InternSubmitPage() {
     },
     {
       title: "Certificate & letters issued",
-      sub: "Internship Certificate, Recommendation and Experience Letter",
-      state:
-        status === "APPROVED" || status === "NOT_ELIGIBLE" ? ("done" as const) : ("todo" as const),
+      sub: "Issued when your internship is completed: Internship Certificate, Recommendation and Experience Letter",
+      state: track.status === "COMPLETED" ? ("done" as const) : ("todo" as const),
     },
   ];
 
   return (
     <div className="flex flex-col gap-7">
       <div className="flex flex-col gap-2">
-        <h1 className="text-foreground text-3xl font-bold tracking-tight">Final submission</h1>
+        <h1 className="text-foreground text-3xl font-bold tracking-tight">
+          Final submission{project.sequence > 1 ? ` · Project ${project.sequence}` : ""}
+        </h1>
         <p className="text-muted-foreground">
           Build the whole project first, then submit it once with your live URL and GitHub
           repository. There is no task-by-task submission.
@@ -237,11 +239,19 @@ export default async function InternSubmitPage() {
             </div>
           ))}
           <div className="bg-primary/10 text-foreground mt-1.5 rounded-xl p-3.5 text-sm leading-relaxed font-medium">
-            After approval you receive your <b>₹3,000 stipend</b>, Internship Certificate, Letter of
-            Recommendation and Experience Letter in this portal.
+            After approval you receive your <b>₹3,000 stipend</b> for this project. Your Internship
+            Certificate, Letter of Recommendation and Experience Letter appear in this portal when
+            your internship is completed.
           </div>
         </div>
       </div>
+
+      {track.projects.length > 1 && (
+        <div className="bg-card border-border flex flex-col gap-3.5 rounded-2xl border p-7">
+          <h2 className="text-xl font-bold">Your projects</h2>
+          <ProjectHistory projects={track.projects} showLinks={false} />
+        </div>
+      )}
     </div>
   );
 }

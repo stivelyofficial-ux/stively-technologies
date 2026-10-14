@@ -28,6 +28,21 @@ export const startInternshipSchema = z.object({
   acceptTerms: z.literal(true, { message: "Please accept the stipend terms to continue." }),
 });
 
+/** The next project within the same internship: either a ready-made template, or a custom brief plus its own task list (one task per line). */
+export const assignNextProjectSchema = z
+  .object({
+    trackId: z.string().min(1),
+    templateKey: z.string().min(1).optional(),
+    title: z.string().trim().max(200).optional(),
+    brief: z.string().trim().max(10_000).optional(),
+    instructions: z.string().trim().max(10_000).optional(),
+    resourceUrl: z.string().trim().url("Enter a valid URL").optional().or(z.literal("")),
+    tasks: z.string().max(10_000).optional(),
+  })
+  .refine((v) => v.templateKey || (v.title && v.brief), {
+    message: "Pick a ready-made project, or enter a title and a brief.",
+  });
+
 export const assignTemplateSchema = z.object({
   trackId: z.string().min(1),
   templateKey: z.string().min(1),

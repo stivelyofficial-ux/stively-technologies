@@ -9,7 +9,11 @@ import type {
 } from "@prisma/client";
 
 export type InternshipTrackDetail = InternshipTrack & {
+  /** The CURRENT project (the one being worked on or just finished). */
   project: InternshipProject | null;
+  /** Every project in this internship, oldest first - the history behind `project`. */
+  projects: InternshipProject[];
+  /** Tasks of the current project only (earlier projects' tasks are archived). */
   tasks: InternshipTask[];
   dailyReports: InternshipDailyReport[];
 };
@@ -22,7 +26,8 @@ export async function getInternshipTrackForStudent(
     where: { studentId },
     include: {
       project: true,
-      tasks: { orderBy: { order: "asc" } },
+      projects: { orderBy: { sequence: "asc" } },
+      tasks: { where: { isArchived: false }, orderBy: { order: "asc" } },
       dailyReports: { orderBy: { reportDate: "desc" } },
     },
   });
@@ -46,7 +51,7 @@ export async function getInternshipTracksForAdmin() {
       project: {
         select: { title: true, finalStatus: true, finalSubmittedAt: true },
       },
-      tasks: { select: { progress: true, isAddon: true } },
+      tasks: { where: { isArchived: false }, select: { progress: true, isAddon: true } },
       dailyReports: { orderBy: { reportDate: "desc" }, take: 1, select: { reportDate: true } },
       _count: { select: { dailyReports: true } },
     },
@@ -59,7 +64,11 @@ export async function getInternshipTrackForAdmin(trackId: string) {
     include: {
       student: { select: { id: true, name: true, email: true } },
       project: true,
-      tasks: { orderBy: { order: "asc" } },
+      projects: {
+        orderBy: { sequence: "asc" },
+        include: { tasks: { select: { progress: true, isAddon: true } } },
+      },
+      tasks: { where: { isArchived: false }, orderBy: { order: "asc" } },
       dailyReports: { orderBy: { reportDate: "desc" } },
     },
   });

@@ -19,6 +19,11 @@ function ProjectCard({ project }: { project: InternshipProject }) {
       <div className="flex items-center gap-2.5">
         <Briefcase className="text-primary size-6" aria-hidden="true" />
         <h2 className="text-foreground text-xl font-bold">{project.title}</h2>
+        {project.sequence > 1 && (
+          <span className="bg-primary/10 text-primary rounded-full px-2.5 py-1 text-xs font-semibold">
+            Project {project.sequence}
+          </span>
+        )}
       </div>
 
       {rows.some(([, v]) => v) && (

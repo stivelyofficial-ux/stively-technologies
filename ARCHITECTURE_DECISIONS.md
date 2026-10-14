@@ -762,6 +762,21 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 
 ---
 
+## AD-046: Several projects per internship, assigned by the admin inside the fixed period
+
+**Date:** 2026-10-14
+**Problem:** The portal allowed exactly one project per internship and approving it closed the internship, although the offer letter pays "per project". The founder wanted to give selected interns a second project, inside the same period, each with its own tasks.
+**Options considered:** (a) overwrite the project row (loses history, the old Approved result blocks the new one); (b) `projects[]` per track and rewrite every `track.project` reader; (c) several project rows per track plus a `currentProjectId` pointer, so existing `track.project` readers keep meaning "the current project".
+**Chosen solution:** (c). `InternshipProject` is many-per-track (`sequence`, unique with trackId); `InternshipTrack.currentProjectId` points at the live one; `InternshipTask.projectId` + `isArchived` keep a finished project's tasks as history while every roadmap query filters `isArchived: false`. `assignNextProject` (admin only) archives the old tasks, creates project N+1 with its own task list (a template, or a custom brief plus one task per line) and moves the pointer. It refuses unless the current project is Approved or Not eligible and the internship is Active with time left - the end date is never moved. Approving a project no longer closes the internship by itself: it closes (and issues the certificate and letters) only if the period is already over; otherwise the admins are notified and choose "Assign next project" or "Mark internship completed".
+**Reason:** Zero churn for the ~30 places that read `track.project`, no new tables, history preserved, and nothing happens without the admin's decision.
+**Trade-offs:** After an approval with time left, certificates are issued by an admin click, not at approval. Only one project template exists today, so next projects are mostly custom briefs until more templates are written.
+**Database impact:** Migration 20261014140000: drops the unique index on InternshipProject.trackId, adds sequence, currentProjectId (backfilled for every existing track), InternshipTask.projectId (backfilled) and isArchived.
+**API impact:** New server action `assignNextProject`; `assignInternshipProject` / `assignProjectTemplate` now work on the current project and refuse once it has a submission; `reviewFinalSubmission` completes the track only when the period is over.
+**Future considerations:** More project templates; a stipend ledger counting approved projects; an automatic reminder when a reviewed intern has time left and no next project.
+**Related components:** `src/features/internships/actions/admin-actions.ts`, `assign-next-project-panel.tsx`, `project-history.tsx`.
+
+---
+
 *Template for new entries — copy this block:*
 
 ```markdown

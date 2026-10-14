@@ -2626,7 +2626,10 @@ model InternshipTrack {
   title  String
   status InternshipTrackStatus @default(ACTIVE)
 
-  project      InternshipProject?
+  /// The CURRENT project (the one the intern is working on / just finished). Earlier ones stay in `projects` as history - see assignNextProject.
+  currentProjectId String?            @unique
+  project          InternshipProject? @relation("CurrentProject", fields: [currentProjectId], references: [id], onDelete: SetNull)
+  projects         InternshipProject[] @relation("TrackProjects")
   tasks        InternshipTask[]
   dailyReports InternshipDailyReport[]
 
@@ -2713,8 +2716,13 @@ model InternshipDocument {
 model InternshipProject {
   id String @id @default(cuid())
 
-  trackId String          @unique
-  track   InternshipTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  trackId String
+  track   InternshipTrack @relation("TrackProjects", fields: [trackId], references: [id], onDelete: Cascade)
+  currentFor InternshipTrack? @relation("CurrentProject")
+
+  /// 1 = the first project, 2 = the next one assigned within the same internship period, and so on.
+  sequence Int @default(1)
+  tasks    InternshipTask[]
 
   title        String
   brief        String  @db.Text
@@ -2741,6 +2749,9 @@ model InternshipProject {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([trackId, sequence])
+  @@index([trackId])
 }
 
 enum InternshipTaskProgress {
@@ -2767,6 +2778,11 @@ model InternshipTask {
 
   trackId String
   track   InternshipTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  /// The project this task belongs to. When the next project is assigned the old project's tasks are kept for history with isArchived = true.
+  projectId  String?
+  project    InternshipProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  isArchived Boolean            @default(false)
 
   title       String
   description String? @db.Text
@@ -2800,6 +2816,7 @@ model InternshipTask {
   updatedAt DateTime @updatedAt
 
   @@index([trackId])
+  @@index([projectId])
 }
 
 /// One row per calendar day a student reports in - @@unique enforces that

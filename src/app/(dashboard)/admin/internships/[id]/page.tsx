@@ -18,6 +18,8 @@ import { DurationControl } from "@/features/internships/components/admin/duratio
 import { listTrackDocuments } from "@/features/internship-documents/server/issuance";
 import { KIND_META } from "@/features/internship-documents/lib/documents";
 import { TrackStatusControls } from "@/features/internships/components/admin/track-status-controls";
+import { AssignNextProjectPanel } from "@/features/internships/components/admin/assign-next-project-panel";
+import { ProjectHistory } from "@/features/internships/components/shared/project-history";
 
 interface AdminInternshipDetailPageProps {
   params: Promise<{ id: string }>;
@@ -45,6 +47,11 @@ export default async function AdminInternshipDetailPage({
   const stats = computeTaskStats(track.tasks);
   const daysLeft = daysUntil(track.endsAt);
   const lastReport = track.dailyReports[0]?.reportDate;
+  const projectReviewed =
+    track.project?.finalStatus === "APPROVED" || track.project?.finalStatus === "NOT_ELIGIBLE";
+  const periodOpen = track.endsAt != null && track.endsAt > new Date();
+  const canAssignNext =
+    track.status === "ACTIVE" && !!track.onboardedAt && projectReviewed && periodOpen;
 
   const facts: [string, string][] = [
     [
@@ -147,10 +154,43 @@ export default async function AdminInternshipDetailPage({
         </Card>
       </div>
 
+      {canAssignNext && (
+        <AssignNextProjectPanel
+          trackId={track.id}
+          nextNumber={(track.project?.sequence ?? 1) + 1}
+          daysLeft={daysLeft}
+          templates={PROJECT_TEMPLATES.map((t) => ({
+            key: t.key,
+            title: t.title,
+            taskCount: t.tasks.length,
+          }))}
+        />
+      )}
+
+      {projectReviewed && !periodOpen && track.status === "ACTIVE" && (
+        <p className="text-muted-foreground bg-muted rounded-xl px-4 py-3 text-sm">
+          The internship period has ended, so no further project can be assigned. Mark the
+          internship Completed above to issue the certificate and letters.
+        </p>
+      )}
+
+      {track.projects.length > 1 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Project history</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProjectHistory projects={track.projects} />
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>{track.project ? "Project" : "Assign a project"}</CardTitle>
+            <CardTitle>
+              {track.project ? `Project ${track.project.sequence}` : "Assign a project"}
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <AssignTemplateButtons
@@ -189,10 +229,15 @@ export default async function AdminInternshipDetailPage({
           ) : (
             <ul className="flex flex-col gap-2">
               {documents.map((doc) => (
-                <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <li
+                  key={doc.id}
+                  className="flex flex-wrap items-center justify-between gap-2 text-sm"
+                >
                   <span className="text-foreground font-medium">
                     {KIND_META[doc.kind].label}{" "}
-                    <span className="text-muted-foreground font-mono text-xs">{doc.documentNumber}</span>
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {doc.documentNumber}
+                    </span>
                   </span>
                   <a
                     href={`/api/internship-documents/${doc.documentNumber}/pdf`}

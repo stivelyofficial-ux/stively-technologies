@@ -95,7 +95,9 @@ export default async function MentorInternDetailPage({
 
           <Card>
             <CardHeader>
-              <CardTitle>{track.project?.title ?? "Project"}</CardTitle>
+              <CardTitle>
+                {track.project ? `Project ${track.project.sequence}: ${track.project.title}` : "Project"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
               {track.project ? (

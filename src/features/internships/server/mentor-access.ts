@@ -17,7 +17,7 @@ export async function getMentorInternTracks(mentorId: string) {
     include: {
       student: { select: { id: true, name: true, email: true } },
       project: { select: { title: true, finalStatus: true, finalSubmittedAt: true } },
-      tasks: { select: { isAddon: true, progress: true } },
+      tasks: { where: { isArchived: false }, select: { isAddon: true, progress: true } },
       dailyReports: { select: { reportDate: true }, orderBy: { reportDate: "desc" }, take: 1 },
     },
     orderBy: { startedAt: "desc" },
