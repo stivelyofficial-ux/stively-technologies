@@ -69,6 +69,32 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      // Design references (public/design-files/*.html, served at /design/<name>):
+      // self-contained HTML mock-ups with inline scripts, so they cannot sit under
+      // the site CSP. Instead each one is sandboxed - scripts run, but in an opaque
+      // origin with no access to stively.com cookies, storage or session - and kept
+      // out of search results. Overrides the site-wide headers above for these paths.
+      {
+        source: "/design/:slug",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "sandbox allow-scripts allow-popups allow-forms allow-modals",
+          },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cache-Control", value: "public, max-age=300" },
+        ],
+      },
+      {
+        source: "/design-files/:file*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "sandbox allow-scripts allow-popups allow-forms allow-modals",
+          },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
       // The AI interview flow needs the candidate's own camera/microphone -
       // scoped to this one path (not site-wide) so every other page keeps
       // the fully-denied default above. Later entries override earlier ones
@@ -78,11 +104,20 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Permissions-Policy",
-            value: "camera=(self), microphone=(self), geolocation=(), browsing-topics=(), interest-cohort=()",
+            value:
+              "camera=(self), microphone=(self), geolocation=(), browsing-topics=(), interest-cohort=()",
           },
         ],
       },
     ];
+  },
+  // /design/nexaspace -> public/design-files/nexaspace.html, keeping the clean URL.
+  async rewrites() {
+    return {
+      beforeFiles: [{ source: "/design/:slug", destination: "/design-files/:slug.html" }],
+      afterFiles: [],
+      fallback: [],
+    };
   },
   // The blog moved off this domain to blog.stively.com - every legacy
   // /blog and /blog/<slug> URL on this domain now permanently (301) redirects
