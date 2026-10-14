@@ -29,14 +29,22 @@ export interface NotificationDropdownProps {
 // for this - 15s polling is a deliberately simple, low-complexity choice
 // (see ARCHITECTURE_DECISIONS.md AD-009) matched to "someone should notice
 // within a few seconds," not sub-second delivery.
-const POLL_INTERVAL_MS = 15000;
+//
+// Every poll is a server-action call that also passes through the proxy, i.e.
+// two function invocations billed as Fluid Active CPU, for every open tab all
+// day. So the cadence adapts: 30s while the tab is in front (still "within
+// seconds" for someone watching the dashboard), 2 minutes while it is hidden
+// (an admin parked on another tab still gets the chime, just a bit later), and
+// an immediate catch-up poll the moment the tab becomes visible again.
+const VISIBLE_POLL_INTERVAL_MS = 30_000;
+const HIDDEN_POLL_INTERVAL_MS = 120_000;
 
 /**
  * Owns the notification list's read/unread state client-side, seeded from
  * a real server-fetched list (src/features/notifications/server/queries.ts,
  * read in the (portal)/(dashboard) layout and passed down through
  * DashboardShell/Topbar) and kept fresh afterward by polling
- * getRecentNotifications every POLL_INTERVAL_MS - the layout-level fetch
+ * getRecentNotifications on the adaptive schedule above - the layout-level fetch
  * only ever runs once per navigation, so without this, a lead arriving
  * while someone's already sitting on the page would go unnoticed until a
  * manual refresh. A chime (src/lib/notification-sound.ts) plays only when a
@@ -69,10 +77,32 @@ function NotificationDropdown({ initialNotifications }: NotificationDropdownProp
       if (hasNewArrival) playNotificationSound();
     }
 
-    const interval = setInterval(poll, POLL_INTERVAL_MS);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    function schedule() {
+      const delay =
+        document.visibilityState === "visible" ? VISIBLE_POLL_INTERVAL_MS : HIDDEN_POLL_INTERVAL_MS;
+      timer = setTimeout(async () => {
+        await poll();
+        if (!cancelled) schedule();
+      }, delay);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState !== "visible") return;
+      // Back in front: catch up now instead of waiting out a long hidden-tab delay.
+      clearTimeout(timer);
+      void poll().then(() => {
+        if (!cancelled) schedule();
+      });
+    }
+
+    schedule();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       cancelled = true;
-      clearInterval(interval);
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 

@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { PortfolioCategory } from "@prisma/client";
 
+/** A full URL (Cloudinary) or a root-relative path to an image shipped in /public. */
+const imagePathSchema = z
+  .string()
+  .trim()
+  .refine((v) => v.startsWith("/") || /^https?:\/\//.test(v), "Cover image is required");
+
 const featureSchema = z.object({
   title: z.string().trim().min(1, "Feature title is required"),
   description: z.string().trim().min(1, "Feature description is required"),
@@ -39,7 +45,7 @@ export const portfolioItemSchema = z.object({
   techStack: z.array(z.string()).default([]),
   outcomes: z.array(outcomeSchema).default([]),
 
-  imageUrl: z.string().trim().url("Cover image is required"),
+  imageUrl: imagePathSchema,
   mockupImages: z.array(z.string().trim().url()).default([]),
   galleryImages: z.array(z.string().trim().url()).default([]),
   liveUrl: z.union([z.string().trim().url("Enter a valid URL"), z.literal("")]).optional(),

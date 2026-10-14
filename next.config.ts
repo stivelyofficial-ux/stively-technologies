@@ -54,6 +54,30 @@ const nextConfig: NextConfig = {
     // segment instead of a single literal char from the set {t,o,k,e,n}.
     "/api/digital-store/download/\\[token\\]": ["./private/digital-products/**/*"],
   },
+  // Keep deployed function bundles small. Vercel counts every deployment's
+  // bundles against "Functions Storage" (10GB on Hobby), so each wasted MB is
+  // multiplied by the number of deployments kept.
+  // - The digital-download path above is built from process.cwd() at runtime,
+  //   which makes the tracer pull in the whole private/ folder (1.6GB of course
+  //   videos locally). Only private/digital-products belongs in a function.
+  // - Prisma ships wasm engines for every database and a query compiler we do not
+  //   use (we use the native library engine on Postgres), plus source maps.
+  outputFileTracingExcludes: {
+    "*": [
+      "./private/Front-End-development/**/*",
+      "./private/*.pptx",
+      "./private/*.pdf",
+      "./node_modules/@prisma/client/runtime/*.map",
+      "./node_modules/@prisma/client/runtime/*wasm-base64*",
+      "./node_modules/@prisma/client/runtime/query_compiler*",
+      "./node_modules/@prisma/client/runtime/query_engine_bg*",
+      "./node_modules/@prisma/client/runtime/wasm*",
+      "./node_modules/@prisma/client/runtime/edge*",
+      "./node_modules/@prisma/client/runtime/react-native*",
+      "./node_modules/.prisma/client/*wasm*",
+      "./node_modules/.prisma/client/edge*",
+    ],
+  },
   images: {
     remotePatterns: [
       {
