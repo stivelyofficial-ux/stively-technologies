@@ -775,6 +775,19 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 **Future considerations:** More project templates; a stipend ledger counting approved projects; an automatic reminder when a reviewed intern has time left and no next project.
 **Related components:** `src/features/internships/actions/admin-actions.ts`, `assign-next-project-panel.tsx`, `project-history.tsx`.
 
+## AD-047: Internships close themselves when their fixed period ends
+
+**Date:** 2026-10-15
+**Problem:** The internship period (startedAt to endsAt) is fixed and runs in real time regardless of projects, but nothing acted when it ended: an Active internship with no project awaiting review stayed Active, with no certificate or letters, until an admin marked it Completed by hand.
+**Options considered:** (a) leave it manual; (b) check the date on page load; (c) a daily cron that completes expired internships.
+**Chosen solution:** (c) `completeExpiredInternships()` (`src/features/internships/server/auto-complete.ts`) behind `/api/cron/internships-complete`, daily at 18:30 UTC (00:00 IST). It claims each ACTIVE internship past `endsAt` with a conditional update, issues the completion documents, and notifies the intern and the admins.
+**Reason:** One cheap daily call, idempotent, reuses the same document issuance as a manual completion, and no page load has side effects.
+**Trade-offs:** PAUSED internships are skipped on purpose (an admin paused them). An internship whose final project is still SUBMITTED is skipped; reviewing it completes it once the period is over. Documents are dated the day the job runs, up to a day after the end date.
+**Database impact:** None.
+**API impact:** New cron route and a `vercel.json` entry; no change to existing actions.
+**Future considerations:** A reminder to the admin a few days before an intern's period ends; a stipend summary in the admin notification.
+**Related components:** `auto-complete.ts`, `src/app/api/cron/internships-complete/route.ts`, `issueCompletionDocuments`, `vercel.json`.
+
 ---
 
 *Template for new entries — copy this block:*
