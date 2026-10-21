@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { listPublicProjectWork, type PublicProjectWork } from "@/features/internships/server/public-projects";
 
 export interface PublicCertificateView {
   certificateNumber: string;
@@ -9,6 +10,8 @@ export interface PublicCertificateView {
   completionDate: Date;
   issuedAt: Date | null;
   status: "ISSUED" | "REVOKED";
+  /** Approved internship projects the recipient delivered, oldest first. */
+  projects: PublicProjectWork[];
 }
 
 /**
@@ -28,9 +31,14 @@ export async function getPublicCertificateByNumber(certificateNumber: string): P
       completionDate: true,
       issuedAt: true,
       status: true,
+      enrollment: { select: { studentId: true } },
     },
   });
   if (!certificate || (certificate.status !== "ISSUED" && certificate.status !== "REVOKED")) return null;
 
-  return certificate as PublicCertificateView;
+  const { enrollment, ...rest } = certificate;
+  // Only a valid certificate vouches for the holder's work.
+  const projects =
+    certificate.status === "ISSUED" ? await listPublicProjectWork({ studentId: enrollment.studentId }) : [];
+  return { ...rest, status: certificate.status as "ISSUED" | "REVOKED", projects };
 }

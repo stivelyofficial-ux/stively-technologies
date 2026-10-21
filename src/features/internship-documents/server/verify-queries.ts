@@ -3,6 +3,7 @@ import "server-only";
 import type { CertificateStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { listPublicProjectWork, type PublicProjectWork } from "@/features/internships/server/public-projects";
 import { KIND_META, type InternshipDocumentKind } from "../lib/documents";
 
 export interface PublicInternshipDocument {
@@ -15,6 +16,8 @@ export interface PublicInternshipDocument {
   endDate: Date | null;
   issuedAt: Date;
   status: CertificateStatus;
+  /** Approved projects the holder delivered during the internship, oldest first. */
+  projects: PublicProjectWork[];
 }
 
 /**
@@ -36,8 +39,11 @@ export async function getPublicInternshipDocument(
       endDate: true,
       issuedAt: true,
       status: true,
+      trackId: true,
     },
   });
   if (!doc) return null;
-  return { ...doc, kindLabel: KIND_META[doc.kind].label };
+  const { trackId, ...rest } = doc;
+  const projects = await listPublicProjectWork({ id: trackId });
+  return { ...rest, kindLabel: KIND_META[doc.kind].label, projects };
 }

@@ -5,6 +5,7 @@ import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PublicProjectWorkList } from "@/features/internships/components/shared/public-project-work";
 import { getPublicInternshipDocument } from "@/features/internship-documents/server/verify-queries";
 
 interface VerifyDocumentPageProps {
@@ -97,6 +98,7 @@ export default async function VerifyDocumentPage({ params }: VerifyDocumentPageP
                   <dt className="text-muted-foreground">Issued by</dt>
                   <dd className="text-foreground font-semibold">Stively Technologies</dd>
                 </dl>
+                <PublicProjectWorkList projects={doc.projects} />
               </>
             )}
           </CardContent>

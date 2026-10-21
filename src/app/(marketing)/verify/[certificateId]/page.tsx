@@ -5,6 +5,7 @@ import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PublicProjectWorkList } from "@/features/internships/components/shared/public-project-work";
 import { getPublicCertificateByNumber } from "@/features/certificates/server/verify-queries";
 
 interface VerifyPageProps {
@@ -148,6 +149,7 @@ export default async function VerifyCertificatePage({ params }: VerifyPageProps)
                     </div>
                   </dl>
                 </div>
+                <PublicProjectWorkList projects={certificate.projects} />
               </>
             )}
           </CardContent>

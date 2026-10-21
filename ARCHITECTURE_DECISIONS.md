@@ -788,6 +788,19 @@ The permanent engineering handbook for Stively. Every major architectural decisi
 **Future considerations:** A reminder to the admin a few days before an intern's period ends; a stipend summary in the admin notification.
 **Related components:** `auto-complete.ts`, `src/app/api/cron/internships-complete/route.ts`, `issueCompletionDocuments`, `vercel.json`.
 
+## AD-048: Verification pages show the project work behind a document
+
+**Date:** 2026-10-21
+**Problem:** Scanning an internship document's QR code proved who held it and when, but not what they actually built. Recruiters could not see the work.
+**Options considered:** (a) a new table of "work samples"; (b) a free-text field on the track; (c) reuse `InternshipProject` (title, live URL, details, review status), which already records exactly this.
+**Chosen solution:** (c). `getPublicInternshipDocument` also returns the track's APPROVED projects (title, client, role, stack, live URL, https only) and `/verify/document/[documentNumber]` lists them under "Project work delivered". Nothing shows when a track has no approved project.
+**Reason:** No schema change; every internship document (offer letter, certificate, recommendation, experience letter) gets it for free, and it fills itself from the normal project review flow.
+**Trade-offs:** Only approved projects are public. Client-site credit lines (footer: "Frontend by <name>") are added by hand in each client repo.
+**Database impact:** None (data only: two `InternshipProject` rows for the first backfilled intern).
+**API impact:** `PublicInternshipDocument` gains `projects`.
+**Future considerations:** Show the same list on `/verify/intern/[internId]`; an admin field to mark a project "client-visible".
+**Related components:** `internships/server/public-projects.ts`, `public-project-work.tsx`, both `verify-queries.ts`, `verify/document/[documentNumber]/page.tsx`, `verify/[certificateId]/page.tsx`. The course certificate page shows the same list (matched through the recipient's student account).
+
 ---
 
 *Template for new entries — copy this block:*
