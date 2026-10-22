@@ -15,7 +15,14 @@ import type { OrderWithMeetings } from "../server/queries";
  * OrderMeetings - renders nothing when there are none, so an order with
  * no meetings looks exactly as it did before this existed).
  */
-function OrderDetailView({ order }: { order: OrderWithMeetings }) {
+function OrderDetailView({
+  order,
+  showDates = true,
+}: {
+  order: OrderWithMeetings;
+  /** The student portal hides order and payment dates; the record itself is unchanged. */
+  showDates?: boolean;
+}) {
   const hasDownload =
     order.status === "PAID" &&
     !!order.downloadToken &&
@@ -44,17 +51,19 @@ function OrderDetailView({ order }: { order: OrderWithMeetings }) {
               {order.amount === 0 ? "Free" : formatPrice(order.amount, order.currency)}
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-sm">Order date</span>
-            <span className="text-foreground text-sm">
-              {order.createdAt.toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
-          </div>
-          {order.paidAt && (
+          {showDates && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground text-sm">Order date</span>
+              <span className="text-foreground text-sm">
+                {order.createdAt.toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+          )}
+          {showDates && order.paidAt && (
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">Paid on</span>
               <span className="text-foreground text-sm">

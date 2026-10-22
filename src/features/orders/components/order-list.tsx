@@ -8,9 +8,11 @@ export interface OrderListProps {
   orders: OrderWithOffering[];
   hrefFor: (order: OrderWithOffering) => string;
   emptyStateHref: string;
+  /** Show each order's date on its card. Defaults to true. */
+  showDates?: boolean;
 }
 
-function OrderList({ orders, hrefFor, emptyStateHref }: OrderListProps) {
+function OrderList({ orders, hrefFor, emptyStateHref, showDates = true }: OrderListProps) {
   if (orders.length === 0) {
     return (
       <EmptyState
@@ -26,7 +28,7 @@ function OrderList({ orders, hrefFor, emptyStateHref }: OrderListProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {orders.map((order) => (
-        <OrderCard key={order.id} order={order} href={hrefFor(order)} />
+        <OrderCard key={order.id} order={order} href={hrefFor(order)} showDate={showDates} />
       ))}
     </div>
   );

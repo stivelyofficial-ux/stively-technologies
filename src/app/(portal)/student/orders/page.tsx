@@ -37,6 +37,7 @@ export default async function StudentOrdersPage({ searchParams }: StudentOrdersP
           orders={orders}
           hrefFor={(order) => `/student/orders/${order.id}`}
           emptyStateHref="/offerings"
+          showDates={false}
         />
 
         <OrderPagination page={currentPage} totalPages={totalPages} basePath="/student/orders" />

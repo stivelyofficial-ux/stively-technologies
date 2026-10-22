@@ -6,7 +6,16 @@ import { formatOrderNumber } from "../lib/order-number";
 import { OrderStatusBadge } from "./order-status-badge";
 import type { OrderWithOffering } from "../server/queries";
 
-function OrderCard({ order, href }: { order: OrderWithOffering; href: string }) {
+function OrderCard({
+  order,
+  href,
+  showDate = true,
+}: {
+  order: OrderWithOffering;
+  href: string;
+  /** The student portal hides the date; the record itself is unchanged. */
+  showDate?: boolean;
+}) {
   return (
     <Link
       href={href}
@@ -21,13 +30,15 @@ function OrderCard({ order, href }: { order: OrderWithOffering; href: string }) 
             <OrderStatusBadge status={order.status} />
           </div>
           <CardTitle className="font-display">{order.offering.title}</CardTitle>
-          <CardDescription>
-            {order.createdAt.toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-          </CardDescription>
+          {showDate && (
+            <CardDescription>
+              {order.createdAt.toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </CardDescription>
+          )}
         </CardHeader>
         <CardFooter className="border-border/70 mt-auto justify-between border-t pt-4">
           <span className="text-foreground font-display text-base font-semibold tabular-nums">

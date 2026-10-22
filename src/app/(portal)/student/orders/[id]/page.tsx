@@ -30,7 +30,7 @@ export default async function StudentOrderDetailPage({ params }: StudentOrderDet
     <>
       <SetPageTitle title={formatOrderNumber(order.sequence)} />
       <Container className="pt-7 pb-16 sm:pt-9">
-        <OrderDetailView order={order} />
+        <OrderDetailView order={order} showDates={false} />
       </Container>
     </>
   );
