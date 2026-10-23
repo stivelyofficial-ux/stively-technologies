@@ -27,12 +27,19 @@ export async function renderCertificatePdf(certificate: Certificate): Promise<Bu
     select: { offering: { select: { slug: true } } },
   });
   const courseConfig = enrollment ? getCourseCertificateConfig(enrollment.offering.slug) : null;
-  const description = courseConfig?.description ?? `Awarded for successfully completing ${certificate.courseName}.`;
+  const description =
+    courseConfig?.description ?? `Awarded for successfully completing ${certificate.courseName}.`;
   // Falls back to the GenAI config's own original hardcoded values if a
   // certificate somehow has no resolvable course config (e.g. the offering
   // was later deleted/renamed) - keeps old certificates rendering instead
   // of crashing, same reasoning as the description fallback above.
-  const skills = courseConfig?.skills ?? ["AI Fundamentals\n& Tools", "Prompt\nEngineering", "Practical Projects\n& Workflows", "Real-world\nUse Cases", "Career Guidance\n& Opportunities"];
+  const skills = courseConfig?.skills ?? [
+    "AI Fundamentals\n& Tools",
+    "Prompt\nEngineering",
+    "Practical Projects\n& Workflows",
+    "Real-world\nUse Cases",
+    "Career Guidance\n& Opportunities",
+  ];
   const sealSub = courseConfig?.sealSub ?? "GENERATIVE AI & PROMPT ENGINEERING";
 
   const verificationUrl = getCertificateVerificationUrl(certificate.certificateNumber);
@@ -50,6 +57,8 @@ export async function renderCertificatePdf(certificate: Certificate): Promise<Bu
     quizzesPassed: certificate.quizzesPassed ?? 0,
     skills,
     sealSub,
+    coSignatoryName: certificate.coSignatoryName,
+    coSignatoryTitle: certificate.coSignatoryTitle,
   });
 
   return renderDocumentPdf(doc);

@@ -2471,6 +2471,10 @@ model Certificate {
   courseDurationMinutes Int?
   quizzesPassed       Int?
 
+  /// A second signatory printed beside the founder's signature (for example the co-founder). Null = founder only.
+  coSignatoryName  String?
+  coSignatoryTitle String?
+
   status        CertificateStatus @default(ISSUED)
   issuedAt      DateTime?
   revokedAt     DateTime?

@@ -3,13 +3,38 @@ import "server-only";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 import * as React from "react";
-import { Document, Page, View, Text, Image, StyleSheet, Svg, Defs, LinearGradient, Stop } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Svg,
+  Defs,
+  LinearGradient,
+  Stop,
+} from "@react-pdf/renderer";
 
 import { registerDocumentFonts } from "@/features/documents/lib/fonts";
 import { COMPANY_SIGNATORY } from "@/features/documents/lib/company-info";
 import { DocQrCode } from "@/features/documents/components/qr-code";
 import { certificateColors, CERT_PAGE } from "../lib/theme";
-import { LucideIcon, LaurelWreath, SidebarFlourish, BRAIN, PEN_LINE, SETTINGS_2, LIGHTBULB, TRENDING_UP, CLOCK, GRADUATION_CAP, CLIPBOARD_CHECK, BOOK_OPEN, ROCKET } from "./icons";
+import {
+  LucideIcon,
+  LaurelWreath,
+  SidebarFlourish,
+  BRAIN,
+  PEN_LINE,
+  SETTINGS_2,
+  LIGHTBULB,
+  TRENDING_UP,
+  CLOCK,
+  GRADUATION_CAP,
+  CLIPBOARD_CHECK,
+  BOOK_OPEN,
+  ROCKET,
+} from "./icons";
 
 registerDocumentFonts();
 
@@ -233,6 +258,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     marginTop: "auto",
   },
+  signatureRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 26,
+  },
   signatureBlock: {
     alignItems: "flex-start",
   },
@@ -375,6 +405,9 @@ export interface CertificateTemplateData {
   skills: readonly string[];
   /** The gold seal's subtitle under "STIVELY CERTIFIED," e.g. "FRONTEND DEVELOPMENT" - see CourseCertificateConfig.sealSub. */
   sealSub: string;
+  /** A second signatory printed beside the founder (e.g. the co-founder). Omit for the founder alone. */
+  coSignatoryName?: string | null;
+  coSignatoryTitle?: string | null;
 }
 
 /**
@@ -404,8 +437,12 @@ export function Template01({
   quizzesPassed,
   skills,
   sealSub,
+  coSignatoryName,
+  coSignatoryTitle,
 }: CertificateTemplateData) {
-  const issuedLabel = issuedAt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+  const issuedLabel = issuedAt
+    .toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    .toUpperCase();
 
   return (
     <Document title={`Certificate ${certificateNumber}`}>
@@ -462,7 +499,12 @@ export function Template01({
                 {skills.map((label, index) => (
                   <View key={label} style={styles.skillItem}>
                     <View style={styles.skillBadge}>
-                      <LucideIcon nodes={SKILL_ICONS[index] as never} size={16} color={certificateColors.gold} strokeWidth={2} />
+                      <LucideIcon
+                        nodes={SKILL_ICONS[index] as never}
+                        size={16}
+                        color={certificateColors.gold}
+                        strokeWidth={2}
+                      />
                     </View>
                     <Text style={styles.skillLabel}>{label}</Text>
                   </View>
@@ -480,7 +522,11 @@ export function Template01({
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <LucideIcon nodes={GRADUATION_CAP as never} size={16} color={certificateColors.gold} />
+                  <LucideIcon
+                    nodes={GRADUATION_CAP as never}
+                    size={16}
+                    color={certificateColors.gold}
+                  />
                   <View>
                     <Text style={styles.statLabel}>MODULES COMPLETED</Text>
                     <Text style={styles.statValue}>
@@ -490,7 +536,11 @@ export function Template01({
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <LucideIcon nodes={CLIPBOARD_CHECK as never} size={16} color={certificateColors.gold} />
+                  <LucideIcon
+                    nodes={CLIPBOARD_CHECK as never}
+                    size={16}
+                    color={certificateColors.gold}
+                  />
                   <View>
                     <Text style={styles.statLabel}>QUIZZES PASSED</Text>
                     <Text style={styles.statValue}>
@@ -502,12 +552,26 @@ export function Template01({
             </View>
 
             <View style={styles.bottomRow}>
-              <View style={styles.signatureBlock}>
-                {/* A signature reads as first-name-only; the full printed name stays on the line below. */}
-                <Text style={styles.signatureScript}>Abhijit</Text>
-                <View style={styles.signatureLine} />
-                <Text style={styles.signatureName}>{COMPANY_SIGNATORY.name}</Text>
-                <Text style={styles.signatureTitle}>{COMPANY_SIGNATORY.title}, Stively Technologies</Text>
+              <View style={styles.signatureRow}>
+                <View style={styles.signatureBlock}>
+                  {/* A signature reads as first-name-only; the full printed name stays on the line below. */}
+                  <Text style={styles.signatureScript}>Abhijit</Text>
+                  <View style={styles.signatureLine} />
+                  <Text style={styles.signatureName}>{COMPANY_SIGNATORY.name}</Text>
+                  <Text style={styles.signatureTitle}>
+                    {COMPANY_SIGNATORY.title}, Stively Technologies
+                  </Text>
+                </View>
+                {coSignatoryName ? (
+                  <View style={styles.signatureBlock}>
+                    <Text style={styles.signatureScript}>{coSignatoryName.split(" ")[0]}</Text>
+                    <View style={styles.signatureLine} />
+                    <Text style={styles.signatureName}>{coSignatoryName}</Text>
+                    <Text style={styles.signatureTitle}>
+                      {coSignatoryTitle || "Co-Founder, Stively Technologies"}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
 
               <View style={styles.sealWrap}>
@@ -528,7 +592,11 @@ export function Template01({
 
           <View style={styles.right}>
             <View style={styles.rightFlourish}>
-              <SidebarFlourish width={168} height={CERT_PAGE.height} color={certificateColors.gold} />
+              <SidebarFlourish
+                width={168}
+                height={CERT_PAGE.height}
+                color={certificateColors.gold}
+              />
             </View>
 
             <View>
@@ -540,7 +608,12 @@ export function Template01({
               {SIDEBAR_PILLARS.map((pillar) => (
                 <View key={pillar.label} style={styles.pillarRow}>
                   <View style={styles.pillarBadge}>
-                    <LucideIcon nodes={pillar.icon as never} size={13} color={certificateColors.inkForeground} strokeWidth={2.25} />
+                    <LucideIcon
+                      nodes={pillar.icon as never}
+                      size={13}
+                      color={certificateColors.inkForeground}
+                      strokeWidth={2.25}
+                    />
                   </View>
                   <Text style={styles.pillarLabel}>{pillar.label}</Text>
                 </View>
@@ -550,7 +623,15 @@ export function Template01({
 
             <View style={styles.qrWrap}>
               {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image, no alt prop in its API */}
-              <Image src={LOGO_ON_INK} style={{ height: 14, width: 14 * LOGO_ASPECT, marginBottom: 10, alignSelf: "center" }} />
+              <Image
+                src={LOGO_ON_INK}
+                style={{
+                  height: 14,
+                  width: 14 * LOGO_ASPECT,
+                  marginBottom: 10,
+                  alignSelf: "center",
+                }}
+              />
               <DocQrCode dataUrl={qrDataUrl} size={64} />
               <Text style={styles.qrCaption}>Verify Certificate</Text>
               <Text style={styles.qrUrl}>stively.com/verify</Text>
