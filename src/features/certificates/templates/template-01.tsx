@@ -405,7 +405,7 @@ export interface CertificateTemplateData {
   skills: readonly string[];
   /** The gold seal's subtitle under "STIVELY CERTIFIED," e.g. "FRONTEND DEVELOPMENT" - see CourseCertificateConfig.sealSub. */
   sealSub: string;
-  /** A second signatory printed beside the founder (e.g. the co-founder). Omit for the founder alone. */
+  /** When set, this person signs the certificate instead of the founder (e.g. the co-founder). Omit for the founder's signature. */
   coSignatoryName?: string | null;
   coSignatoryTitle?: string | null;
 }
@@ -553,15 +553,6 @@ export function Template01({
 
             <View style={styles.bottomRow}>
               <View style={styles.signatureRow}>
-                <View style={styles.signatureBlock}>
-                  {/* A signature reads as first-name-only; the full printed name stays on the line below. */}
-                  <Text style={styles.signatureScript}>Abhijit</Text>
-                  <View style={styles.signatureLine} />
-                  <Text style={styles.signatureName}>{COMPANY_SIGNATORY.name}</Text>
-                  <Text style={styles.signatureTitle}>
-                    {COMPANY_SIGNATORY.title}, Stively Technologies
-                  </Text>
-                </View>
                 {coSignatoryName ? (
                   <View style={styles.signatureBlock}>
                     <Text style={styles.signatureScript}>{coSignatoryName.split(" ")[0]}</Text>
@@ -571,7 +562,17 @@ export function Template01({
                       {coSignatoryTitle || "Co-Founder, Stively Technologies"}
                     </Text>
                   </View>
-                ) : null}
+                ) : (
+                  <View style={styles.signatureBlock}>
+                    {/* A signature reads as first-name-only; the full printed name stays on the line below. */}
+                    <Text style={styles.signatureScript}>Abhijit</Text>
+                    <View style={styles.signatureLine} />
+                    <Text style={styles.signatureName}>{COMPANY_SIGNATORY.name}</Text>
+                    <Text style={styles.signatureTitle}>
+                      {COMPANY_SIGNATORY.title}, Stively Technologies
+                    </Text>
+                  </View>
+                )}
               </View>
 
               <View style={styles.sealWrap}>

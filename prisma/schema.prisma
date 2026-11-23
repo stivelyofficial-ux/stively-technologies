@@ -2471,7 +2471,7 @@ model Certificate {
   courseDurationMinutes Int?
   quizzesPassed       Int?
 
-  /// A second signatory printed beside the founder's signature (for example the co-founder). Null = founder only.
+  /// When set, this person signs the certificate instead of the founder (for example the co-founder). Null = the founder signs.
   coSignatoryName  String?
   coSignatoryTitle String?
 

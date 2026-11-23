@@ -45,3 +45,11 @@ next-env.d.ts
 /private/
 
 /private
+
+
+# Environment variables
+.env
+.env.*
+!.env.example
+.env.production
+.env.local
